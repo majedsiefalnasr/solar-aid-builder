@@ -71,11 +71,11 @@ function HomePage() {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
-                to="/calculator"
+                to="/tools"
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:translate-y-[-1px] hover:bg-primary/95"
               >
                 <Calculator className="h-4 w-4" />
-                احسب نظامك الشمسي
+                الأدوات الهندسية
               </Link>
               <Link
                 to="/store"
