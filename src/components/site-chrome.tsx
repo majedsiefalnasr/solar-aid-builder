@@ -3,9 +3,11 @@ import { Menu } from "lucide-react";
 import { useState } from "react";
 
 const navLinks = [
-  { to: "/", label: "الرئيسية" },
+  { to: "/", label: "من نحن" },
+  { to: "/", label: "حلولنا" },
   { to: "/calculator", label: "حاسبة الطاقة" },
-  { to: "/cart", label: "السلة" },
+  { to: "/", label: "المدونة" },
+  { to: "/cart", label: "تواصل معنا" },
 ] as const;
 
 export function SiteNav() {
