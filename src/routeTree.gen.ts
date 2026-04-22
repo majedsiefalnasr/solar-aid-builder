@@ -9,38 +9,141 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResultsRouteImport } from './routes/results'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CartRouteImport } from './routes/cart'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalculatorIndexRouteImport } from './routes/calculator.index'
+import { Route as CalculatorPreferencesRouteImport } from './routes/calculator.preferences'
+import { Route as CalculatorDevicesRouteImport } from './routes/calculator.devices'
 
+const ResultsRoute = ResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalculatorIndexRoute = CalculatorIndexRouteImport.update({
+  id: '/calculator/',
+  path: '/calculator/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculatorPreferencesRoute = CalculatorPreferencesRouteImport.update({
+  id: '/calculator/preferences',
+  path: '/calculator/preferences',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculatorDevicesRoute = CalculatorDevicesRouteImport.update({
+  id: '/calculator/devices',
+  path: '/calculator/devices',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/results': typeof ResultsRoute
+  '/calculator/devices': typeof CalculatorDevicesRoute
+  '/calculator/preferences': typeof CalculatorPreferencesRoute
+  '/calculator/': typeof CalculatorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/results': typeof ResultsRoute
+  '/calculator/devices': typeof CalculatorDevicesRoute
+  '/calculator/preferences': typeof CalculatorPreferencesRoute
+  '/calculator': typeof CalculatorIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/results': typeof ResultsRoute
+  '/calculator/devices': typeof CalculatorDevicesRoute
+  '/calculator/preferences': typeof CalculatorPreferencesRoute
+  '/calculator/': typeof CalculatorIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/results'
+    | '/calculator/devices'
+    | '/calculator/preferences'
+    | '/calculator/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/results'
+    | '/calculator/devices'
+    | '/calculator/preferences'
+    | '/calculator'
+  id:
+    | '__root__'
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/results'
+    | '/calculator/devices'
+    | '/calculator/preferences'
+    | '/calculator/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CartRoute: typeof CartRoute
+  CheckoutRoute: typeof CheckoutRoute
+  ResultsRoute: typeof ResultsRoute
+  CalculatorDevicesRoute: typeof CalculatorDevicesRoute
+  CalculatorPreferencesRoute: typeof CalculatorPreferencesRoute
+  CalculatorIndexRoute: typeof CalculatorIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/results': {
+      id: '/results'
+      path: '/results'
+      fullPath: '/results'
+      preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +151,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calculator/': {
+      id: '/calculator/'
+      path: '/calculator'
+      fullPath: '/calculator/'
+      preLoaderRoute: typeof CalculatorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculator/preferences': {
+      id: '/calculator/preferences'
+      path: '/calculator/preferences'
+      fullPath: '/calculator/preferences'
+      preLoaderRoute: typeof CalculatorPreferencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculator/devices': {
+      id: '/calculator/devices'
+      path: '/calculator/devices'
+      fullPath: '/calculator/devices'
+      preLoaderRoute: typeof CalculatorDevicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CartRoute: CartRoute,
+  CheckoutRoute: CheckoutRoute,
+  ResultsRoute: ResultsRoute,
+  CalculatorDevicesRoute: CalculatorDevicesRoute,
+  CalculatorPreferencesRoute: CalculatorPreferencesRoute,
+  CalculatorIndexRoute: CalculatorIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
