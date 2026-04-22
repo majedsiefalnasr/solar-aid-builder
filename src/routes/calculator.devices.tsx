@@ -1,0 +1,329 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Plus,
+  Trash2,
+  Snowflake,
+  Wind,
+  Fan,
+  Lightbulb,
+  Droplets,
+  Box,
+  Zap,
+} from "lucide-react";
+import { CalculatorShell } from "@/components/calculator-shell";
+import {
+  AC_PRESETS,
+  FAN_PRESETS,
+  FRIDGE_PRESETS,
+  LIGHT_PRESETS,
+  PUMP_PRESETS,
+  loadState,
+  saveState,
+  type Device,
+  type DeviceCategory,
+} from "@/lib/calculator";
+
+export const Route = createFileRoute("/calculator/devices")({
+  head: () => ({
+    meta: [
+      { title: "اختر الأجهزة — حاسبة الطاقة | متجددة" },
+      {
+        name: "description",
+        content: "الخطوة 3: حدد الأجهزة التي ترغب في تشغيلها للحصول على أفضل تقدير.",
+      },
+    ],
+  }),
+  component: StepDevices,
+});
+
+const categoryMeta: {
+  id: DeviceCategory;
+  label: string;
+  Icon: typeof Snowflake;
+  defaultLabel: string;
+  defaultWatts: number;
+  presets: { label: string; watts: number }[];
+}[] = [
+  { id: "fridges", label: "الثلاجات", Icon: Snowflake, defaultLabel: "ثلاجة", defaultWatts: 150, presets: FRIDGE_PRESETS },
+  { id: "ac", label: "المكيفات", Icon: Wind, defaultLabel: "مكيف", defaultWatts: 1200, presets: AC_PRESETS },
+  { id: "fans", label: "المراوح", Icon: Fan, defaultLabel: "مروحة", defaultWatts: 75, presets: FAN_PRESETS },
+  { id: "lights", label: "الإضاءة", Icon: Lightbulb, defaultLabel: "لمبة LED", defaultWatts: 9, presets: LIGHT_PRESETS },
+  { id: "pumps", label: "مضخات المياه", Icon: Droplets, defaultLabel: "مضخة", defaultWatts: 750, presets: PUMP_PRESETS },
+  { id: "other", label: "أجهزة أخرى", Icon: Box, defaultLabel: "جهاز مخصص", defaultWatts: 100, presets: [] },
+];
+
+function StepDevices() {
+  const navigate = useNavigate();
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [activeCat, setActiveCat] = useState<DeviceCategory>("fridges");
+
+  useEffect(() => {
+    setDevices(loadState().devices);
+  }, []);
+
+  const filtered = devices.filter((d) => d.category === activeCat);
+  const meta = categoryMeta.find((c) => c.id === activeCat)!;
+
+  const totalWatts = useMemo(
+    () => filtered.reduce((a, d) => a + d.watts * d.qty, 0),
+    [filtered],
+  );
+
+  const update = (id: string, patch: Partial<Device>) => {
+    setDevices((ds) => ds.map((d) => (d.id === id ? { ...d, ...patch } : d)));
+  };
+  const remove = (id: string) => setDevices((ds) => ds.filter((d) => d.id !== id));
+  const add = () => {
+    setDevices((ds) => [
+      ...ds,
+      {
+        id: crypto.randomUUID(),
+        category: activeCat,
+        label: meta.defaultLabel,
+        watts: meta.defaultWatts,
+        qty: 1,
+        hours: 8,
+        nightHours: 2,
+      },
+    ]);
+  };
+
+  const goCalculate = () => {
+    saveState({ ...loadState(), devices });
+    navigate({ to: "/results" });
+  };
+
+  return (
+    <CalculatorShell>
+      <div className="flex items-start gap-4">
+        <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary md:flex">
+          <Box className="h-6 w-6" />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-2xl font-extrabold text-ink">اختر الأجهزة المستهدفة</h2>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            حدد الأجهزة التي ترغب في تشغيلها للحصول على أفضل تقدير.
+          </p>
+        </div>
+      </div>
+
+      {/* Category tabs */}
+      <div className="mt-6 grid grid-cols-3 gap-2.5 md:grid-cols-6">
+        {categoryMeta.map((c) => {
+          const Icon = c.Icon;
+          const active = activeCat === c.id;
+          const count = devices.filter((d) => d.category === c.id).length;
+          return (
+            <button
+              key={c.id}
+              onClick={() => setActiveCat(c.id)}
+              className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 px-2 py-4 text-xs font-bold transition ${
+                active
+                  ? "border-primary bg-primary text-primary-foreground shadow-cta"
+                  : "border-border bg-card text-foreground/80 hover:border-primary/40"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              {c.label}
+              {count > 0 && (
+                <span
+                  className={`absolute -left-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] ${
+                    active ? "bg-white text-primary" : "bg-primary text-primary-foreground"
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Devices list for active category */}
+      <div className="mt-7 rounded-2xl border border-border bg-card p-5">
+        <div className="mb-5 flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-base font-extrabold text-ink">
+            <meta.Icon className="h-5 w-5 text-primary" />
+            تفاصيل {meta.label}
+          </h3>
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-foreground/70">
+            {filtered.length} جهاز · {totalWatts}W
+          </span>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
+            لا توجد أجهزة بعد. اضغط "إضافة جهاز" للبدء.
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {filtered.map((d, i) => (
+              <DeviceRow
+                key={d.id}
+                device={d}
+                index={i + 1}
+                presets={meta.presets}
+                onChange={(p) => update(d.id, p)}
+                onRemove={() => remove(d.id)}
+              />
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={add}
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-background py-3 text-sm font-bold text-foreground/70 transition hover:border-primary hover:text-primary"
+        >
+          <Plus className="h-4 w-4" />
+          إضافة {meta.label === "أجهزة أخرى" ? "جهاز مخصص" : "جديد"}
+        </button>
+      </div>
+
+      <hr className="my-8 border-border" />
+
+      <div className="flex items-center justify-between">
+        <button
+          onClick={goCalculate}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95"
+        >
+          <Zap className="h-4 w-4" />
+          احسب
+        </button>
+        <button
+          onClick={() => navigate({ to: "/calculator/preferences" })}
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
+        >
+          السابق
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </CalculatorShell>
+  );
+}
+
+function DeviceRow({
+  device,
+  index,
+  presets,
+  onChange,
+  onRemove,
+}: {
+  device: Device;
+  index: number;
+  presets: { label: string; watts: number }[];
+  onChange: (p: Partial<Device>) => void;
+  onRemove: () => void;
+}) {
+  const total = device.watts * device.qty;
+  return (
+    <div className="rounded-xl border border-border bg-background p-4">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="rounded-md bg-muted px-2 py-1 text-xs font-bold text-foreground/70">
+            الجهاز #{index}
+          </span>
+          <span className="rounded-md bg-primary-soft px-2 py-1 text-xs font-bold text-primary">
+            {total}W إجمالي
+          </span>
+        </div>
+        <button
+          onClick={onRemove}
+          className="text-muted-foreground transition hover:text-destructive"
+          aria-label="حذف"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <NumberField
+          label="القدرة (واط)"
+          value={device.watts}
+          onChange={(v) => onChange({ watts: v })}
+        />
+        <NumberField
+          label="العدد"
+          value={device.qty}
+          onChange={(v) => onChange({ qty: Math.max(1, v) })}
+        />
+        <NumberField
+          label="ساعات التشغيل"
+          value={device.hours}
+          onChange={(v) => onChange({ hours: Math.max(0, Math.min(24, v)) })}
+        />
+        <NumberField
+          label="منها ساعات ليلية"
+          value={device.nightHours}
+          onChange={(v) =>
+            onChange({ nightHours: Math.max(0, Math.min(device.hours, v)) })
+          }
+        />
+      </div>
+
+      {presets.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {presets.map((p) => {
+            const active = p.watts === device.watts && p.label === device.label;
+            return (
+              <button
+                key={p.label}
+                onClick={() => onChange({ watts: p.watts, label: p.label })}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                  active
+                    ? "border-primary bg-primary-soft text-primary"
+                    : "border-border bg-card text-foreground/70 hover:border-primary/40"
+                }`}
+              >
+                <span>{p.label}</span>
+                <span className="text-[10px] text-muted-foreground">{p.watts} واط</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+        {label}
+      </span>
+      <div className="flex items-center rounded-xl border border-input bg-card focus-within:border-primary">
+        <button
+          type="button"
+          onClick={() => onChange(value - 1)}
+          className="px-3 py-2.5 text-muted-foreground transition hover:text-primary"
+        >
+          −
+        </button>
+        <input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value) || 0)}
+          className="w-full bg-transparent py-2.5 text-center text-sm font-bold text-ink focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={() => onChange(value + 1)}
+          className="px-3 py-2.5 text-muted-foreground transition hover:text-primary"
+        >
+          +
+        </button>
+      </div>
+    </label>
+  );
+}
