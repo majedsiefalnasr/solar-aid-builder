@@ -4,6 +4,13 @@ import {
   Calculator,
   ArrowLeft,
   ChevronLeft,
+  ShieldCheck,
+  Truck,
+  Headset,
+  BadgeCheck,
+  Star,
+  ShoppingCart,
+  Quote,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import heroImg from "@/assets/solar-hero.jpg";
@@ -12,6 +19,8 @@ import solarImg from "@/assets/solar-card.jpg";
 import catMaterials from "@/assets/cat-materials.jpg";
 import catTools from "@/assets/cat-tools.jpg";
 import catRebar from "@/assets/cat-rebar.jpg";
+import { products } from "@/lib/products";
+import { addProductToCart } from "@/lib/cart-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,6 +42,8 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const featured = products.slice(0, 4);
+
   return (
     <div className="min-h-screen bg-background">
       <SiteNav />
@@ -135,7 +146,7 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Categories — 3-column showcase */}
+      {/* Categories — full-bleed image tiles with gradient overlay */}
       <section id="categories" className="border-y border-border bg-card/40">
         <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
           <div className="mb-10 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
@@ -152,69 +163,57 @@ function HomePage() {
             </p>
           </div>
 
+          {/* Grid: tall left + 2 stacked middle + tall right */}
           <div className="grid gap-5 md:grid-cols-3 md:[grid-template-rows:1fr_1fr]">
-            {/* Tall featured — Solar Energy (left, primary) */}
-            <Link
+            {/* Tall left — Solar */}
+            <CategoryTile
               to="/calculator"
-              className="group relative flex flex-col overflow-hidden rounded-3xl bg-primary p-7 text-primary-foreground shadow-elevated transition hover:-translate-y-0.5 md:row-span-2 md:min-h-[520px]"
-            >
-              <div className="flex items-center justify-end gap-2">
-                <span className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold backdrop-blur">
-                  Lithium
-                </span>
-                <span className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold backdrop-blur">
-                  Gel
-                </span>
-              </div>
-              <div className="mt-6 text-end">
-                <h3 className="text-3xl font-extrabold leading-tight md:text-4xl">
-                  الطاقة
-                  <br />
-                  الشمسية
-                </h3>
-                <p className="mt-2 text-sm opacity-90">ألواح · بطاريات · إنفرترات</p>
-              </div>
-              <div className="relative mt-auto flex items-end justify-between">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2.5 text-xs font-extrabold text-primary-foreground shadow-cta">
-                  ابدأ الحساب
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                </span>
-              </div>
-              <div className="pointer-events-none absolute -left-8 -bottom-12 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-              <Sun className="pointer-events-none absolute -left-6 bottom-8 h-56 w-56 text-white/15" />
-            </Link>
+              image={solarImg}
+              alt="الطاقة الشمسية"
+              eyebrow="الأكثر طلباً"
+              title="الطاقة الشمسية"
+              subtitle="ألواح · بطاريات · إنفرترات"
+              cta="ابدأ الحساب"
+              accent
+              tall
+              className="md:row-span-2 md:min-h-[520px]"
+            />
 
             {/* Top middle — Concrete */}
             <CategoryTile
-              eyebrow="اليمامة"
-              title="الخرسانات والإسمنت"
+              to="/store"
               image={catMaterials}
               alt="إسمنت ومواد بناء"
-              variant="light"
+              eyebrow="اليمامة · سيكا"
+              title="الخرسانات والإسمنت"
+              cta="استكشف"
             />
 
-            {/* Tall right — Reinforcement (dark) */}
+            {/* Tall right — Reinforcement */}
             <CategoryTile
-              eyebrow="حديد الراجحي"
-              title="معدات التسليح"
+              to="/store"
               image={catRebar}
               alt="حديد التسليح"
-              variant="dark"
-              className="md:row-span-2 md:min-h-[520px]"
+              eyebrow="حديد الراجحي"
+              title="معدات التسليح"
+              subtitle="حديد مبروم · أسلاك ربط"
+              cta="تصفح المنتجات"
               tall
+              className="md:row-span-2 md:min-h-[520px]"
             />
 
             {/* Bottom middle — Tools */}
             <CategoryTile
-              eyebrow="بوش · ديوالت"
-              title="أدوات البناء"
+              to="/store"
               image={catTools}
               alt="أدوات البناء"
-              variant="light"
+              eyebrow="بوش · ديوالت"
+              title="أدوات البناء"
+              cta="استكشف"
             />
           </div>
 
-          {/* Secondary chips for remaining categories */}
+          {/* Secondary chips */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             {["الدهانات والعوازل", "السلامة المهنية", "السباكة والصرف"].map((c) => (
               <Link
@@ -230,88 +229,298 @@ function HomePage() {
         </div>
       </section>
 
+      {/* Mini store — featured products */}
+      <section className="bg-background">
+        <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
+          <div className="mb-8 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
+            <div>
+              <span className="mb-2 inline-block rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
+                المتجر
+              </span>
+              <h2 className="text-3xl font-extrabold text-ink md:text-4xl">
+                منتجات مختارة لك
+              </h2>
+            </div>
+            <Link
+              to="/store"
+              className="inline-flex items-center gap-1.5 text-sm font-extrabold text-primary hover:underline"
+            >
+              عرض كل المنتجات
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p) => (
+              <article
+                key={p.id}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated"
+              >
+                <div className="relative flex h-36 items-center justify-center bg-gradient-to-br from-muted to-card">
+                  <Sun className="h-14 w-14 text-foreground/15" />
+                  {p.badge && (
+                    <span className="absolute right-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground shadow-sm">
+                      {p.badge}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col p-4">
+                  <div className="mb-1 text-[11px] font-semibold text-muted-foreground">
+                    {p.brand}
+                  </div>
+                  <h3 className="text-sm font-bold text-ink line-clamp-2">{p.name}</h3>
+                  <div className="mt-2 flex items-center gap-1 text-xs text-amber-500">
+                    <Star className="h-3.5 w-3.5 fill-current" />
+                    <span className="font-bold">{p.rating}</span>
+                  </div>
+                  <div className="mt-auto flex items-center justify-between pt-4">
+                    <div className="text-lg font-extrabold text-primary">
+                      {p.price}{" "}
+                      <span className="text-xs font-bold text-muted-foreground">ر.س</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => addProductToCart(p.id, 1)}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-cta transition hover:bg-primary/95"
+                      aria-label="إضافة للسلة"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Bunyan — features */}
+      <section className="border-y border-border bg-card/40">
+        <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
+          <div className="mb-10 text-center">
+            <span className="mb-2 inline-block rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
+              لماذا بنيان؟
+            </span>
+            <h2 className="text-3xl font-extrabold text-ink md:text-4xl">
+              شريكك من الأساس حتى التشغيل
+            </h2>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: BadgeCheck,
+                title: "جودة معتمدة",
+                desc: "منتجات أصلية من علامات تجارية موثوقة بضمان رسمي.",
+              },
+              {
+                icon: Truck,
+                title: "توصيل سريع",
+                desc: "شبكة توصيل تغطي جميع المدن خلال 24-72 ساعة.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "دفع آمن",
+                desc: "بوابات دفع محمية وخيارات دفع عند الاستلام.",
+              },
+              {
+                icon: Headset,
+                title: "دعم هندسي",
+                desc: "فريق هندسي متخصص للاستشارات قبل وبعد الشراء.",
+              },
+            ].map((f) => {
+              const Icon = f.icon;
+              return (
+                <div
+                  key={f.title}
+                  className="group rounded-2xl border border-border bg-card p-6 text-center transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
+                >
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="mb-1.5 text-base font-extrabold text-ink">{f.title}</h3>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{f.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="bg-background">
+        <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
+          <div className="mb-10 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
+            <div>
+              <span className="mb-2 inline-block rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
+                آراء العملاء
+              </span>
+              <h2 className="text-3xl font-extrabold text-ink md:text-4xl">
+                ثقة عملائنا هي رأس مالنا
+              </h2>
+            </div>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              {
+                name: "م. أحمد الحسني",
+                role: "مهندس إنشائي · صنعاء",
+                quote:
+                  "حاسبة الطاقة الشمسية أنقذتني من ساعات حسابات. النتائج دقيقة والمنتجات أصلية.",
+              },
+              {
+                name: "خالد البكري",
+                role: "مقاول · عدن",
+                quote:
+                  "أسعار منافسة وتوصيل أسرع من المتوقع. فريق الدعم متعاون جداً.",
+              },
+              {
+                name: "م. سارة الزبيدي",
+                role: "استشارية معمارية · تعز",
+                quote:
+                  "أحب تنوع العلامات التجارية وسهولة المقارنة. أصبحت وجهتي الأولى للمشاريع.",
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className="relative rounded-2xl border border-border bg-card p-6 shadow-card"
+              >
+                <Quote className="absolute -top-3 right-6 h-8 w-8 rotate-180 rounded-full bg-primary p-1.5 text-primary-foreground shadow-cta" />
+                <div className="mb-3 flex items-center gap-1 text-amber-500">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-3.5 w-3.5 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm leading-relaxed text-foreground/85">"{t.quote}"</p>
+                <div className="mt-5 border-t border-border pt-4">
+                  <div className="text-sm font-extrabold text-ink">{t.name}</div>
+                  <div className="text-xs text-muted-foreground">{t.role}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="bg-background pb-20">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-emerald-700 p-8 text-primary-foreground shadow-elevated md:p-12">
+            <div className="pointer-events-none absolute -left-12 -bottom-12 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+            <Sun className="pointer-events-none absolute -left-6 top-6 h-48 w-48 text-white/10" />
+            <div className="relative grid items-center gap-6 md:grid-cols-[1fr_auto]">
+              <div className="text-end md:text-start">
+                <h3 className="text-2xl font-extrabold md:text-4xl">
+                  جاهز لبدء مشروعك؟
+                </h3>
+                <p className="mt-2 max-w-xl text-sm opacity-90 md:text-base">
+                  احسب احتياجك من الطاقة الشمسية مجاناً، أو تصفح آلاف المنتجات المعتمدة.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                <Link
+                  to="/store"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-extrabold text-primary-foreground backdrop-blur transition hover:bg-white/20"
+                >
+                  تصفح المتجر
+                </Link>
+                <Link
+                  to="/calculator"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-extrabold text-primary shadow-cta transition hover:bg-white/95"
+                >
+                  <Calculator className="h-4 w-4" />
+                  ابدأ الحساب
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <SiteFooter />
     </div>
   );
 }
 
 function CategoryTile({
-  eyebrow,
-  title,
+  to,
   image,
   alt,
-  variant,
-  className,
+  eyebrow,
+  title,
+  subtitle,
+  cta,
   tall,
+  accent,
+  className,
 }: {
-  eyebrow: string;
-  title: string;
+  to: string;
   image: string;
   alt: string;
-  variant: "light" | "dark";
-  className?: string;
+  eyebrow: string;
+  title: string;
+  subtitle?: string;
+  cta: string;
   tall?: boolean;
+  accent?: boolean;
+  className?: string;
 }) {
-  const isDark = variant === "dark";
   return (
     <Link
-      to="/store"
-      className={`group relative flex flex-col overflow-hidden rounded-3xl shadow-card transition hover:-translate-y-0.5 hover:shadow-elevated ${
-        isDark ? "bg-ink text-primary-foreground" : "bg-muted text-ink"
-      } ${className ?? "min-h-[240px]"}`}
+      to={to}
+      className={`group relative flex flex-col justify-end overflow-hidden rounded-3xl shadow-card transition hover:-translate-y-0.5 hover:shadow-elevated ${
+        className ?? "min-h-[240px]"
+      }`}
     >
-      {/* Brand chips top */}
-      <div className="relative z-10 flex items-center justify-end gap-2 p-5">
-        {eyebrow.split("·").map((b) => (
-          <span
-            key={b}
-            className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
-              isDark ? "bg-white/10 text-white" : "bg-card text-foreground/80"
+      {/* Full-bleed image */}
+      <img
+        src={image}
+        alt={alt}
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+      />
+
+      {/* Gradient overlay for legibility */}
+      <div
+        className={`absolute inset-0 ${
+          accent
+            ? "bg-gradient-to-t from-primary/95 via-primary/60 to-primary/15"
+            : "bg-gradient-to-t from-ink/90 via-ink/50 to-ink/10"
+        }`}
+      />
+
+      {/* Top eyebrow chip */}
+      <div className="relative z-10 flex items-start justify-end p-5">
+        <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md">
+          {eyebrow}
+        </span>
+      </div>
+
+      {/* Bottom content */}
+      <div className="relative z-10 flex flex-col gap-3 p-5 text-end text-white md:p-6">
+        <div>
+          <h3
+            className={`font-extrabold leading-tight ${
+              tall ? "text-3xl md:text-4xl" : "text-xl md:text-2xl"
             }`}
           >
-            {b.trim()}
-          </span>
-        ))}
-      </div>
-
-      {/* Title */}
-      <div className="relative z-10 px-5 text-end">
-        <h3
-          className={`font-extrabold leading-tight ${
-            tall ? "text-3xl md:text-4xl" : "text-xl md:text-2xl"
-          }`}
-        >
-          {title}
-        </h3>
-        {!tall && (
-          <span className="mt-2 inline-flex items-center gap-1 text-xs font-extrabold text-primary">
-            استكشف
-            <ArrowLeft className="h-3 w-3" />
-          </span>
-        )}
-      </div>
-
-      {tall && (
-        <div className="relative z-10 mt-4 flex justify-start px-5">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-xs font-extrabold text-primary-foreground shadow-cta">
-            تصفح المنتجات
+            {title}
+          </h3>
+          {subtitle && <p className="mt-1.5 text-xs opacity-90 md:text-sm">{subtitle}</p>}
+        </div>
+        <div className="flex items-center justify-start">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-extrabold shadow-cta ${
+              accent
+                ? "bg-ink text-primary-foreground"
+                : "bg-primary text-primary-foreground"
+            }`}
+          >
+            {cta}
             <ArrowLeft className="h-3.5 w-3.5" />
           </span>
         </div>
-      )}
-
-      {/* Image */}
-      <div className="relative mt-auto flex flex-1 items-end justify-center">
-        <img
-          src={image}
-          alt={alt}
-          loading="lazy"
-          width={768}
-          height={768}
-          className={`pointer-events-none object-contain transition duration-500 group-hover:scale-105 ${
-            tall ? "max-h-[360px] w-auto" : "max-h-[180px] w-auto"
-          }`}
-        />
       </div>
     </Link>
   );

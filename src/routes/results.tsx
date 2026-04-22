@@ -74,21 +74,21 @@ function ResultsPage() {
     <div className="min-h-screen bg-background">
       <SiteNav />
 
-      {/* Hero */}
-      <div className="relative h-44 w-full overflow-hidden md:h-56">
+      {/* Hero — shorter so first card sits clearly in front */}
+      <div className="relative h-40 w-full overflow-hidden md:h-48">
         <img src={heroImg} alt="" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 to-background" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <h1 className="text-2xl font-extrabold text-ink md:text-4xl">
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/40 to-background" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 pb-6 text-center">
+          <h1 className="text-2xl font-extrabold text-ink md:text-3xl">
             نظامك الشمسي المقترح
           </h1>
-          <p className="mt-1.5 text-sm text-foreground/80">
+          <p className="mt-1.5 text-xs text-foreground/80 md:text-sm">
             تقدير دقيق بناءً على أحمالك والاعتمادية المطلوبة.
           </p>
         </div>
       </div>
 
-      <main className="mx-auto -mt-10 max-w-5xl space-y-6 px-4 pb-20 md:px-8">
+      <main className="relative z-10 mx-auto -mt-6 max-w-5xl space-y-6 px-4 pb-20 md:px-8">
         {/* Loads summary */}
         <Card>
           <SectionTitle icon={<Zap className="h-5 w-5" />} title="ملخص الأحمال" />
