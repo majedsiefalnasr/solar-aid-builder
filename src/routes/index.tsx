@@ -13,17 +13,19 @@ import {
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import heroImg from "@/assets/solar-hero.jpg";
+import materialsImg from "@/assets/materials-card.jpg";
+import solarImg from "@/assets/solar-card.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "متجددة — منصة البناء والطاقة الشمسية" },
+      { title: "بنيان — منصة البناء والطاقة الشمسية" },
       {
         name: "description",
         content:
-          "متجر متجددة: مواد بناء، طاقة شمسية، وأدوات هندسية متقدمة. احسب نظامك الشمسي بدقة بضغطة زر.",
+          "متجر بنيان: مواد بناء، طاقة شمسية، وأدوات هندسية متقدمة. احسب نظامك الشمسي بدقة بضغطة زر.",
       },
-      { property: "og:title", content: "متجددة — منصة البناء والطاقة الشمسية" },
+      { property: "og:title", content: "بنيان — منصة البناء والطاقة الشمسية" },
       {
         property: "og:description",
         content: "احسب نظامك الشمسي بدقة بضغطة زر. تسوق مواد البناء والطاقة الشمسية.",

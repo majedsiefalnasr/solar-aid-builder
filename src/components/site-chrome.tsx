@@ -3,10 +3,10 @@ import { Menu } from "lucide-react";
 import { useState } from "react";
 
 const navLinks = [
-  { to: "/", label: "من نحن" },
+  { to: "/", label: "الرئيسية" },
   { to: "/", label: "حلولنا" },
-  { to: "/calculator", label: "حاسبة الطاقة" },
-  { to: "/", label: "المدونة" },
+  { to: "/", label: "المتجر" },
+  { to: "/", label: "مركز المساعدة" },
   { to: "/cart", label: "تواصل معنا" },
 ] as const;
 
@@ -25,8 +25,8 @@ export function SiteNav() {
             </svg>
           </div>
           <div className="leading-tight">
-            <div className="text-lg font-extrabold tracking-tight text-ink">متجددة</div>
-            <div className="text-[10px] tracking-widest text-muted-foreground">طاقة تنبض بالحياة</div>
+            <div className="text-lg font-extrabold tracking-tight text-ink">بنيان</div>
+            <div className="text-[10px] tracking-widest text-muted-foreground">منصة البناء والطاقة</div>
           </div>
         </Link>
 
@@ -34,7 +34,7 @@ export function SiteNav() {
         <nav className="hidden items-center gap-7 md:flex">
           {navLinks.map((l) => (
             <Link
-              key={l.to}
+              key={l.label}
               to={l.to}
               className="text-sm font-medium text-foreground/80 transition hover:text-primary"
               activeProps={{ className: "text-primary font-semibold" }}
@@ -72,7 +72,7 @@ export function SiteNav() {
           <nav className="flex flex-col px-4 py-3">
             {navLinks.map((l) => (
               <Link
-                key={l.to}
+                key={l.label}
                 to={l.to}
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
@@ -92,7 +92,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-card">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4 md:px-8">
         <div className="space-y-3">
-          <div className="text-lg font-extrabold text-ink">متجددة</div>
+          <div className="text-lg font-extrabold text-ink">بنيان</div>
           <p className="text-sm leading-relaxed text-muted-foreground">
             منصة متكاملة لخدمات البناء، مواد البناء، والطاقة الشمسية.
           </p>
@@ -102,8 +102,8 @@ export function SiteFooter() {
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>الرئيسية</li>
             <li>حلولنا</li>
-            <li>حاسبة الطاقة</li>
-            <li>المدونة</li>
+            <li>المتجر</li>
+            <li>مركز المساعدة</li>
           </ul>
         </div>
         <div>
@@ -118,13 +118,13 @@ export function SiteFooter() {
         <div>
           <div className="mb-3 text-sm font-bold text-ink">تواصل</div>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>info@mutajadidah.tech</li>
+            <li>info@bunyan.tech</li>
             <li>+967 700 000 000</li>
           </ul>
         </div>
       </div>
       <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-        © 2026 متجددة. جميع الحقوق محفوظة.
+        © 2026 بنيان. جميع الحقوق محفوظة.
       </div>
     </footer>
   );
