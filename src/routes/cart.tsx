@@ -21,7 +21,7 @@ interface CartItem {
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "السلة | متجددة" },
+      { title: "السلة | بنيان" },
       { name: "description", content: "راجع نظامك الشمسي قبل إتمام الشراء." },
     ],
   }),

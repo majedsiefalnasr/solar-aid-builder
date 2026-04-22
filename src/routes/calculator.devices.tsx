@@ -29,7 +29,7 @@ import {
 export const Route = createFileRoute("/calculator/devices")({
   head: () => ({
     meta: [
-      { title: "اختر الأجهزة — حاسبة الطاقة | متجددة" },
+      { title: "اختر الأجهزة — حاسبة الطاقة | بنيان" },
       {
         name: "description",
         content: "الخطوة 3: حدد الأجهزة التي ترغب في تشغيلها للحصول على أفضل تقدير.",
@@ -184,10 +184,12 @@ function StepDevices() {
 
       <hr className="my-8 border-border" />
 
-      <div className="flex items-center justify-between">
+      {/* RTL: primary CTA on the LEFT */}
+      <div className="flex items-center justify-between" dir="ltr">
         <button
           onClick={goCalculate}
           className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95"
+          dir="rtl"
         >
           <Zap className="h-4 w-4" />
           احسب
@@ -195,9 +197,10 @@ function StepDevices() {
         <button
           onClick={() => navigate({ to: "/calculator/preferences" })}
           className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
+          dir="rtl"
         >
-          السابق
           <ArrowRight className="h-4 w-4" />
+          السابق
         </button>
       </div>
     </CalculatorShell>

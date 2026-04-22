@@ -16,7 +16,7 @@ import { Steps } from "./cart";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "إتمام الطلب | متجددة" },
+      { title: "إتمام الطلب | بنيان" },
       { name: "description", content: "أكمل بياناتك واختر طريقة الدفع." },
     ],
   }),
@@ -42,7 +42,7 @@ function CheckoutPage() {
             تم استلام طلبك بنجاح
           </h1>
           <p className="mt-3 max-w-md text-sm text-muted-foreground">
-            سيتواصل معك فريق متجددة خلال 24 ساعة لتأكيد الطلب وجدولة التركيب.
+            سيتواصل معك فريق بنيان خلال 24 ساعة لتأكيد الطلب وجدولة التركيب.
           </p>
           <Link
             to="/"
@@ -154,7 +154,7 @@ function CheckoutPage() {
                     <div className="font-bold text-ink">تفاصيل التحويل</div>
                     <div className="mt-2 space-y-1 text-muted-foreground">
                       <div>البنك: البنك الأهلي السعودي</div>
-                      <div>اسم الحساب: شركة متجددة للطاقة</div>
+                      <div>اسم الحساب: شركة بنيان للطاقة</div>
                       <div>IBAN: SA00 0000 0000 0000 0000 0000</div>
                     </div>
                   </div>
