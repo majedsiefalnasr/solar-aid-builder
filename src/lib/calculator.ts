@@ -23,7 +23,6 @@ export type DeviceCategory =
   | "other";
 
 export interface CalcState {
-  country: string;
   city: string;
   battery: BatteryType;
   autonomy: Autonomy;
@@ -31,7 +30,6 @@ export interface CalcState {
 }
 
 export const defaultState: CalcState = {
-  country: "اليمن",
   city: "عدن",
   battery: "lithium",
   autonomy: 2,
