@@ -16,7 +16,7 @@ import { Steps } from "./cart";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "إتمام الطلب | متجددة" },
+      { title: "إتمام الطلب | بنيان" },
       { name: "description", content: "أكمل بياناتك واختر طريقة الدفع." },
     ],
   }),
@@ -42,7 +42,7 @@ function CheckoutPage() {
             تم استلام طلبك بنجاح
           </h1>
           <p className="mt-3 max-w-md text-sm text-muted-foreground">
-            سيتواصل معك فريق متجددة خلال 24 ساعة لتأكيد الطلب وجدولة التركيب.
+            سيتواصل معك فريق بنيان خلال 24 ساعة لتأكيد الطلب وجدولة التركيب.
           </p>
           <Link
             to="/"
@@ -107,10 +107,11 @@ function CheckoutPage() {
 
               <hr className="my-7 border-border" />
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between" dir="ltr">
                 <button
                   onClick={() => setStage(2)}
                   className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95"
+                  dir="rtl"
                 >
                   متابعة للدفع
                   <ArrowLeft className="h-4 w-4" />
@@ -118,9 +119,10 @@ function CheckoutPage() {
                 <button
                   onClick={() => navigate({ to: "/cart" })}
                   className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition hover:text-primary"
+                  dir="rtl"
                 >
-                  العودة للسلة
                   <ArrowRight className="h-4 w-4" />
+                  العودة للسلة
                 </button>
               </div>
             </>
@@ -154,7 +156,7 @@ function CheckoutPage() {
                     <div className="font-bold text-ink">تفاصيل التحويل</div>
                     <div className="mt-2 space-y-1 text-muted-foreground">
                       <div>البنك: البنك الأهلي السعودي</div>
-                      <div>اسم الحساب: شركة متجددة للطاقة</div>
+                      <div>اسم الحساب: شركة بنيان للطاقة</div>
                       <div>IBAN: SA00 0000 0000 0000 0000 0000</div>
                     </div>
                   </div>
@@ -180,10 +182,11 @@ function CheckoutPage() {
 
               <hr className="my-7 border-border" />
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between" dir="ltr">
                 <button
                   onClick={() => setDone(true)}
                   className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95"
+                  dir="rtl"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   تأكيد الطلب
@@ -191,9 +194,10 @@ function CheckoutPage() {
                 <button
                   onClick={() => setStage(1)}
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
+                  dir="rtl"
                 >
-                  السابق
                   <ArrowRight className="h-4 w-4" />
+                  السابق
                 </button>
               </div>
             </>

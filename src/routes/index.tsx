@@ -13,17 +13,19 @@ import {
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import heroImg from "@/assets/solar-hero.jpg";
+import materialsImg from "@/assets/materials-card.jpg";
+import solarImg from "@/assets/solar-card.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "متجددة — منصة البناء والطاقة الشمسية" },
+      { title: "بنيان — منصة البناء والطاقة الشمسية" },
       {
         name: "description",
         content:
-          "متجر متجددة: مواد بناء، طاقة شمسية، وأدوات هندسية متقدمة. احسب نظامك الشمسي بدقة بضغطة زر.",
+          "متجر بنيان: مواد بناء، طاقة شمسية، وأدوات هندسية متقدمة. احسب نظامك الشمسي بدقة بضغطة زر.",
       },
-      { property: "og:title", content: "متجددة — منصة البناء والطاقة الشمسية" },
+      { property: "og:title", content: "بنيان — منصة البناء والطاقة الشمسية" },
       {
         property: "og:description",
         content: "احسب نظامك الشمسي بدقة بضغطة زر. تسوق مواد البناء والطاقة الشمسية.",
@@ -131,47 +133,46 @@ function HomePage() {
             </div>
           </div>
 
-          {/* Hero card */}
+          {/* Hero visual cards: building materials + solar energy */}
           <div className="relative hidden md:block">
             <div className="absolute -right-8 top-8 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
-            <div className="relative rounded-3xl border border-border bg-card p-6 shadow-elevated">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-semibold text-muted-foreground">
-                    نظام مقترح • منزل عائلي
-                  </div>
-                  <div className="mt-1 text-2xl font-extrabold text-ink">5.5 kWp</div>
-                </div>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-                  <Sun className="h-7 w-7" />
+            <div className="relative grid grid-cols-2 gap-4">
+              <div className="group relative overflow-hidden rounded-3xl border border-border bg-card shadow-elevated">
+                <img
+                  src={solarImg}
+                  alt="ألواح الطاقة الشمسية"
+                  loading="lazy"
+                  width={896}
+                  height={704}
+                  className="aspect-[3/4] h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <div className="absolute bottom-0 right-0 left-0 p-5 text-white">
+                  <span className="inline-block rounded-full bg-primary/95 px-2.5 py-1 text-[10px] font-bold">
+                    الأكثر طلباً
+                  </span>
+                  <div className="mt-2 text-lg font-extrabold">الطاقة الشمسية</div>
+                  <div className="text-xs opacity-90">ألواح · بطاريات · إنفرترات</div>
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                {[
-                  { l: "الألواح", v: "10×550W" },
-                  { l: "البطاريات", v: "10 kWh" },
-                  { l: "الإنفرتر", v: "5 kVA" },
-                  { l: "أيام التخزين", v: "ليلتان" },
-                ].map((m) => (
-                  <div key={m.l} className="rounded-xl bg-muted px-3 py-2.5">
-                    <div className="text-[11px] text-muted-foreground">{m.l}</div>
-                    <div className="text-sm font-bold text-ink">{m.v}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-5 flex items-end justify-between rounded-2xl bg-gradient-to-l from-primary to-emerald-700 px-5 py-4 text-primary-foreground">
-                <div>
-                  <div className="text-xs opacity-80">التكلفة التقديرية</div>
-                  <div className="text-2xl font-extrabold">22,500 ر.س</div>
+              <div className="group relative mt-8 overflow-hidden rounded-3xl border border-border bg-card shadow-elevated">
+                <img
+                  src={materialsImg}
+                  alt="مواد البناء"
+                  loading="lazy"
+                  width={896}
+                  height={704}
+                  className="aspect-[3/4] h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <div className="absolute bottom-0 right-0 left-0 p-5 text-white">
+                  <span className="inline-block rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold backdrop-blur">
+                    أساس متين
+                  </span>
+                  <div className="mt-2 text-lg font-extrabold">مواد البناء</div>
+                  <div className="text-xs opacity-90">إسمنت · حديد · طوب · تشطيبات</div>
                 </div>
-                <Link
-                  to="/calculator"
-                  className="rounded-full bg-white/15 px-4 py-2 text-xs font-bold backdrop-blur transition hover:bg-white/25"
-                >
-                  ابدأ الحساب ←
-                </Link>
               </div>
             </div>
           </div>
