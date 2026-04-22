@@ -29,19 +29,25 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "بنيان — منصة البناء والطاقة الشمسية" },
+      { title: "متجددة — منصة البناء والطاقة الشمسية" },
       {
         name: "description",
         content: "احسب نظامك الشمسي بدقة، تسوق مواد البناء، واكتشف أدوات هندسية متقدمة.",
       },
-      { name: "author", content: "بنيان" },
-      { property: "og:title", content: "بنيان — منصة البناء والطاقة الشمسية" },
+      { name: "author", content: "متجددة" },
+      { property: "og:title", content: "متجددة — منصة البناء والطاقة الشمسية" },
       {
         property: "og:description",
         content: "أداة مجانية لمساعدتك على فهم احتياجاتك من الطاقة الشمسية.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "متجددة — منصة البناء والطاقة الشمسية" },
+      { name: "description", content: "Solar Builder is a web application for calculating solar energy system requirements." },
+      { property: "og:description", content: "Solar Builder is a web application for calculating solar energy system requirements." },
+      { name: "twitter:description", content: "Solar Builder is a web application for calculating solar energy system requirements." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fae9ff19-96f1-4e1a-b881-23b28f93267f/id-preview-ca9f43b9--5d8f0073-91cb-4597-9404-9ceb1d94137f.lovable.app-1776869459247.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fae9ff19-96f1-4e1a-b881-23b28f93267f/id-preview-ca9f43b9--5d8f0073-91cb-4597-9404-9ceb1d94137f.lovable.app-1776869459247.png" },
     ],
     links: [
       {
