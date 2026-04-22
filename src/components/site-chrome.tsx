@@ -4,10 +4,8 @@ import { useState } from "react";
 
 const navLinks = [
   { to: "/", label: "الرئيسية" },
-  { to: "/solutions", label: "حلولنا" },
   { to: "/calculator", label: "حاسبة الطاقة" },
-  { to: "/blog", label: "المدونة" },
-  { to: "/about", label: "من نحن" },
+  { to: "/cart", label: "السلة" },
 ] as const;
 
 export function SiteNav() {
