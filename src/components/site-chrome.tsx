@@ -52,9 +52,10 @@ export function SiteNav() {
           </div>
           <Link
             to="/cart"
-            className="hidden rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:border-primary hover:text-primary md:inline-flex"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground transition hover:border-primary hover:text-primary"
+            aria-label="السلة"
           >
-            تواصل معنا
+            <ShoppingCart className="h-4.5 w-4.5" />
           </Link>
           <button
             onClick={() => setOpen((o) => !o)}
