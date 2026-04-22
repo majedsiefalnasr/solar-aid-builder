@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalculatorIndexRouteImport } from './routes/calculator.index'
+import { Route as CalculatorPreferencesRouteImport } from './routes/calculator.preferences'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalculatorIndexRoute = CalculatorIndexRouteImport.update({
+  id: '/calculator/',
+  path: '/calculator/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculatorPreferencesRoute = CalculatorPreferencesRouteImport.update({
+  id: '/calculator/preferences',
+  path: '/calculator/preferences',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calculator/preferences': typeof CalculatorPreferencesRoute
+  '/calculator/': typeof CalculatorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calculator/preferences': typeof CalculatorPreferencesRoute
+  '/calculator': typeof CalculatorIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calculator/preferences': typeof CalculatorPreferencesRoute
+  '/calculator/': typeof CalculatorIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/calculator/preferences' | '/calculator/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/calculator/preferences' | '/calculator'
+  id: '__root__' | '/' | '/calculator/preferences' | '/calculator/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalculatorPreferencesRoute: typeof CalculatorPreferencesRoute
+  CalculatorIndexRoute: typeof CalculatorIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calculator/': {
+      id: '/calculator/'
+      path: '/calculator'
+      fullPath: '/calculator/'
+      preLoaderRoute: typeof CalculatorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculator/preferences': {
+      id: '/calculator/preferences'
+      path: '/calculator/preferences'
+      fullPath: '/calculator/preferences'
+      preLoaderRoute: typeof CalculatorPreferencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalculatorPreferencesRoute: CalculatorPreferencesRoute,
+  CalculatorIndexRoute: CalculatorIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
