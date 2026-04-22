@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -11,7 +11,6 @@ import {
   Share2,
   RefreshCw,
   ShoppingCart,
-  Store,
   CheckCircle2,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
