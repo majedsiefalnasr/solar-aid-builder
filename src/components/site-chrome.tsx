@@ -5,7 +5,7 @@ import { useState } from "react";
 const navLinks = [
   { to: "/", label: "الرئيسية" },
   { to: "/", label: "حلولنا" },
-  { to: "/", label: "المتجر" },
+  { to: "/store", label: "المتجر" },
   { to: "/", label: "مركز المساعدة" },
 ] as const;
 
