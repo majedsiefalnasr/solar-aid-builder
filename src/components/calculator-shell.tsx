@@ -21,8 +21,8 @@ export function CalculatorShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       <SiteNav />
 
-      {/* Hero band */}
-      <div className="relative h-56 w-full overflow-hidden md:h-72">
+      {/* Hero band — shorter so the card sits clearly in front, not behind */}
+      <div className="relative h-40 w-full overflow-hidden md:h-52">
         <img
           src={heroImg}
           alt=""
@@ -30,19 +30,19 @@ export function CalculatorShell({ children }: { children: React.ReactNode }) {
           width={1920}
           height={800}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/20 to-background" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <h1 className="text-2xl font-extrabold text-ink md:text-4xl">
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/40 to-background" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 pb-6 text-center">
+          <h1 className="text-2xl font-extrabold text-ink md:text-3xl">
             احسب نظامك الشمسي بدقة
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-foreground/80 md:text-base">
-            أداة مجانية لمساعدتك على فهم احتياجاتك من الطاقة الشمسية.
+          <p className="mt-1.5 max-w-xl text-xs text-foreground/80 md:text-sm">
+            أداة مجانية لفهم احتياجاتك من الطاقة الشمسية.
           </p>
         </div>
       </div>
 
-      <main className="mx-auto -mt-16 max-w-4xl px-4 pb-20 md:px-8">
-        <div className="overflow-hidden rounded-3xl bg-card shadow-elevated">
+      <main className="relative z-10 mx-auto -mt-6 max-w-4xl px-4 pb-20 md:px-8">
+        <div className="overflow-hidden rounded-3xl bg-card shadow-elevated ring-1 ring-border">
           {/* Step header */}
           <div className="border-b border-border/60 bg-card px-6 py-5 md:px-10 md:py-6">
             <div className="mb-3 text-center text-sm font-semibold text-muted-foreground">
