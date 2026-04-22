@@ -9,15 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as StoreRouteImport } from './routes/store'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
+import { Route as CalculatorConstructionRouteImport } from './routes/calculator-construction'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalculatorIndexRouteImport } from './routes/calculator.index'
 import { Route as CalculatorPreferencesRouteImport } from './routes/calculator.preferences'
 import { Route as CalculatorDevicesRouteImport } from './routes/calculator.devices'
 
+const ToolsRoute = ToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StoreRoute = StoreRouteImport.update({
   id: '/store',
   path: '/store',
@@ -36,6 +43,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const CartRoute = CartRouteImport.update({
   id: '/cart',
   path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculatorConstructionRoute = CalculatorConstructionRouteImport.update({
+  id: '/calculator-construction',
+  path: '/calculator-construction',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,20 +73,24 @@ const CalculatorDevicesRoute = CalculatorDevicesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calculator-construction': typeof CalculatorConstructionRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/results': typeof ResultsRoute
   '/store': typeof StoreRoute
+  '/tools': typeof ToolsRoute
   '/calculator/devices': typeof CalculatorDevicesRoute
   '/calculator/preferences': typeof CalculatorPreferencesRoute
   '/calculator/': typeof CalculatorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calculator-construction': typeof CalculatorConstructionRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/results': typeof ResultsRoute
   '/store': typeof StoreRoute
+  '/tools': typeof ToolsRoute
   '/calculator/devices': typeof CalculatorDevicesRoute
   '/calculator/preferences': typeof CalculatorPreferencesRoute
   '/calculator': typeof CalculatorIndexRoute
@@ -82,10 +98,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calculator-construction': typeof CalculatorConstructionRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/results': typeof ResultsRoute
   '/store': typeof StoreRoute
+  '/tools': typeof ToolsRoute
   '/calculator/devices': typeof CalculatorDevicesRoute
   '/calculator/preferences': typeof CalculatorPreferencesRoute
   '/calculator/': typeof CalculatorIndexRoute
@@ -94,30 +112,36 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/calculator-construction'
     | '/cart'
     | '/checkout'
     | '/results'
     | '/store'
+    | '/tools'
     | '/calculator/devices'
     | '/calculator/preferences'
     | '/calculator/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/calculator-construction'
     | '/cart'
     | '/checkout'
     | '/results'
     | '/store'
+    | '/tools'
     | '/calculator/devices'
     | '/calculator/preferences'
     | '/calculator'
   id:
     | '__root__'
     | '/'
+    | '/calculator-construction'
     | '/cart'
     | '/checkout'
     | '/results'
     | '/store'
+    | '/tools'
     | '/calculator/devices'
     | '/calculator/preferences'
     | '/calculator/'
@@ -125,10 +149,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalculatorConstructionRoute: typeof CalculatorConstructionRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ResultsRoute: typeof ResultsRoute
   StoreRoute: typeof StoreRoute
+  ToolsRoute: typeof ToolsRoute
   CalculatorDevicesRoute: typeof CalculatorDevicesRoute
   CalculatorPreferencesRoute: typeof CalculatorPreferencesRoute
   CalculatorIndexRoute: typeof CalculatorIndexRoute
@@ -136,6 +162,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tools': {
+      id: '/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof ToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/store': {
       id: '/store'
       path: '/store'
@@ -162,6 +195,13 @@ declare module '@tanstack/react-router' {
       path: '/cart'
       fullPath: '/cart'
       preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculator-construction': {
+      id: '/calculator-construction'
+      path: '/calculator-construction'
+      fullPath: '/calculator-construction'
+      preLoaderRoute: typeof CalculatorConstructionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -197,10 +237,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalculatorConstructionRoute: CalculatorConstructionRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ResultsRoute: ResultsRoute,
   StoreRoute: StoreRoute,
+  ToolsRoute: ToolsRoute,
   CalculatorDevicesRoute: CalculatorDevicesRoute,
   CalculatorPreferencesRoute: CalculatorPreferencesRoute,
   CalculatorIndexRoute: CalculatorIndexRoute,
