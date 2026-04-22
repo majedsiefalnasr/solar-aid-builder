@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -11,7 +11,6 @@ import {
   Share2,
   RefreshCw,
   ShoppingCart,
-  Store,
   CheckCircle2,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
@@ -181,13 +180,6 @@ function ResultsPage() {
                 إضافة للسلة
                 <ArrowLeft className="h-4 w-4" />
               </button>
-              <Link
-                to="/"
-                className="inline-flex items-center gap-2 rounded-full bg-white/15 px-5 py-3 text-sm font-bold backdrop-blur transition hover:bg-white/25"
-              >
-                <Store className="h-4 w-4" />
-                تصفح السوق
-              </Link>
             </div>
           </div>
         </div>
