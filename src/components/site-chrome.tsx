@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Menu } from "lucide-react";
+import { Menu, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 
 const navLinks = [
@@ -7,7 +7,6 @@ const navLinks = [
   { to: "/", label: "حلولنا" },
   { to: "/", label: "المتجر" },
   { to: "/", label: "مركز المساعدة" },
-  { to: "/cart", label: "تواصل معنا" },
 ] as const;
 
 export function SiteNav() {
