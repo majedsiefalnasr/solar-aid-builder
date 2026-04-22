@@ -29,13 +29,13 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "متجددة — منصة البناء والطاقة الشمسية" },
+      { title: "بنيان — منصة البناء والطاقة الشمسية" },
       {
         name: "description",
         content: "احسب نظامك الشمسي بدقة، تسوق مواد البناء، واكتشف أدوات هندسية متقدمة.",
       },
-      { name: "author", content: "متجددة" },
-      { property: "og:title", content: "متجددة — منصة البناء والطاقة الشمسية" },
+      { name: "author", content: "بنيان" },
+      { property: "og:title", content: "بنيان — منصة البناء والطاقة الشمسية" },
       {
         property: "og:description",
         content: "أداة مجانية لمساعدتك على فهم احتياجاتك من الطاقة الشمسية.",
