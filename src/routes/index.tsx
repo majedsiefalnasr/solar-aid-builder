@@ -415,7 +415,7 @@ function HomePage() {
                   جاهز لبدء مشروعك؟
                 </h3>
                 <p className="mt-2 max-w-xl text-sm opacity-90 md:text-base">
-                  احسب احتياجك من الطاقة الشمسية مجاناً، أو تصفح آلاف المنتجات المعتمدة.
+                  استخدم أدواتنا الهندسية لحساب احتياجاتك بدقة، أو تصفح آلاف المنتجات المعتمدة.
                 </p>
               </div>
               <div className="flex flex-wrap items-center justify-end gap-3">
@@ -426,11 +426,11 @@ function HomePage() {
                   تصفح المتجر
                 </Link>
                 <Link
-                  to="/calculator"
+                  to="/tools"
                   className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-extrabold text-primary shadow-cta transition hover:bg-white/95"
                 >
                   <Calculator className="h-4 w-4" />
-                  ابدأ الحساب
+                  الأدوات الهندسية
                 </Link>
               </div>
             </div>
