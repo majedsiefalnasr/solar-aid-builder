@@ -306,7 +306,7 @@ function seedState(): StoreState {
       {
         id: "PH-1",
         name: "الأساسات والحفر",
-        budget: 8_000,
+        budget: 8,
         durationDays: 30,
         tasks: [
           { id: "T1", title: "حفر الموقع", done: true },
