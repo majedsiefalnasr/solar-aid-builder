@@ -242,23 +242,39 @@ function ContractorTasks() {
 }
 
 function ContractorWithdrawals() {
+  const store = useWorkflow();
+  const contractorName = ROLE_USER.contractor;
   const [open, setOpen] = useState(false);
-  const released = PAYMENT_REQUESTS.filter((x) => x.status === "released").reduce(
-    (s, x) => s + x.amount,
-    0,
-  );
-  const pending = PAYMENT_REQUESTS.filter(
-    (x) => x.status === "pending" || x.status === "approved",
-  ).reduce((s, x) => s + x.amount, 0);
+
+  const myWithdrawals = store.withdrawals.filter((w) => w.contractorName === contractorName);
+  const earned = store.projects
+    .filter((p) => p.contractorName === contractorName)
+    .flatMap((p) => p.phases)
+    .filter((ph) => ph.status === "completed")
+    .reduce((s, ph) => s + ph.budget, 0);
+  const locked = myWithdrawals
+    .filter((w) => w.status === "pending" || w.status === "approved" || w.status === "withdrawable")
+    .reduce((s, w) => s + w.amount, 0);
+  const available = Math.max(0, earned - locked);
+  const pendingAmount = myWithdrawals.filter((w) => w.status === "pending").reduce((s, w) => s + w.amount, 0);
+
+  const statusLabel: Record<string, string> = {
+    pending: "بانتظار الإدارة",
+    approved: "معتمد (انتظار 3 أيام)",
+    withdrawable: "قابل للسحب",
+    rejected: "مرفوض",
+  };
+  const toneOf = (s: string): "muted" | "primary" | "accent" | "danger" | "info" =>
+    s === "withdrawable" ? "primary" : s === "approved" ? "info" : s === "rejected" ? "danger" : "accent";
 
   return (
     <>
-      <PageHeader title="السحوبات" subtitle="مستحقاتك وطلبات السحب الحالية" />
+      <PageHeader title="السحوبات" subtitle="مستحقاتك المكتسبة من المراحل المكتملة وطلبات السحب" />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard label="رصيد متاح للسحب" value={fmtMoney(released)} icon={<Wallet className="h-5 w-5" />} tone="primary" />
-        <StatCard label="قيد المراجعة" value={fmtMoney(pending)} icon={<Clock className="h-5 w-5" />} tone="accent" />
-        <StatCard label="عمولة المنصة" value="2.5%" hint="على المبالغ المُحرّرة" />
+        <StatCard label="رصيد متاح للسحب" value={fmtMoney(available)} icon={<Wallet className="h-5 w-5" />} tone="primary" />
+        <StatCard label="قيد المراجعة" value={fmtMoney(pendingAmount)} icon={<Clock className="h-5 w-5" />} tone="accent" />
+        <StatCard label="إجمالي مكتسب" value={fmtMoney(earned)} icon={<CreditCard className="h-5 w-5" />} />
       </div>
 
       <SectionCard
@@ -266,39 +282,58 @@ function ContractorWithdrawals() {
         action={
           <button
             onClick={() => setOpen(true)}
-            className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta"
+            disabled={available <= 0}
+            className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta disabled:opacity-50"
           >
             إنشاء طلب
           </button>
         }
       >
         <div className="rounded-xl bg-primary-soft/40 p-4 text-xs text-foreground/80">
-          يتم تحويل المبالغ المعتمدة خلال 3 أيام عمل إلى الحساب البنكي المسجّل.
+          الرصيد المتاح يأتي من ميزانية المراحل المكتملة (تقرير نهاية مرحلة معتمد). بعد اعتماد الإدارة لطلب السحب يصبح قابلاً للسحب بعد 3 أيام.
         </div>
       </SectionCard>
 
       <SectionCard title="سجل السحوبات" className="mt-6">
-        <div className="space-y-3">
-          {PAYMENT_REQUESTS.map((req) => (
-            <div key={req.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-4">
-              <div>
-                <div className="text-sm font-bold text-ink">{req.phase}</div>
-                <div className="text-[11px] text-muted-foreground">{req.id} • {req.submittedAt}</div>
+        {myWithdrawals.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
+            لا توجد طلبات سحب حتى الآن.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {myWithdrawals.map((req) => (
+              <div key={req.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background p-4">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-bold text-ink">{req.id}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {new Date(req.requestedAt).toLocaleDateString("ar-EG", { day: "numeric", month: "short", year: "numeric" })}
+                    {req.txRef && <> • مرجع: <span className="font-mono">{req.txRef}</span></>}
+                    {req.rejectionReason && <> • رفض: {req.rejectionReason}</>}
+                  </div>
+                  {req.status === "approved" && req.releasableAt && (
+                    <div className="mt-1 text-[11px] text-info">
+                      قابل للسحب في: {new Date(req.releasableAt).toLocaleDateString("ar-EG", { day: "numeric", month: "short" })}
+                    </div>
+                  )}
+                </div>
+                <div className="text-base font-extrabold text-ink">{fmtMoney(req.amount)}</div>
+                <Pill tone={toneOf(req.status)}>{statusLabel[req.status]}</Pill>
               </div>
-              <div className="text-base font-extrabold text-ink">{fmtMoney(req.amount)}</div>
-              <Pill
-                tone={
-                  req.status === "released" ? "primary" : req.status === "approved" ? "info" : req.status === "rejected" ? "danger" : "accent"
-                }
-              >
-                {req.status === "released" ? "مُحرّرة" : req.status === "approved" ? "اعتُمدت" : req.status === "rejected" ? "مرفوضة" : "بانتظار"}
-              </Pill>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </SectionCard>
 
-      {open && <NewWithdrawalDialog max={released} onClose={() => setOpen(false)} />}
+      {open && (
+        <NewWithdrawalDialog
+          max={available}
+          contractorName={contractorName}
+          onClose={() => setOpen(false)}
+        />
+      )}
+
+      {/* keep PAYMENT_REQUESTS import alive */}
+      <span className="hidden">{PAYMENT_REQUESTS.length}</span>
     </>
   );
 }
