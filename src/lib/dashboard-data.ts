@@ -51,7 +51,7 @@ export type PhaseStatus =
 export interface Phase {
   id: string;
   name: string;
-  amount: number; // YER (thousands)
+  amount: number; // SAR (thousands)
   progress: number; // 0..100
   status: PhaseStatus;
   dueDate: string;
@@ -255,7 +255,7 @@ export const DISPUTES: Dispute[] = [
 export const PLATFORM_STATS = {
   activeProjects: 124,
   contractors: 312,
-  totalTracked: 8_400_000, // YER (thousands)
+  totalTracked: 8_400_000, // SAR (thousands)
   openDisputes: 7,
 };
 
