@@ -60,26 +60,9 @@ function ToolsHub() {
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-12 md:px-8">
         <div className="grid gap-6 md:grid-cols-2">
           <ToolCard
-            to="/calculator"
-            icon={<Sun className="h-7 w-7" />}
-            badge="الأكثر استخداماً"
-            title="حاسبة الطاقة الشمسية"
-            desc="احسب احتياجك من الألواح والبطاريات والإنفرتر بناءً على أحمالك اليومية وموقعك."
-            features={[
-              "تقدير عدد الألواح وقدرتها",
-              "حجم بنك البطاريات وأيام الاستقلالية",
-              "قدرة الإنفرتر مع هامش Surge",
-              "تكلفة تقديرية شاملة",
-            ]}
-            time="~3 دقائق"
-            cta="ابدأ الحساب"
-            accent
-          />
-
-          <ToolCard
             to="/calculator-construction"
             icon={<HardHat className="h-7 w-7" />}
-            badge="جديد"
+            badge="الأكثر استخداماً"
             title="حاسبة كميات البناء"
             desc="احسب كميات الخرسانة والحديد والبلوك المطلوبة لمشروعك بناءً على المساحة والأبعاد."
             features={[
@@ -90,6 +73,25 @@ function ToolsHub() {
             ]}
             time="~2 دقيقة"
             cta="ابدأ الحساب"
+            pattern="construction"
+            accent
+          />
+
+          <ToolCard
+            to="/calculator"
+            icon={<Sun className="h-7 w-7" />}
+            badge="جديد"
+            title="حاسبة الطاقة الشمسية"
+            desc="احسب احتياجك من الألواح والبطاريات والإنفرتر بناءً على أحمالك اليومية وموقعك."
+            features={[
+              "تقدير عدد الألواح وقدرتها",
+              "حجم بنك البطاريات وأيام الاستقلالية",
+              "قدرة الإنفرتر مع هامش Surge",
+              "تكلفة تقديرية شاملة",
+            ]}
+            time="~3 دقائق"
+            cta="ابدأ الحساب"
+            pattern="solar"
           />
         </div>
 
