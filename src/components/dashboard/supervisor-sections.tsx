@@ -12,12 +12,22 @@ import { SupervisorDashboard } from "./supervisor-dashboard";
 import { Pill, SectionCard, StatCard } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 
-export function SupervisorSection({ section }: { section: string }) {
+import { ProjectDetail } from "./project-detail";
+
+export function SupervisorSection({
+  section,
+  projectId,
+}: {
+  section: string;
+  projectId?: string;
+}) {
   switch (section) {
     case "overview":
       return <SupervisorDashboard />;
     case "projects":
       return <SupervisorProjects />;
+    case "project-detail":
+      return <ProjectDetail role="supervisor" projectId={projectId} />;
     case "assignments":
       return <SupervisorAssignments />;
     case "field-team":
