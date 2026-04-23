@@ -15,12 +15,7 @@ import {
   Store as StoreIcon,
   Wallet,
 } from "lucide-react";
-import {
-  MOCK_PROJECT,
-  PAYMENT_REQUESTS,
-  STATUS_LABEL,
-  STATUS_TONE,
-} from "@/lib/dashboard-data";
+import { MOCK_PROJECT, PAYMENT_REQUESTS, STATUS_LABEL, STATUS_TONE } from "@/lib/dashboard-data";
 import { CITIES } from "@/lib/calculator";
 import { OwnerDashboard } from "./owner-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
@@ -105,9 +100,7 @@ function OwnerProjects() {
                 </div>
                 <div className="text-left text-xs">
                   <div className="text-muted-foreground">الميزانية</div>
-                  <div className="text-base font-extrabold text-ink">
-                    {fmtMoney(p.totalBudget)}
-                  </div>
+                  <div className="text-base font-extrabold text-ink">{fmtMoney(p.totalBudget)}</div>
                 </div>
               </div>
             </div>
@@ -327,10 +320,7 @@ function OwnerNewProject() {
 }
 
 function OwnerPayments() {
-  const total = useMemo(
-    () => PAYMENT_REQUESTS.reduce((s, p) => s + p.amount, 0),
-    [],
-  );
+  const total = useMemo(() => PAYMENT_REQUESTS.reduce((s, p) => s + p.amount, 0), []);
   const released = PAYMENT_REQUESTS.filter((x) => x.status === "released").reduce(
     (s, x) => s + x.amount,
     0,
@@ -380,17 +370,11 @@ function OwnerPayments() {
             <tbody className="divide-y divide-border bg-card">
               {PAYMENT_REQUESTS.map((p) => (
                 <tr key={p.id}>
-                  <td className="px-4 py-3 font-mono text-xs font-bold text-primary">
-                    {p.id}
-                  </td>
+                  <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{p.id}</td>
                   <td className="px-4 py-3 font-bold text-ink">{p.phase}</td>
                   <td className="px-4 py-3 text-muted-foreground">{p.contractor}</td>
-                  <td className="px-4 py-3 font-extrabold text-ink">
-                    {fmtMoney(p.amount)}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {p.submittedAt}
-                  </td>
+                  <td className="px-4 py-3 font-extrabold text-ink">{fmtMoney(p.amount)}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{p.submittedAt}</td>
                   <td className="px-4 py-3">
                     <Pill
                       tone={
@@ -425,16 +409,13 @@ function OwnerPayments() {
 function OwnerStoreShortcut() {
   return (
     <>
-      <PageHeader
-        title="المتجر"
-        subtitle="تصفح مواد البناء وأدوات الطاقة بأفضل الأسعار"
-      />
+      <PageHeader title="المتجر" subtitle="تصفح مواد البناء وأدوات الطاقة بأفضل الأسعار" />
       <div className="rounded-3xl border border-border bg-gradient-to-l from-primary/10 to-card p-8 text-center shadow-card">
         <StoreIcon className="mx-auto h-14 w-14 text-primary" />
         <h2 className="mt-4 text-xl font-extrabold text-ink">متجر تم</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          ادخل إلى متجر تم لتصفح آلاف المنتجات من مواد البناء، الكهرباء، السباكة،
-          وأدوات الطاقة الشمسية.
+          ادخل إلى متجر تم لتصفح آلاف المنتجات من مواد البناء، الكهرباء، السباكة، وأدوات الطاقة
+          الشمسية.
         </p>
         <Link
           to="/store"

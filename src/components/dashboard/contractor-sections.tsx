@@ -9,11 +9,7 @@ import {
   ShoppingBag,
   Wallet,
 } from "lucide-react";
-import {
-  FIELD_REPORTS,
-  MOCK_PROJECT,
-  PAYMENT_REQUESTS,
-} from "@/lib/dashboard-data";
+import { FIELD_REPORTS, MOCK_PROJECT, PAYMENT_REQUESTS } from "@/lib/dashboard-data";
 import { ContractorDashboard } from "./contractor-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
@@ -60,10 +56,7 @@ function ContractorProjects() {
       <PageHeader title="مشاريعي" subtitle="المشاريع التي تنفذها حالياً" />
       <div className="grid gap-4 lg:grid-cols-2">
         {CONTRACTOR_PROJECTS.map((p) => (
-          <article
-            key={p.id}
-            className="rounded-2xl border border-border bg-card p-5 shadow-card"
-          >
+          <article key={p.id} className="rounded-2xl border border-border bg-card p-5 shadow-card">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-[11px] font-bold text-accent">#{p.id}</div>
@@ -86,9 +79,7 @@ function ContractorProjects() {
             </div>
             <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
               <div className="text-xs text-muted-foreground">الدفعة القادمة</div>
-              <div className="text-sm font-extrabold text-ink">
-                {fmtMoney(p.nextPayout)}
-              </div>
+              <div className="text-sm font-extrabold text-ink">{fmtMoney(p.nextPayout)}</div>
             </div>
           </article>
         ))}
@@ -166,11 +157,7 @@ function ContractorTasks() {
                 t.done ? "opacity-60" : ""
               }`}
             >
-              <input
-                type="checkbox"
-                defaultChecked={t.done}
-                className="h-4 w-4 accent-primary"
-              />
+              <input type="checkbox" defaultChecked={t.done} className="h-4 w-4 accent-primary" />
               <div className="flex-1">
                 <div className={`text-sm font-bold text-ink ${t.done ? "line-through" : ""}`}>
                   {t.title}
@@ -185,11 +172,7 @@ function ContractorTasks() {
               </div>
               <Pill
                 tone={
-                  t.priority === "high"
-                    ? "danger"
-                    : t.priority === "medium"
-                      ? "accent"
-                      : "muted"
+                  t.priority === "high" ? "danger" : t.priority === "medium" ? "accent" : "muted"
                 }
               >
                 {t.priority === "high" ? "عاجل" : t.priority === "medium" ? "متوسط" : "عادي"}
@@ -288,10 +271,7 @@ function ContractorWithdrawals() {
 function ContractorMaterials() {
   return (
     <>
-      <PageHeader
-        title="شراء مواد"
-        subtitle="اطلب مواد البناء بأسعار خاصة للمقاولين على منصة تم"
-      />
+      <PageHeader title="شراء مواد" subtitle="اطلب مواد البناء بأسعار خاصة للمقاولين على منصة تم" />
       <div className="rounded-3xl border border-border bg-gradient-to-l from-accent/10 to-card p-8 text-center shadow-card">
         <ShoppingBag className="mx-auto h-14 w-14 text-accent" />
         <h2 className="mt-4 text-xl font-extrabold text-ink">متجر المقاولين</h2>

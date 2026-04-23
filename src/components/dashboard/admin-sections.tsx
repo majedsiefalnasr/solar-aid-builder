@@ -15,12 +15,7 @@ import {
   Users,
   Workflow,
 } from "lucide-react";
-import {
-  DISPUTES,
-  MOCK_PROJECT,
-  PAYMENT_REQUESTS,
-  PLATFORM_STATS,
-} from "@/lib/dashboard-data";
+import { DISPUTES, MOCK_PROJECT, PAYMENT_REQUESTS, PLATFORM_STATS } from "@/lib/dashboard-data";
 import { AdminDashboard } from "./admin-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
@@ -53,10 +48,38 @@ export function AdminSection({ section }: { section: string }) {
 }
 
 const PROJECTS_LIST = [
-  { id: MOCK_PROJECT.id, name: MOCK_PROJECT.name, city: MOCK_PROJECT.city, owner: MOCK_PROJECT.owner, status: "active", progress: 42 },
-  { id: "PRJ-2055", name: "شقة المعلا", city: "عدن", owner: "فهد المنصور", status: "active", progress: 28 },
-  { id: "PRJ-2068", name: "محل تجاري — حي السلام", city: "تعز", owner: "خالد العبسي", status: "pending", progress: 0 },
-  { id: "PRJ-2099", name: "مجمع النور التجاري", city: "صنعاء", owner: "ريم السقاف", status: "active", progress: 18 },
+  {
+    id: MOCK_PROJECT.id,
+    name: MOCK_PROJECT.name,
+    city: MOCK_PROJECT.city,
+    owner: MOCK_PROJECT.owner,
+    status: "active",
+    progress: 42,
+  },
+  {
+    id: "PRJ-2055",
+    name: "شقة المعلا",
+    city: "عدن",
+    owner: "فهد المنصور",
+    status: "active",
+    progress: 28,
+  },
+  {
+    id: "PRJ-2068",
+    name: "محل تجاري — حي السلام",
+    city: "تعز",
+    owner: "خالد العبسي",
+    status: "pending",
+    progress: 0,
+  },
+  {
+    id: "PRJ-2099",
+    name: "مجمع النور التجاري",
+    city: "صنعاء",
+    owner: "ريم السقاف",
+    status: "active",
+    progress: 18,
+  },
 ];
 
 function AdminProjects() {
@@ -89,10 +112,7 @@ function AdminProjects() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full bg-primary"
-                          style={{ width: `${p.progress}%` }}
-                        />
+                        <div className="h-full bg-primary" style={{ width: `${p.progress}%` }} />
                       </div>
                       <span className="text-xs font-bold text-ink">{p.progress}%</span>
                     </div>
@@ -113,18 +133,33 @@ function AdminProjects() {
 }
 
 const PENDING_ASSIGNMENTS = [
-  { id: "ASN-501", project: "فيلا الشاطئ", role: "مهندس مشرف", candidate: "م. ليلى العمراني", date: "2026-04-22" },
-  { id: "ASN-502", project: "محل تجاري — السلام", role: "مقاول", candidate: "شركة بناة الجنوب", date: "2026-04-21" },
-  { id: "ASN-503", project: "مجمع النور", role: "مهندس ميداني", candidate: "م. أمل الزبيدي", date: "2026-04-20" },
+  {
+    id: "ASN-501",
+    project: "فيلا الشاطئ",
+    role: "مهندس مشرف",
+    candidate: "م. ليلى العمراني",
+    date: "2026-04-22",
+  },
+  {
+    id: "ASN-502",
+    project: "محل تجاري — السلام",
+    role: "مقاول",
+    candidate: "شركة بناة الجنوب",
+    date: "2026-04-21",
+  },
+  {
+    id: "ASN-503",
+    project: "مجمع النور",
+    role: "مهندس ميداني",
+    candidate: "م. أمل الزبيدي",
+    date: "2026-04-20",
+  },
 ];
 
 function AdminAssignments() {
   return (
     <>
-      <PageHeader
-        title="طلبات التعيين"
-        subtitle="مطابقة المهندسين والمقاولين بالمشاريع المناسبة"
-      />
+      <PageHeader title="طلبات التعيين" subtitle="مطابقة المهندسين والمقاولين بالمشاريع المناسبة" />
       <SectionCard
         title="طلبات بانتظار التعيين"
         action={
@@ -182,11 +217,7 @@ function AdminPayments() {
           icon={<CheckCircle2 className="h-5 w-5" />}
           tone="accent"
         />
-        <StatCard
-          label="عمولة المنصة"
-          value="2.5%"
-          icon={<CreditCard className="h-5 w-5" />}
-        />
+        <StatCard label="عمولة المنصة" value="2.5%" icon={<CreditCard className="h-5 w-5" />} />
       </div>
 
       <SectionCard title="آخر الحركات">
@@ -274,9 +305,7 @@ function AdminUsers() {
                     </Pill>
                   </td>
                   <td className="px-4 py-3">
-                    <button className="text-xs font-bold text-primary hover:underline">
-                      عرض
-                    </button>
+                    <button className="text-xs font-bold text-primary hover:underline">عرض</button>
                   </td>
                 </tr>
               ))}
@@ -328,11 +357,7 @@ function AdminWorkflow() {
               </div>
               <label className="flex items-center gap-2 text-xs">
                 <span className="text-muted-foreground">تلقائي</span>
-                <input
-                  type="checkbox"
-                  defaultChecked={s.auto}
-                  className="h-4 w-4 accent-primary"
-                />
+                <input type="checkbox" defaultChecked={s.auto} className="h-4 w-4 accent-primary" />
               </label>
             </div>
           ))}
@@ -351,9 +376,7 @@ function AdminWorkflow() {
             />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-ink">
-              مدة تجميد الدفعة (أيام)
-            </span>
+            <span className="mb-1.5 block text-xs font-bold text-ink">مدة تجميد الدفعة (أيام)</span>
             <input
               type="number"
               defaultValue={3}
@@ -443,9 +466,7 @@ function AdminStore() {
       <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-card">
         <StoreIcon className="mx-auto h-12 w-12 text-primary" />
         <h2 className="mt-4 text-lg font-extrabold text-ink">واجهة المتجر العامة</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          عرض المتجر كما يراه العملاء
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">عرض المتجر كما يراه العملاء</p>
         <Link
           to="/store"
           className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-primary-foreground shadow-cta"
@@ -528,9 +549,27 @@ const CATEGORIES = [
 ];
 
 const ORDERS = [
-  { id: "ORD-9012", customer: "شركة البناء المتقن", total: 4_850, status: "shipped", date: "2026-04-23" },
-  { id: "ORD-9011", customer: "م. أحمد الشامي", total: 1_200, status: "processing", date: "2026-04-22" },
-  { id: "ORD-9010", customer: "مؤسسة بناة الجنوب", total: 7_320, status: "delivered", date: "2026-04-21" },
+  {
+    id: "ORD-9012",
+    customer: "شركة البناء المتقن",
+    total: 4_850,
+    status: "shipped",
+    date: "2026-04-23",
+  },
+  {
+    id: "ORD-9011",
+    customer: "م. أحمد الشامي",
+    total: 1_200,
+    status: "processing",
+    date: "2026-04-22",
+  },
+  {
+    id: "ORD-9010",
+    customer: "مؤسسة بناة الجنوب",
+    total: 7_320,
+    status: "delivered",
+    date: "2026-04-21",
+  },
   { id: "ORD-9009", customer: "فهد المنصور", total: 980, status: "cancelled", date: "2026-04-20" },
 ];
 
@@ -572,9 +611,7 @@ function AdminOrders() {
               <tbody className="divide-y divide-border bg-card">
                 {ORDERS.map((o) => (
                   <tr key={o.id}>
-                    <td className="px-4 py-3 font-mono text-xs font-bold text-primary">
-                      {o.id}
-                    </td>
+                    <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.id}</td>
                     <td className="px-4 py-3 font-bold text-ink">{o.customer}</td>
                     <td className="px-4 py-3 font-extrabold text-ink">${o.total}</td>
                     <td className="px-4 py-3">

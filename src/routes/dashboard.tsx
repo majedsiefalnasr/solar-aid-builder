@@ -18,8 +18,7 @@ export const Route = createFileRoute("/dashboard")({
   validateSearch: (search: Record<string, unknown>): DashboardSearch => {
     const role = search.role as Role;
     const validRole = ROLES.includes(role) ? role : "owner";
-    const section =
-      typeof search.section === "string" ? search.section : undefined;
+    const section = typeof search.section === "string" ? search.section : undefined;
     return {
       role: validRole,
       section: validSection(validRole, section),

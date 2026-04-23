@@ -41,10 +41,7 @@ function SupervisorProjects() {
       <PageHeader title="المشاريع" subtitle="مشاريع تحت إشرافك الفني" />
       <div className="grid gap-4 lg:grid-cols-2">
         {SUPERVISED.map((p) => (
-          <article
-            key={p.id}
-            className="rounded-2xl border border-border bg-card p-5 shadow-card"
-          >
+          <article key={p.id} className="rounded-2xl border border-border bg-card p-5 shadow-card">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-[11px] font-bold text-sky-600">#{p.id}</div>
@@ -94,10 +91,7 @@ const ASSIGNMENT_REQUESTS = [
 function SupervisorAssignments() {
   return (
     <>
-      <PageHeader
-        title="طلبات التعيين"
-        subtitle="طلبات الإشراف الجديدة المُسندة إليك من المنصة"
-      />
+      <PageHeader title="طلبات التعيين" subtitle="طلبات الإشراف الجديدة المُسندة إليك من المنصة" />
       <SectionCard title="طلبات بانتظار قرارك">
         <div className="space-y-3">
           {ASSIGNMENT_REQUESTS.map((r) => (
@@ -131,8 +125,18 @@ function SupervisorAssignments() {
 }
 
 const FIELD_TEAM = [
-  { name: "م. سامي الحاج", project: "فيلا الياسمين", reportsThisWeek: 8, status: "active" as const },
-  { name: "م. ياسر القباطي", project: "فيلا الياسمين", reportsThisWeek: 5, status: "active" as const },
+  {
+    name: "م. سامي الحاج",
+    project: "فيلا الياسمين",
+    reportsThisWeek: 8,
+    status: "active" as const,
+  },
+  {
+    name: "م. ياسر القباطي",
+    project: "فيلا الياسمين",
+    reportsThisWeek: 5,
+    status: "active" as const,
+  },
   { name: "م. أمل الزبيدي", project: "مجمع النور", reportsThisWeek: 3, status: "leave" as const },
 ];
 

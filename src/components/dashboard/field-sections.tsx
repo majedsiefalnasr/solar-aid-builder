@@ -21,10 +21,7 @@ function FieldReports() {
       <SectionCard title="السجل الكامل">
         <div className="space-y-3">
           {FIELD_REPORTS.map((r) => (
-            <div
-              key={r.id}
-              className="rounded-xl border border-border bg-background p-4"
-            >
+            <div key={r.id} className="rounded-xl border border-border bg-background p-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Pill tone="info">{r.id}</Pill>

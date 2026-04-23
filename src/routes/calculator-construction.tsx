@@ -40,13 +40,7 @@ export const Route = createFileRoute("/calculator-construction")({
   component: ConstructionCalculator,
 });
 
-type ProjectType =
-  | "villa"
-  | "apartment"
-  | "commercial"
-  | "warehouse"
-  | "hotel"
-  | "school";
+type ProjectType = "villa" | "apartment" | "commercial" | "warehouse" | "hotel" | "school";
 
 type FinishQuality = "economy" | "standard" | "luxury";
 
@@ -154,8 +148,7 @@ function ConstructionCalculator() {
     const blocksCount = Math.round(wallArea * preset.blocksPerM2);
     const cementBags = Math.round(concreteM3 * 7);
 
-    const finishMul =
-      finishOptions.find((f) => f.id === finish)?.multiplier ?? 1;
+    const finishMul = finishOptions.find((f) => f.id === finish)?.multiplier ?? 1;
 
     const baseCost =
       concreteM3 * prices.concretePerM3 +
@@ -194,9 +187,7 @@ function ConstructionCalculator() {
             <HardHat className="h-3 w-3" />
             حاسبة الإنشاءات
           </span>
-          <h1 className="text-2xl font-extrabold text-ink md:text-3xl">
-            احسب كميات مواد البناء
-          </h1>
+          <h1 className="text-2xl font-extrabold text-ink md:text-3xl">احسب كميات مواد البناء</h1>
           <p className="mt-1.5 max-w-xl text-xs text-foreground/80 md:text-sm">
             تقدير سريع لكميات الخرسانة والحديد والبلوك حسب نوع المشروع والتشطيب.
           </p>
@@ -217,9 +208,7 @@ function ConstructionCalculator() {
             <div className="space-y-7 px-6 py-7 md:px-8 md:py-8">
               {/* Project type */}
               <div>
-                <label className="mb-3 block text-sm font-extrabold text-ink">
-                  نوع المشروع
-                </label>
+                <label className="mb-3 block text-sm font-extrabold text-ink">نوع المشروع</label>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {(Object.keys(projectPresets) as ProjectType[]).map((k) => {
                     const active = type === k;
@@ -244,9 +233,7 @@ function ConstructionCalculator() {
                         >
                           <Icon className="h-4 w-4" />
                         </div>
-                        <div className="text-xs font-bold text-ink">
-                          {projectPresets[k].label}
-                        </div>
+                        <div className="text-xs font-bold text-ink">{projectPresets[k].label}</div>
                       </button>
                     );
                   })}
@@ -255,9 +242,7 @@ function ConstructionCalculator() {
 
               {/* City */}
               <div>
-                <label className="mb-2 block text-sm font-extrabold text-ink">
-                  المدينة
-                </label>
+                <label className="mb-2 block text-sm font-extrabold text-ink">المدينة</label>
                 <div className="relative">
                   <MapPin className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <select
@@ -296,9 +281,7 @@ function ConstructionCalculator() {
 
               {/* Finish quality */}
               <div>
-                <label className="mb-3 block text-sm font-extrabold text-ink">
-                  جودة التشطيب
-                </label>
+                <label className="mb-3 block text-sm font-extrabold text-ink">جودة التشطيب</label>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {finishOptions.map((f) => {
                     const active = finish === f.id;
@@ -317,9 +300,7 @@ function ConstructionCalculator() {
                           <Sparkles
                             className={`h-4 w-4 ${active ? "text-primary" : "text-muted-foreground"}`}
                           />
-                          <span className="text-sm font-extrabold text-ink">
-                            {f.label}
-                          </span>
+                          <span className="text-sm font-extrabold text-ink">{f.label}</span>
                         </div>
                         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
                           {f.desc}
@@ -358,10 +339,7 @@ function ConstructionCalculator() {
             <div className="rounded-3xl border border-border bg-card p-5 shadow-card">
               <h3 className="mb-4 text-sm font-extrabold text-ink">الكميات المقدّرة</h3>
               <div className="space-y-2.5">
-                <ResultRow
-                  label="الخرسانة"
-                  value={`${arabicNumber(result.concreteM3)} م³`}
-                />
+                <ResultRow label="الخرسانة" value={`${arabicNumber(result.concreteM3)} م³`} />
                 <ResultRow
                   label="حديد التسليح"
                   value={`${arabicNumber(result.rebarKg.toLocaleString("en-US"))} كجم`}
@@ -370,10 +348,7 @@ function ConstructionCalculator() {
                   label="البلوك"
                   value={`${arabicNumber(result.blocksCount.toLocaleString("en-US"))} قطعة`}
                 />
-                <ResultRow
-                  label="أكياس الإسمنت"
-                  value={`${arabicNumber(result.cementBags)} كيس`}
-                />
+                <ResultRow label="أكياس الإسمنت" value={`${arabicNumber(result.cementBags)} كيس`} />
               </div>
 
               <div className="mt-5 flex flex-col gap-2">
@@ -430,8 +405,7 @@ function ConstructionCalculator() {
         </div>
 
         <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
-          * الأرقام تقديرية مبنية على متوسطات صناعية. للحصول على عرض دقيق يُرجى
-          استشارة مهندس مختص.
+          * الأرقام تقديرية مبنية على متوسطات صناعية. للحصول على عرض دقيق يُرجى استشارة مهندس مختص.
         </p>
       </main>
 
