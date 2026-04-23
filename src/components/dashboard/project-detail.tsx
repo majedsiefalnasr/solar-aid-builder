@@ -62,12 +62,7 @@ export function ProjectDetail({
         to="/dashboard"
         search={{
           role,
-          section:
-            role === "contractor" || role === "owner"
-              ? "projects"
-              : role === "supervisor"
-                ? "projects"
-                : "projects",
+          section: "projects",
         }}
         className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground transition hover:text-primary"
       >
