@@ -397,57 +397,58 @@ function AdminAssignments() {
 
   return (
     <>
-      <PageHeader title="طلبات تعيين المهندسين" subtitle="مطابقة المهندسين بالمشاريع المناسبة" />
+      <PageHeader
+        title="طلبات تعيين المهندسين"
+        subtitle={`${projects.length} مشاريع بانتظار تعيين مشرف — اختر مشروعاً من القائمة`}
+      />
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-        {/* Available engineers */}
-        <SectionCard title="المهندسين المتاحين">
+      <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
+        {/* Pending projects list (left) */}
+        <SectionCard title={`المشاريع المعلّقة (${projects.length})`}>
           <div className="space-y-2">
-            {ENGINEERS.map((e) => (
-              <div
-                key={e.id}
-                className="flex items-center gap-3 rounded-xl border border-border bg-background p-3"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                  <User className="h-4 w-4" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-extrabold text-ink">{e.name}</div>
-                  <div className="text-[10px] text-muted-foreground">{e.active} مشاريع نشطة</div>
-                </div>
-                <Pill tone="primary">متاح</Pill>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
-
-        {/* Pending project + assignment */}
-        <div className="space-y-4">
-          {/* Project switcher chips */}
-          {projects.length > 1 && (
-            <div className="flex flex-wrap gap-2">
-              {projects.map((p) => (
+            {projects.map((p) => {
+              const isActive = p.id === active.id;
+              return (
                 <button
                   key={p.id}
                   onClick={() => {
                     setActiveId(p.id);
                     setSelectedEngineer("");
                   }}
-                  className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
-                    p.id === active.id
-                      ? "bg-primary text-primary-foreground shadow-cta"
-                      : "border border-border bg-card text-foreground/70 hover:border-primary"
+                  className={`group w-full rounded-2xl border p-3 text-right transition ${
+                    isActive
+                      ? "border-primary bg-primary-soft shadow-cta"
+                      : "border-border bg-background hover:border-primary/50 hover:bg-muted/40"
                   }`}
                 >
-                  {p.name}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-extrabold ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                          #{p.id}
+                        </span>
+                        <Pill tone={isActive ? "primary" : "accent"}>{p.city}</Pill>
+                      </div>
+                      <div className="mt-1 truncate text-sm font-extrabold text-ink">{p.name}</div>
+                      <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                        {p.client} • {p.date}
+                      </div>
+                    </div>
+                    {isActive && (
+                      <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                        ✓
+                      </span>
+                    )}
+                  </div>
                 </button>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
+        </SectionCard>
 
-          <SectionCard
-            title={`مشاريع بانتظار تعيين مهندس (${projects.length})`}
-          >
+        {/* Active project + engineer assignment */}
+        <div className="space-y-4">
+          <SectionCard title="تفاصيل المشروع المختار">
             <div className="rounded-xl border border-border bg-background p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
