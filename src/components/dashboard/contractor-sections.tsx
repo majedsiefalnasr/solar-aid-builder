@@ -27,6 +27,11 @@ import {
   X,
 } from "lucide-react";
 import { FIELD_REPORTS, MOCK_PROJECT, PAYMENT_REQUESTS } from "@/lib/dashboard-data";
+import {
+  ROLE_USER,
+  markTaskDone,
+  useWorkflow,
+} from "@/lib/workflow-store";
 import { products as STORE_PRODUCTS, filterCategories } from "@/lib/products";
 import { ContractorDashboard } from "./contractor-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
