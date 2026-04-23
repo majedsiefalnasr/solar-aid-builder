@@ -1071,6 +1071,108 @@ export function reportsForAdmin(s: StoreState): FieldReportDoc[] {
   return s.reports;
 }
 
+// ============================================================
+// Chat: mutations & selectors
+// ============================================================
+
+function mutateThreads(fn: (threads: ChatThreadDoc[]) => ChatThreadDoc[]) {
+  state = { ...state, threads: fn(state.threads) };
+  emit();
+}
+
+export function sendChatMessage(input: {
+  threadId: string;
+  authorRole: ChatRole;
+  authorName: string;
+  text: string;
+}): ChatMessageDoc | null {
+  const text = input.text.trim();
+  if (!text) return null;
+  const msg: ChatMessageDoc = {
+    id: uid("M"),
+    authorRole: input.authorRole,
+    authorName: input.authorName,
+    text,
+    at: nowISO(),
+    readBy: [input.authorRole],
+  };
+  mutateThreads((threads) =>
+    threads.map((t) => (t.id === input.threadId ? { ...t, messages: [...t.messages, msg] } : t)),
+  );
+  return msg;
+}
+
+export function markThreadRead(threadId: string, role: ChatRole) {
+  mutateThreads((threads) =>
+    threads.map((t) => {
+      if (t.id !== threadId) return t;
+      let changed = false;
+      const updated = t.messages.map((m) => {
+        if (m.readBy.includes(role)) return m;
+        changed = true;
+        return { ...m, readBy: [...m.readBy, role] };
+      });
+      return changed ? { ...t, messages: updated } : t;
+    }),
+  );
+}
+
+export function getOrCreateThread(input: {
+  projectId?: string;
+  participants: ChatRole[];
+  title: string;
+}): ChatThreadDoc {
+  const sortedParts = [...input.participants].sort();
+  const existing = state.threads.find(
+    (t) =>
+      t.projectId === input.projectId &&
+      t.participants.length === sortedParts.length &&
+      [...t.participants].sort().every((p, i) => p === sortedParts[i]),
+  );
+  if (existing) return existing;
+  const created: ChatThreadDoc = {
+    id: uid("THR"),
+    projectId: input.projectId,
+    title: input.title,
+    participants: sortedParts,
+    createdAt: nowISO(),
+    messages: [],
+  };
+  mutateThreads((threads) => [created, ...threads]);
+  return created;
+}
+
+export function threadsForRole(s: StoreState, role: ChatRole, userName: string): ChatThreadDoc[] {
+  return s.threads
+    .filter((t) => t.participants.includes(role))
+    .filter((t) => {
+      if (role === "admin") return true;
+      if (!t.projectId) return false;
+      const proj = s.projects.find((p) => p.id === t.projectId);
+      if (!proj) return false;
+      switch (role) {
+        case "owner":
+          return proj.ownerName === userName;
+        case "supervisor":
+          return proj.supervisorName === userName;
+        case "field":
+          return proj.fieldEngineerName === userName;
+        case "contractor":
+          return proj.contractorName === SINGLE_CONTRACTOR;
+        default:
+          return false;
+      }
+    });
+}
+
+export function unreadCountForRole(thread: ChatThreadDoc, role: ChatRole): number {
+  return thread.messages.filter((m) => m.authorRole !== role && !m.readBy.includes(role)).length;
+}
+
+export function lastMessageOf(thread: ChatThreadDoc): ChatMessageDoc | undefined {
+  return thread.messages[thread.messages.length - 1];
+}
+
 // Reset / utilities (for debugging)
 export function resetWorkflow() {
   state = seedState();
