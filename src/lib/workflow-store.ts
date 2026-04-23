@@ -39,10 +39,17 @@ export interface TimelineEvent {
   kind: "created" | "approved" | "rejected" | "assigned" | "accepted" | "quote" | "payment" | "verified" | "phase_started" | "phase_completed" | "report" | "info";
 }
 
+export type TaskApprovalStatus = "todo" | "pending" | "approved" | "rejected";
+
 export interface PhaseTask {
   id: string;
   title: string;
-  done: boolean;
+  done: boolean;                     // كان منجز يدوياً (لتوافق قديم)
+  approval?: TaskApprovalStatus;     // الحالة الجديدة: todo → pending → approved/rejected
+  markedDoneAt?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  rejectionReason?: string;
 }
 
 export interface PhaseDef {
@@ -144,10 +151,42 @@ export interface ChatThreadDoc {
   messages: ChatMessageDoc[];
 }
 
+// ============================================================
+// Withdrawals
+// ============================================================
+
+export type WithdrawalStatus =
+  | "pending"        // طلب جديد بانتظار اعتماد الإدارة
+  | "approved"       // الإدارة اعتمدت وأرفقت الإثبات — لكن غير قابل للسحب لمدة 3 أيام
+  | "withdrawable"   // مرت 3 أيام منذ الاعتماد — أصبح قابلاً للسحب وتم خصمه من الرصيد
+  | "rejected";      // مرفوض
+
+export interface WithdrawalDoc {
+  id: string;
+  projectId?: string;          // اختياري — لربطه بمشروع/مرحلة
+  phaseId?: string;
+  contractorName: string;
+  amount: number;
+  iban?: string;
+  notes?: string;
+  requestedAt: string;
+  // قرار الأدمن
+  reviewedBy?: string;
+  reviewedAt?: string;
+  txRef?: string;              // رقم العملية البنكية
+  bankName?: string;
+  imageDataUrl?: string;       // صورة التحويل
+  rejectionReason?: string;
+  status: WithdrawalStatus;
+  // متى تصبح قابلة للسحب (approvedAt + 3 أيام)
+  releasableAt?: string;
+}
+
 interface StoreState {
   projects: ProjectDoc[];
   reports: FieldReportDoc[];
   threads: ChatThreadDoc[];
+  withdrawals: WithdrawalDoc[];
 }
 
 // ============================================================
@@ -185,7 +224,7 @@ export const FIELD_ENGINEER_POOL = [
 // Storage
 // ============================================================
 
-const STORAGE_KEY = "tamm_workflow_v1";
+const STORAGE_KEY = "tamm_workflow_v2";
 
 function nowISO() {
   return new Date().toISOString();
@@ -206,6 +245,7 @@ function loadFromStorage(): StoreState | null {
       projects: parsed.projects,
       reports: parsed.reports,
       threads: Array.isArray(parsed.threads) ? parsed.threads : [],
+      withdrawals: Array.isArray(parsed.withdrawals) ? parsed.withdrawals : [],
     };
   } catch {
     return null;
@@ -568,10 +608,52 @@ function seedState(): StoreState {
     },
   ];
 
+  // Seed a couple of withdrawal records for demo purposes
+  const withdrawals: WithdrawalDoc[] = [
+    {
+      id: "WTH-001",
+      projectId: "PRJ-2041",
+      phaseId: "PH-1",
+      contractorName: SINGLE_CONTRACTOR,
+      amount: 6_000,
+      iban: "YE94 0008 0000 0000 0001 9999",
+      requestedAt: daysAgo(40),
+      reviewedBy: ADMIN_USER,
+      reviewedAt: daysAgo(38),
+      txRef: "OUT-77001",
+      bankName: "بنك التضامن الإسلامي",
+      status: "withdrawable",
+      releasableAt: daysAgo(35),
+    },
+    {
+      id: "WTH-002",
+      projectId: "PRJ-2041",
+      phaseId: "PH-2",
+      contractorName: SINGLE_CONTRACTOR,
+      amount: 4_500,
+      iban: "YE94 0008 0000 0000 0001 9999",
+      requestedAt: daysAgo(2),
+      status: "pending",
+    },
+  ];
+
+  // ensure each task in seeded phases has approval state aligned with its done flag
+  const stamp = (proj: ProjectDoc): ProjectDoc => ({
+    ...proj,
+    phases: proj.phases.map((ph) => ({
+      ...ph,
+      tasks: ph.tasks.map((t) => ({
+        ...t,
+        approval: t.approval ?? (t.done ? "approved" : "todo"),
+      })),
+    })),
+  });
+
   return {
-    projects: [p1, p2, p3],
+    projects: [stamp(p1), stamp(p2), stamp(p3)],
     reports,
     threads,
+    withdrawals,
   };
 }
 
@@ -617,13 +699,24 @@ export function useProject(id: string | undefined) {
 }
 
 // Hydrate from storage on mount (handles SSR / first client render mismatch)
+// كذلك يعمل تحديث دوري لتحويل السحوبات إلى "قابلة للسحب" بعد 3 أيام
 export function useHydrateWorkflow() {
   useEffect(() => {
     const stored = loadFromStorage();
     if (stored) {
       state = stored;
-      emit();
     }
+    const tick = () => {
+      const next = transitionWithdrawals(state.withdrawals);
+      if (next !== state.withdrawals) {
+        state = { ...state, withdrawals: next };
+        emit();
+      }
+    };
+    tick();
+    emit();
+    const id = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(id);
   }, []);
 }
 
@@ -867,7 +960,23 @@ export function fieldEngineerAccept(projectId: string, engineerName: string) {
   }));
 }
 
-// --- Phases progress ---
+// --- Phases progress & tasks ---
+
+// نسبة الإنجاز محسوبة من المهام المعتمدة، تصل لـ 99% كحد أقصى عبر المهام،
+// و 100% فقط عند اعتماد تقرير "نهاية مرحلة" من المشرف.
+export function computePhaseProgressFromTasks(tasks: PhaseTask[]): number {
+  if (!tasks || tasks.length === 0) return 0;
+  const approvedCount = tasks.filter((t) => t.approval === "approved").length;
+  // كل مهمة = 99 / عدد المهام
+  const perTask = 99 / tasks.length;
+  return Math.min(99, Math.round(approvedCount * perTask));
+}
+
+function recomputePhaseFromTasks(ph: PhaseDef): PhaseDef {
+  // لا نعدل المرحلة المكتملة (100%) — نبقى عليها كما هي
+  if (ph.status === "completed") return ph;
+  return { ...ph, progress: computePhaseProgressFromTasks(ph.tasks) };
+}
 
 export function setPhaseProgress(projectId: string, phaseId: string, progress: number) {
   updateProject(projectId, (p) => ({
@@ -875,6 +984,106 @@ export function setPhaseProgress(projectId: string, phaseId: string, progress: n
     phases: p.phases.map((ph) =>
       ph.id === phaseId ? { ...ph, progress: Math.max(0, Math.min(100, progress)) } : ph,
     ),
+  }));
+}
+
+// المقاول يؤشر على مهمة كمنجزة → تذهب لحالة pending بانتظار اعتماد المشرف
+export function markTaskDone(projectId: string, phaseId: string, taskId: string, by: string) {
+  updateProject(projectId, (p) => ({
+    ...p,
+    phases: p.phases.map((ph) =>
+      ph.id !== phaseId
+        ? ph
+        : recomputePhaseFromTasks({
+            ...ph,
+            tasks: ph.tasks.map((t) =>
+              t.id === taskId
+                ? {
+                    ...t,
+                    done: true,
+                    approval: "pending" as TaskApprovalStatus,
+                    markedDoneAt: nowISO(),
+                    rejectionReason: undefined,
+                  }
+                : t,
+            ),
+          }),
+    ),
+    timeline: [
+      ...p.timeline,
+      {
+        at: nowISO(),
+        label: `أشّر ${by} على إنجاز مهمة بانتظار اعتماد المشرف`,
+        by,
+        kind: "info",
+      },
+    ],
+  }));
+}
+
+// المشرف يعتمد إنجاز مهمة → progress يزداد بنسبة المهمة
+export function approveTask(projectId: string, phaseId: string, taskId: string, by: string) {
+  updateProject(projectId, (p) => ({
+    ...p,
+    phases: p.phases.map((ph) =>
+      ph.id !== phaseId
+        ? ph
+        : recomputePhaseFromTasks({
+            ...ph,
+            tasks: ph.tasks.map((t) =>
+              t.id === taskId
+                ? {
+                    ...t,
+                    done: true,
+                    approval: "approved" as TaskApprovalStatus,
+                    reviewedAt: nowISO(),
+                    reviewedBy: by,
+                    rejectionReason: undefined,
+                  }
+                : t,
+            ),
+          }),
+    ),
+    timeline: [
+      ...p.timeline,
+      { at: nowISO(), label: `اعتمد المشرف إنجاز مهمة`, by, kind: "approved" },
+    ],
+  }));
+}
+
+// المشرف يرفض إنجاز مهمة → ترجع المهمة لحالة todo مع سبب
+export function rejectTask(
+  projectId: string,
+  phaseId: string,
+  taskId: string,
+  by: string,
+  reason: string,
+) {
+  updateProject(projectId, (p) => ({
+    ...p,
+    phases: p.phases.map((ph) =>
+      ph.id !== phaseId
+        ? ph
+        : recomputePhaseFromTasks({
+            ...ph,
+            tasks: ph.tasks.map((t) =>
+              t.id === taskId
+                ? {
+                    ...t,
+                    done: false,
+                    approval: "rejected" as TaskApprovalStatus,
+                    reviewedAt: nowISO(),
+                    reviewedBy: by,
+                    rejectionReason: reason,
+                  }
+                : t,
+            ),
+          }),
+    ),
+    timeline: [
+      ...p.timeline,
+      { at: nowISO(), label: `رفض المشرف إنجاز مهمة: ${reason}`, by, kind: "rejected" },
+    ],
   }));
 }
 
@@ -938,13 +1147,19 @@ export function createReport(input: {
 }
 
 export function approveReport(reportId: string, reviewer: string) {
+  let reportSnapshot: FieldReportDoc | undefined;
   mutateReports((reports) =>
-    reports.map((r) =>
-      r.id === reportId
-        ? { ...r, status: "approved" as const, reviewedBy: reviewer, reviewedAt: nowISO() }
-        : r,
-    ),
+    reports.map((r) => {
+      if (r.id !== reportId) return r;
+      const next = { ...r, status: "approved" as const, reviewedBy: reviewer, reviewedAt: nowISO() };
+      reportSnapshot = next;
+      return next;
+    }),
   );
+  // إذا كان تقرير "نهاية مرحلة" → نكمل المرحلة (نسبة 100% + فتح المرحلة التالية)
+  if (reportSnapshot && reportSnapshot.type === "phase_end" && reportSnapshot.phaseId) {
+    completePhase(reportSnapshot.projectId, reportSnapshot.phaseId, reviewer);
+  }
 }
 
 export function rejectReport(reportId: string, reviewer: string, reason: string) {
@@ -961,6 +1176,140 @@ export function rejectReport(reportId: string, reviewer: string, reason: string)
         : r,
     ),
   );
+}
+
+// ============================================================
+// Withdrawals
+// ============================================================
+
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
+function mutateWithdrawals(fn: (w: WithdrawalDoc[]) => WithdrawalDoc[]) {
+  state = { ...state, withdrawals: fn(state.withdrawals) };
+  emit();
+}
+
+// تطبيق منطق "بعد 3 أيام تصبح قابلة للسحب"
+function transitionWithdrawals(items: WithdrawalDoc[]): WithdrawalDoc[] {
+  const now = Date.now();
+  let changed = false;
+  const next = items.map((w) => {
+    if (w.status === "approved" && w.releasableAt && new Date(w.releasableAt).getTime() <= now) {
+      changed = true;
+      return { ...w, status: "withdrawable" as const };
+    }
+    return w;
+  });
+  return changed ? next : items;
+}
+
+// إجمالي ميزانية المراحل المكتملة للمقاول (الرصيد المكتسب)
+export function contractorEarnedTotal(s: StoreState, contractorName: string): number {
+  return s.projects
+    .filter((p) => p.contractorName === contractorName)
+    .flatMap((p) => p.phases)
+    .filter((ph) => ph.status === "completed")
+    .reduce((sum, ph) => sum + ph.budget, 0);
+}
+
+// المبالغ التي بدأ صرفها (pending أو approved أو withdrawable) — تخصم من المتاح
+export function contractorWithdrawnOrLocked(s: StoreState, contractorName: string): number {
+  return s.withdrawals
+    .filter((w) => w.contractorName === contractorName)
+    .filter((w) => w.status === "approved" || w.status === "withdrawable" || w.status === "pending")
+    .reduce((sum, w) => sum + w.amount, 0);
+}
+
+export function contractorAvailableBalance(s: StoreState, contractorName: string): number {
+  return Math.max(0, contractorEarnedTotal(s, contractorName) - contractorWithdrawnOrLocked(s, contractorName));
+}
+
+export function withdrawalsForContractor(s: StoreState, contractorName: string): WithdrawalDoc[] {
+  return s.withdrawals.filter((w) => w.contractorName === contractorName);
+}
+
+export function withdrawalsForAdmin(s: StoreState): WithdrawalDoc[] {
+  return s.withdrawals;
+}
+
+export function requestWithdrawal(input: {
+  contractorName: string;
+  amount: number;
+  iban?: string;
+  notes?: string;
+  projectId?: string;
+  phaseId?: string;
+}): WithdrawalDoc {
+  const doc: WithdrawalDoc = {
+    id: uid("WTH"),
+    contractorName: input.contractorName,
+    amount: input.amount,
+    iban: input.iban,
+    notes: input.notes,
+    projectId: input.projectId,
+    phaseId: input.phaseId,
+    requestedAt: nowISO(),
+    status: "pending",
+  };
+  mutateWithdrawals((items) => [doc, ...items]);
+  return doc;
+}
+
+export function approveWithdrawal(input: {
+  id: string;
+  by: string;
+  txRef: string;
+  bankName: string;
+  imageDataUrl?: string;
+  notes?: string;
+}) {
+  const releasable = new Date(Date.now() + THREE_DAYS_MS).toISOString();
+  mutateWithdrawals((items) =>
+    items.map((w) =>
+      w.id === input.id
+        ? {
+            ...w,
+            status: "approved" as const,
+            reviewedAt: nowISO(),
+            reviewedBy: input.by,
+            txRef: input.txRef,
+            bankName: input.bankName,
+            imageDataUrl: input.imageDataUrl,
+            notes: input.notes ?? w.notes,
+            releasableAt: releasable,
+          }
+        : w,
+    ),
+  );
+}
+
+export function rejectWithdrawal(id: string, by: string, reason: string) {
+  mutateWithdrawals((items) =>
+    items.map((w) =>
+      w.id === id
+        ? {
+            ...w,
+            status: "rejected" as const,
+            reviewedAt: nowISO(),
+            reviewedBy: by,
+            rejectionReason: reason,
+          }
+        : w,
+    ),
+  );
+}
+
+export function withdrawalStatusLabel(s: WithdrawalStatus): string {
+  switch (s) {
+    case "pending":
+      return "بانتظار الإدارة";
+    case "approved":
+      return "معتمد (في فترة الانتظار)";
+    case "withdrawable":
+      return "قابل للسحب";
+    case "rejected":
+      return "مرفوض";
+  }
 }
 
 // ============================================================
