@@ -80,7 +80,7 @@ const CONTRACTOR_PROJECTS = [
     city: MOCK_PROJECT.city,
     progress: MOCK_PROJECT.overallProgress,
     activePhase: "البناء بالطوب والقواطع",
-    nextPayout: 3_700,
+    nextPayout: 3.7,
   },
   {
     id: "PRJ-2099",
@@ -88,7 +88,7 @@ const CONTRACTOR_PROJECTS = [
     city: "صنعاء",
     progress: 18,
     activePhase: "الحفر والأساسات",
-    nextPayout: 5_200,
+    nextPayout: 5.2,
   },
 ];
 

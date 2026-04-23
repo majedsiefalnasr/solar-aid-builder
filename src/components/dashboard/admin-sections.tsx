@@ -432,7 +432,7 @@ const PENDING_PROJECTS: PendingProject[] = [
     date: "2026-04-12",
     area: "180 م²",
     type: "سكني",
-    budget: "12,000K ر.س",
+    budget: "12K ر.س",
   },
   {
     id: "PRJ-3003",
@@ -442,7 +442,7 @@ const PENDING_PROJECTS: PendingProject[] = [
     date: "2026-04-15",
     area: "1,200 م²",
     type: "تجاري",
-    budget: "85,000K ر.س",
+    budget: "85K ر.س",
   },
   {
     id: "PRJ-3004",
@@ -452,7 +452,7 @@ const PENDING_PROJECTS: PendingProject[] = [
     date: "2026-04-18",
     area: "2,400 م²",
     type: "صناعي",
-    budget: "62,000K ر.س",
+    budget: "62K ر.س",
   },
   {
     id: "PRJ-3005",
@@ -462,7 +462,7 @@ const PENDING_PROJECTS: PendingProject[] = [
     date: "2026-04-20",
     area: "520 م²",
     type: "سكني",
-    budget: "38,000K ر.س",
+    budget: "38K ر.س",
   },
 ];
 
@@ -1657,7 +1657,7 @@ function AdminStore() {
         />
         <StatCard
           label="إيرادات المتجر"
-          value={fmtMoney(85_400)}
+          value={fmtMoney(85.4)}
           hint="متوسط 68 ر.س/طلب"
           icon={<Coins className="h-5 w-5" />}
         />

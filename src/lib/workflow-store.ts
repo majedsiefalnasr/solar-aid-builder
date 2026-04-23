@@ -285,7 +285,7 @@ function seedState(): StoreState {
     city: "صنعاء",
     type: "villa",
     area: 320,
-    budget: 48_000,
+    budget: 48,
     description: "فيلا سكنية دورين مع ملحق",
     ownerName: ROLE_USER.owner,
     contractorName: SINGLE_CONTRACTOR,
@@ -306,7 +306,7 @@ function seedState(): StoreState {
       {
         id: "PH-1",
         name: "الأساسات والحفر",
-        budget: 8_000,
+        budget: 8,
         durationDays: 30,
         tasks: [
           { id: "T1", title: "حفر الموقع", done: true },
@@ -321,7 +321,7 @@ function seedState(): StoreState {
       {
         id: "PH-2",
         name: "الهيكل الإنشائي",
-        budget: 11_200,
+        budget: 11.2,
         durationDays: 45,
         tasks: [
           { id: "T4", title: "صب الأعمدة", done: true },
@@ -336,7 +336,7 @@ function seedState(): StoreState {
       {
         id: "PH-3",
         name: "البناء بالطوب والقواطع",
-        budget: 7_400,
+        budget: 7.4,
         durationDays: 30,
         tasks: [
           { id: "T7", title: "بناء جدران الدور الأول", done: true },
@@ -350,7 +350,7 @@ function seedState(): StoreState {
       {
         id: "PH-4",
         name: "التمديدات الكهربائية والصحية",
-        budget: 6_800,
+        budget: 6.8,
         durationDays: 25,
         tasks: [
           { id: "T10", title: "تمديد الأنابيب", done: false },
@@ -364,7 +364,7 @@ function seedState(): StoreState {
       {
         id: "PAY-001",
         phaseId: "PH-1",
-        amount: 8_000,
+        amount: 8,
         bankName: "بنك التضامن الإسلامي",
         txRef: "TX-99812345",
         notes: "دفعة المرحلة الأولى",
@@ -376,7 +376,7 @@ function seedState(): StoreState {
       {
         id: "PAY-002",
         phaseId: "PH-2",
-        amount: 11_200,
+        amount: 11.2,
         bankName: "بنك اليمن والكويت",
         txRef: "TX-99834567",
         uploadedAt: daysAgo(46),
@@ -387,7 +387,7 @@ function seedState(): StoreState {
       {
         id: "PAY-003",
         phaseId: "PH-3",
-        amount: 7_400,
+        amount: 7.4,
         bankName: "بنك سبأ الإسلامي",
         txRef: "TX-99898765",
         uploadedAt: daysAgo(16),
@@ -418,7 +418,7 @@ function seedState(): StoreState {
     city: "تعز",
     type: "commercial",
     area: 120,
-    budget: 9_500,
+    budget: 9.5,
     ownerName: "خالد العبسي",
     status: "pending_admin",
     createdAt: daysAgo(2),
@@ -436,7 +436,7 @@ function seedState(): StoreState {
     city: "عدن",
     type: "apartment",
     area: 180,
-    budget: 22_000,
+    budget: 22,
     ownerName: "فهد المنصور",
     contractorName: SINGLE_CONTRACTOR,
     supervisorName: "م. خالد الأهدل",
@@ -615,7 +615,7 @@ function seedState(): StoreState {
       projectId: "PRJ-2041",
       phaseId: "PH-1",
       contractorName: SINGLE_CONTRACTOR,
-      amount: 6_000,
+      amount: 6,
       iban: "YE94 0008 0000 0000 0001 9999",
       requestedAt: daysAgo(40),
       reviewedBy: ADMIN_USER,
@@ -630,7 +630,7 @@ function seedState(): StoreState {
       projectId: "PRJ-2041",
       phaseId: "PH-2",
       contractorName: SINGLE_CONTRACTOR,
-      amount: 4_500,
+      amount: 4.5,
       iban: "YE94 0008 0000 0000 0001 9999",
       requestedAt: daysAgo(2),
       status: "pending",

@@ -77,14 +77,14 @@ export const MOCK_PROJECT: Project = {
   owner: "م. أحمد الشامي",
   contractor: "شركة البناء المتقن",
   supervisor: "م. ليلى العمراني",
-  totalBudget: 48_000,
-  releasedAmount: 19_200,
+  totalBudget: 48,
+  releasedAmount: 19.2,
   overallProgress: 42,
   phases: [
     {
       id: "P1",
       name: "الأساسات والحفر",
-      amount: 8_000,
+      amount: 8,
       progress: 100,
       status: "completed",
       dueDate: "2026-01-12",
@@ -92,7 +92,7 @@ export const MOCK_PROJECT: Project = {
     {
       id: "P2",
       name: "الهيكل الإنشائي",
-      amount: 11_200,
+      amount: 11.2,
       progress: 100,
       status: "completed",
       dueDate: "2026-02-28",
@@ -100,7 +100,7 @@ export const MOCK_PROJECT: Project = {
     {
       id: "P3",
       name: "البناء بالطوب والقواطع",
-      amount: 7_400,
+      amount: 7.4,
       progress: 65,
       status: "in_progress",
       dueDate: "2026-05-10",
@@ -108,7 +108,7 @@ export const MOCK_PROJECT: Project = {
     {
       id: "P4",
       name: "التمديدات الكهربائية والصحية",
-      amount: 6_800,
+      amount: 6.8,
       progress: 0,
       status: "awaiting_funding",
       dueDate: "2026-06-30",
@@ -116,7 +116,7 @@ export const MOCK_PROJECT: Project = {
     {
       id: "P5",
       name: "التشطيبات الداخلية",
-      amount: 9_400,
+      amount: 9.4,
       progress: 0,
       status: "locked",
       dueDate: "2026-08-15",
@@ -124,7 +124,7 @@ export const MOCK_PROJECT: Project = {
     {
       id: "P6",
       name: "الواجهات والتسليم",
-      amount: 5_200,
+      amount: 5.2,
       progress: 0,
       status: "locked",
       dueDate: "2026-09-30",
@@ -201,7 +201,7 @@ export const PAYMENT_REQUESTS: PaymentRequest[] = [
   {
     id: "PAY-301",
     phase: "الهيكل الإنشائي",
-    amount: 11_200,
+    amount: 11.2,
     contractor: "شركة البناء المتقن",
     submittedAt: "2026-03-01",
     status: "released",
@@ -209,7 +209,7 @@ export const PAYMENT_REQUESTS: PaymentRequest[] = [
   {
     id: "PAY-302",
     phase: "البناء بالطوب — دفعة أولى",
-    amount: 3_700,
+    amount: 3.7,
     contractor: "شركة البناء المتقن",
     submittedAt: "2026-04-10",
     status: "approved",
@@ -217,7 +217,7 @@ export const PAYMENT_REQUESTS: PaymentRequest[] = [
   {
     id: "PAY-303",
     phase: "البناء بالطوب — دفعة ثانية",
-    amount: 3_700,
+    amount: 3.7,
     contractor: "شركة البناء المتقن",
     submittedAt: "2026-04-22",
     status: "pending",
@@ -255,7 +255,7 @@ export const DISPUTES: Dispute[] = [
 export const PLATFORM_STATS = {
   activeProjects: 124,
   contractors: 312,
-  totalTracked: 8_400_000, // SAR (thousands)
+  totalTracked: 8_400, // SAR (thousands)
   openDisputes: 7,
 };
 
