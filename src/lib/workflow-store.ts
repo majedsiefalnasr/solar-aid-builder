@@ -350,7 +350,7 @@ function seedState(): StoreState {
       {
         id: "PH-4",
         name: "التمديدات الكهربائية والصحية",
-        budget: 6_800,
+        budget: 6.8,
         durationDays: 25,
         tasks: [
           { id: "T10", title: "تمديد الأنابيب", done: false },
