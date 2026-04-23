@@ -10,6 +10,7 @@ import { SupervisorSection } from "@/components/dashboard/supervisor-sections";
 import { FieldSection } from "@/components/dashboard/field-sections";
 import { AdminSection } from "@/components/dashboard/admin-sections";
 import { applyToDOM, useSettings } from "@/lib/settings-store";
+import { NotificationsBell } from "@/components/dashboard/notifications-bell";
 
 interface DashboardSearch {
   role: Role;
