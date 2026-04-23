@@ -285,7 +285,7 @@ function seedState(): StoreState {
     city: "صنعاء",
     type: "villa",
     area: 320,
-    budget: 48_000,
+    budget: 48,
     description: "فيلا سكنية دورين مع ملحق",
     ownerName: ROLE_USER.owner,
     contractorName: SINGLE_CONTRACTOR,
