@@ -1,16 +1,24 @@
 import { Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Briefcase,
   CheckCircle2,
   Clock,
-  ExternalLink,
   Eye,
   ListChecks,
+  Minus,
+  Plus,
+  Search,
   ShoppingBag,
+  ShoppingCart,
+  Star,
   Wallet,
+  X,
 } from "lucide-react";
 import { FIELD_REPORTS, MOCK_PROJECT, PAYMENT_REQUESTS } from "@/lib/dashboard-data";
+import { products as STORE_PRODUCTS, filterCategories } from "@/lib/products";
 import { ContractorDashboard } from "./contractor-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
