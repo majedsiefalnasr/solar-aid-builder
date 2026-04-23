@@ -35,11 +35,17 @@ import {
   XCircle,
 } from "lucide-react";
 import { DISPUTES, MOCK_PROJECT, PAYMENT_REQUESTS, PLATFORM_STATS } from "@/lib/dashboard-data";
+import { useWorkflow } from "@/lib/workflow-store";
 import { AdminDashboard } from "./admin-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { ReportsSection } from "./reports-section";
+import {
+  AdminReviewProjectDialog,
+  ProjectStatusPill,
+  VerifyPaymentDialog,
+} from "./project-flow-shared";
 import { AreaChart, BarChart, DonutChart, Sparkline } from "./charts";
 
 export function AdminSection({
