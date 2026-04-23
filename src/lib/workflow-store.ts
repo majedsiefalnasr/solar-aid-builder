@@ -615,7 +615,7 @@ function seedState(): StoreState {
       projectId: "PRJ-2041",
       phaseId: "PH-1",
       contractorName: SINGLE_CONTRACTOR,
-      amount: 6_000,
+      amount: 6,
       iban: "YE94 0008 0000 0000 0001 9999",
       requestedAt: daysAgo(40),
       reviewedBy: ADMIN_USER,
