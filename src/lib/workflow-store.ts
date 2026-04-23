@@ -120,9 +120,34 @@ export interface ProjectDoc {
   rejectionReason?: string;
 }
 
+// ============================================================
+// Chat threads
+// ============================================================
+
+export type ChatRole = "owner" | "contractor" | "supervisor" | "field" | "admin";
+
+export interface ChatMessageDoc {
+  id: string;
+  authorRole: ChatRole;
+  authorName: string;
+  text: string;
+  at: string;            // ISO
+  readBy: ChatRole[];    // who has read
+}
+
+export interface ChatThreadDoc {
+  id: string;
+  projectId?: string;     // tied to a project (optional for admin disputes)
+  title: string;          // ar
+  participants: ChatRole[]; // who can see/post
+  createdAt: string;
+  messages: ChatMessageDoc[];
+}
+
 interface StoreState {
   projects: ProjectDoc[];
   reports: FieldReportDoc[];
+  threads: ChatThreadDoc[];
 }
 
 // ============================================================
@@ -175,9 +200,13 @@ function loadFromStorage(): StoreState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as StoreState;
+    const parsed = JSON.parse(raw) as Partial<StoreState>;
     if (!Array.isArray(parsed.projects) || !Array.isArray(parsed.reports)) return null;
-    return parsed;
+    return {
+      projects: parsed.projects,
+      reports: parsed.reports,
+      threads: Array.isArray(parsed.threads) ? parsed.threads : [],
+    };
   } catch {
     return null;
   }
@@ -434,9 +463,115 @@ function seedState(): StoreState {
     },
   ];
 
+  // Seed chat threads for active project (p1)
+  const threads: ChatThreadDoc[] = [
+    {
+      id: "THR-001",
+      projectId: "PRJ-2041",
+      title: "محادثة المالك ↔ المقاول",
+      participants: ["owner", "contractor"],
+      createdAt: daysAgo(60),
+      messages: [
+        {
+          id: "M-1",
+          authorRole: "contractor",
+          authorName: SINGLE_CONTRACTOR,
+          text: "تم إنجاز جدران الدور الأول، نحتاج اعتماد المرحلة.",
+          at: daysAgo(2),
+          readBy: ["contractor", "owner"],
+        },
+        {
+          id: "M-2",
+          authorRole: "owner",
+          authorName: ROLE_USER.owner,
+          text: "ممتاز، سأطلب من المشرف المعاينة اليوم.",
+          at: daysAgo(2),
+          readBy: ["owner", "contractor"],
+        },
+      ],
+    },
+    {
+      id: "THR-002",
+      projectId: "PRJ-2041",
+      title: "محادثة المالك ↔ المشرف",
+      participants: ["owner", "supervisor"],
+      createdAt: daysAgo(60),
+      messages: [
+        {
+          id: "M-3",
+          authorRole: "supervisor",
+          authorName: "م. ليلى العمراني",
+          text: "تقرير الموقع جاهز للمراجعة.",
+          at: daysAgo(1),
+          readBy: ["supervisor"],
+        },
+      ],
+    },
+    {
+      id: "THR-003",
+      projectId: "PRJ-2041",
+      title: "محادثة المشرف ↔ المهندس الميداني",
+      participants: ["supervisor", "field"],
+      createdAt: daysAgo(60),
+      messages: [
+        {
+          id: "M-4",
+          authorRole: "supervisor",
+          authorName: "م. ليلى العمراني",
+          text: "وثّق ميول الصرف الصحي اليوم.",
+          at: daysAgo(0),
+          readBy: ["supervisor"],
+        },
+      ],
+    },
+    {
+      id: "THR-004",
+      projectId: "PRJ-2041",
+      title: "محادثة المشرف ↔ المقاول",
+      participants: ["supervisor", "contractor"],
+      createdAt: daysAgo(60),
+      messages: [
+        {
+          id: "M-5",
+          authorRole: "contractor",
+          authorName: SINGLE_CONTRACTOR,
+          text: "بانتظار توقيعك على التقرير.",
+          at: daysAgo(0),
+          readBy: ["contractor"],
+        },
+      ],
+    },
+    {
+      id: "THR-005",
+      projectId: "PRJ-2041",
+      title: "نزاع — وساطة الإدارة",
+      participants: ["admin", "owner", "contractor"],
+      createdAt: daysAgo(5),
+      messages: [
+        {
+          id: "M-6",
+          authorRole: "owner",
+          authorName: ROLE_USER.owner,
+          text: "أعترض على جودة بعض الأعمال.",
+          at: daysAgo(5),
+          readBy: ["owner", "admin"],
+        },
+        {
+          id: "M-7",
+          authorRole: "admin",
+          authorName: ADMIN_USER,
+          text: "سنُكلّف فريق فحص محايد ونعود إليكم.",
+          at: daysAgo(4),
+          readBy: ["admin"],
+        },
+      ],
+    },
+  ];
+
   return {
     projects: [p1, p2, p3],
     reports,
+    threads,
   };
 }
 
@@ -934,6 +1069,108 @@ export function reportsForFieldEngineer(s: StoreState, engineerName: string): Fi
 
 export function reportsForAdmin(s: StoreState): FieldReportDoc[] {
   return s.reports;
+}
+
+// ============================================================
+// Chat: mutations & selectors
+// ============================================================
+
+function mutateThreads(fn: (threads: ChatThreadDoc[]) => ChatThreadDoc[]) {
+  state = { ...state, threads: fn(state.threads) };
+  emit();
+}
+
+export function sendChatMessage(input: {
+  threadId: string;
+  authorRole: ChatRole;
+  authorName: string;
+  text: string;
+}): ChatMessageDoc | null {
+  const text = input.text.trim();
+  if (!text) return null;
+  const msg: ChatMessageDoc = {
+    id: uid("M"),
+    authorRole: input.authorRole,
+    authorName: input.authorName,
+    text,
+    at: nowISO(),
+    readBy: [input.authorRole],
+  };
+  mutateThreads((threads) =>
+    threads.map((t) => (t.id === input.threadId ? { ...t, messages: [...t.messages, msg] } : t)),
+  );
+  return msg;
+}
+
+export function markThreadRead(threadId: string, role: ChatRole) {
+  mutateThreads((threads) =>
+    threads.map((t) => {
+      if (t.id !== threadId) return t;
+      let changed = false;
+      const updated = t.messages.map((m) => {
+        if (m.readBy.includes(role)) return m;
+        changed = true;
+        return { ...m, readBy: [...m.readBy, role] };
+      });
+      return changed ? { ...t, messages: updated } : t;
+    }),
+  );
+}
+
+export function getOrCreateThread(input: {
+  projectId?: string;
+  participants: ChatRole[];
+  title: string;
+}): ChatThreadDoc {
+  const sortedParts = [...input.participants].sort();
+  const existing = state.threads.find(
+    (t) =>
+      t.projectId === input.projectId &&
+      t.participants.length === sortedParts.length &&
+      [...t.participants].sort().every((p, i) => p === sortedParts[i]),
+  );
+  if (existing) return existing;
+  const created: ChatThreadDoc = {
+    id: uid("THR"),
+    projectId: input.projectId,
+    title: input.title,
+    participants: sortedParts,
+    createdAt: nowISO(),
+    messages: [],
+  };
+  mutateThreads((threads) => [created, ...threads]);
+  return created;
+}
+
+export function threadsForRole(s: StoreState, role: ChatRole, userName: string): ChatThreadDoc[] {
+  return s.threads
+    .filter((t) => t.participants.includes(role))
+    .filter((t) => {
+      if (role === "admin") return true;
+      if (!t.projectId) return false;
+      const proj = s.projects.find((p) => p.id === t.projectId);
+      if (!proj) return false;
+      switch (role) {
+        case "owner":
+          return proj.ownerName === userName;
+        case "supervisor":
+          return proj.supervisorName === userName;
+        case "field":
+          return proj.fieldEngineerName === userName;
+        case "contractor":
+          return proj.contractorName === SINGLE_CONTRACTOR;
+        default:
+          return false;
+      }
+    });
+}
+
+export function unreadCountForRole(thread: ChatThreadDoc, role: ChatRole): number {
+  return thread.messages.filter((m) => m.authorRole !== role && !m.readBy.includes(role)).length;
+}
+
+export function lastMessageOf(thread: ChatThreadDoc): ChatMessageDoc | undefined {
+  return thread.messages[thread.messages.length - 1];
 }
 
 // Reset / utilities (for debugging)
