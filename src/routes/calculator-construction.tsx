@@ -4,16 +4,23 @@ import {
   HardHat,
   ArrowLeft,
   ArrowRight,
-  Layers,
-  Construction,
-  Package,
+  Home,
+  Building2,
+  Building,
+  Warehouse,
+  Hotel,
+  School,
   Calculator,
   CheckCircle2,
   RefreshCw,
+  MapPin,
+  Sparkles,
+  Rocket,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import heroImg from "@/assets/solar-hero.jpg";
 import { arabicNumber } from "@/components/calculator-shell";
+import { CITIES } from "@/lib/calculator";
 
 export const Route = createFileRoute("/calculator-construction")({
   head: () => ({
@@ -22,7 +29,7 @@ export const Route = createFileRoute("/calculator-construction")({
       {
         name: "description",
         content:
-          "احسب كميات الخرسانة والحديد والبلوك المطلوبة لمشروعك بناءً على المساحة والارتفاع.",
+          "احسب كميات الخرسانة والحديد والبلوك المطلوبة لمشروعك بناءً على نوع المشروع والمدينة وجودة التشطيب.",
       },
       { property: "og:title", content: "حاسبة كميات البناء | بنيان" },
       {
@@ -34,33 +41,96 @@ export const Route = createFileRoute("/calculator-construction")({
   component: ConstructionCalculator,
 });
 
-type ProjectType = "residential" | "commercial" | "wall";
+type ProjectType =
+  | "villa"
+  | "apartment"
+  | "commercial"
+  | "warehouse"
+  | "hotel"
+  | "school";
+
+type FinishQuality = "economy" | "standard" | "luxury";
 
 const projectPresets: Record<
   ProjectType,
-  { label: string; concretePerM2: number; rebarKgPerM2: number; blocksPerM2: number }
+  {
+    label: string;
+    Icon: typeof Home;
+    concretePerM2: number;
+    rebarKgPerM2: number;
+    blocksPerM2: number;
+  }
 > = {
-  residential: {
-    label: "مبنى سكني",
-    concretePerM2: 0.35,
-    rebarKgPerM2: 45,
+  villa: {
+    label: "فيلا سكنية",
+    Icon: Home,
+    concretePerM2: 0.4,
+    rebarKgPerM2: 50,
     blocksPerM2: 12.5,
+  },
+  apartment: {
+    label: "شقة سكنية",
+    Icon: Building,
+    concretePerM2: 0.32,
+    rebarKgPerM2: 42,
+    blocksPerM2: 11,
   },
   commercial: {
     label: "مبنى تجاري",
-    concretePerM2: 0.45,
-    rebarKgPerM2: 65,
+    Icon: Building2,
+    concretePerM2: 0.5,
+    rebarKgPerM2: 70,
     blocksPerM2: 13,
   },
-  wall: {
-    label: "سور / جدار",
-    concretePerM2: 0.12,
-    rebarKgPerM2: 18,
-    blocksPerM2: 12.5,
+  warehouse: {
+    label: "مستودع",
+    Icon: Warehouse,
+    concretePerM2: 0.28,
+    rebarKgPerM2: 38,
+    blocksPerM2: 9,
+  },
+  hotel: {
+    label: "فندق",
+    Icon: Hotel,
+    concretePerM2: 0.55,
+    rebarKgPerM2: 75,
+    blocksPerM2: 14,
+  },
+  school: {
+    label: "مدرسة",
+    Icon: School,
+    concretePerM2: 0.42,
+    rebarKgPerM2: 55,
+    blocksPerM2: 12,
   },
 };
 
-// Approximate prices (SAR/YER unified placeholder)
+const finishOptions: {
+  id: FinishQuality;
+  label: string;
+  desc: string;
+  multiplier: number;
+}[] = [
+  {
+    id: "economy",
+    label: "اقتصادي",
+    desc: "تشطيبات أساسية بأقل تكلفة.",
+    multiplier: 0.85,
+  },
+  {
+    id: "standard",
+    label: "قياسي",
+    desc: "توازن بين الجودة والتكلفة.",
+    multiplier: 1,
+  },
+  {
+    id: "luxury",
+    label: "فاخر",
+    desc: "خامات ممتازة وتشطيبات راقية.",
+    multiplier: 1.4,
+  },
+];
+
 const prices = {
   concretePerM3: 285,
   rebarPerKg: 4.2,
@@ -69,23 +139,26 @@ const prices = {
 };
 
 function ConstructionCalculator() {
-  const [type, setType] = useState<ProjectType>("residential");
+  const [type, setType] = useState<ProjectType>("villa");
+  const [city, setCity] = useState<string>("عدن");
+  const [finish, setFinish] = useState<FinishQuality>("standard");
   const [area, setArea] = useState(150);
   const [floors, setFloors] = useState(2);
-  const [wallHeight, setWallHeight] = useState(3);
 
   const result = useMemo(() => {
     const preset = projectPresets[type];
     const totalArea = area * floors;
-    const wallArea = type === "wall" ? area * wallHeight : totalArea * 0.8;
+    const wallArea = totalArea * 0.8;
 
     const concreteM3 = +(totalArea * preset.concretePerM2).toFixed(1);
     const rebarKg = Math.round(totalArea * preset.rebarKgPerM2);
     const blocksCount = Math.round(wallArea * preset.blocksPerM2);
-    // Cement bags ~ 7 bags per m³ of concrete
     const cementBags = Math.round(concreteM3 * 7);
 
-    const cost =
+    const finishMul =
+      finishOptions.find((f) => f.id === finish)?.multiplier ?? 1;
+
+    const baseCost =
       concreteM3 * prices.concretePerM3 +
       rebarKg * prices.rebarPerKg +
       blocksCount * prices.blockPerUnit +
@@ -97,15 +170,16 @@ function ConstructionCalculator() {
       rebarKg,
       blocksCount,
       cementBags,
-      totalCost: Math.round(cost),
+      totalCost: Math.round(baseCost * finishMul),
     };
-  }, [type, area, floors, wallHeight]);
+  }, [type, area, floors, finish]);
 
   const reset = () => {
-    setType("residential");
+    setType("villa");
+    setCity("عدن");
+    setFinish("standard");
     setArea(150);
     setFloors(2);
-    setWallHeight(3);
   };
 
   return (
@@ -125,7 +199,7 @@ function ConstructionCalculator() {
             احسب كميات مواد البناء
           </h1>
           <p className="mt-1.5 max-w-xl text-xs text-foreground/80 md:text-sm">
-            تقدير سريع لكميات الخرسانة والحديد والبلوك حسب نوع المشروع.
+            تقدير سريع لكميات الخرسانة والحديد والبلوك حسب نوع المشروع والتشطيب.
           </p>
         </div>
       </div>
@@ -147,32 +221,31 @@ function ConstructionCalculator() {
                 <label className="mb-3 block text-sm font-extrabold text-ink">
                   نوع المشروع
                 </label>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {(Object.keys(projectPresets) as ProjectType[]).map((k) => {
                     const active = type === k;
+                    const Icon = projectPresets[k].Icon;
                     return (
                       <button
                         key={k}
                         type="button"
                         onClick={() => setType(k)}
-                        className={`rounded-2xl border-2 p-4 text-center transition ${
+                        className={`rounded-2xl border-2 p-3 text-center transition ${
                           active
                             ? "border-primary bg-primary-soft"
                             : "border-border bg-card hover:border-primary/40"
                         }`}
                       >
                         <div
-                          className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl ${
+                          className={`mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-xl ${
                             active
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted text-foreground/60"
                           }`}
                         >
-                          {k === "residential" && <Layers className="h-5 w-5" />}
-                          {k === "commercial" && <Construction className="h-5 w-5" />}
-                          {k === "wall" && <Package className="h-5 w-5" />}
+                          <Icon className="h-4 w-4" />
                         </div>
-                        <div className="text-sm font-bold text-ink">
+                        <div className="text-xs font-bold text-ink">
                           {projectPresets[k].label}
                         </div>
                       </button>
@@ -181,43 +254,87 @@ function ConstructionCalculator() {
                 </div>
               </div>
 
+              {/* City */}
+              <div>
+                <label className="mb-2 block text-sm font-extrabold text-ink">
+                  المدينة
+                </label>
+                <div className="relative">
+                  <MapPin className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-input bg-background px-4 py-3 ps-4 pe-10 text-sm font-semibold text-ink focus:border-primary focus:outline-none"
+                  >
+                    {CITIES.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {/* Area */}
               <NumberField
-                label={type === "wall" ? "طول السور (متر)" : "مساحة الدور الواحد (م²)"}
+                label="مساحة الدور الواحد (م²)"
                 value={area}
                 onChange={setArea}
                 min={10}
                 max={2000}
                 step={10}
-                hint={type === "wall" ? "مثال: 50 متر طولي" : "مثال: 150 متر مربع"}
+                hint="مثال: 150 متر مربع"
               />
 
-              {/* Floors or wall height */}
-              {type === "wall" ? (
-                <NumberField
-                  label="ارتفاع السور (متر)"
-                  value={wallHeight}
-                  onChange={setWallHeight}
-                  min={1}
-                  max={6}
-                  step={0.5}
-                  hint="مثال: 3 متر"
-                />
-              ) : (
-                <NumberField
-                  label="عدد الأدوار"
-                  value={floors}
-                  onChange={setFloors}
-                  min={1}
-                  max={10}
-                  step={1}
-                  hint="بما فيها الدور الأرضي"
-                />
-              )}
+              {/* Floors */}
+              <NumberField
+                label="عدد الأدوار"
+                value={floors}
+                onChange={setFloors}
+                min={1}
+                max={20}
+                step={1}
+                hint="بما فيها الدور الأرضي"
+              />
+
+              {/* Finish quality */}
+              <div>
+                <label className="mb-3 block text-sm font-extrabold text-ink">
+                  جودة التشطيب
+                </label>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {finishOptions.map((f) => {
+                    const active = finish === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setFinish(f.id)}
+                        className={`rounded-2xl border-2 p-3 text-right transition ${
+                          active
+                            ? "border-primary bg-primary-soft"
+                            : "border-border bg-card hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Sparkles
+                            className={`h-4 w-4 ${active ? "text-primary" : "text-muted-foreground"}`}
+                          />
+                          <span className="text-sm font-extrabold text-ink">
+                            {f.label}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                          {f.desc}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               <div className="rounded-xl bg-primary-soft px-4 py-3 text-sm text-foreground/85">
                 <strong className="text-primary">إجمالي المساحة:</strong>{" "}
-                {arabicNumber(result.totalArea.toLocaleString("en-US"))} م²
+                {arabicNumber(result.totalArea.toLocaleString("en-US"))} م² ·{" "}
+                <span className="text-foreground/70">{city}</span>
               </div>
             </div>
           </div>
@@ -235,7 +352,7 @@ function ConstructionCalculator() {
               </div>
               <div className="mt-1.5 flex items-center gap-1.5 text-[11px] opacity-90">
                 <CheckCircle2 className="h-3 w-3" />
-                شامل المواد الأساسية
+                شامل المواد الأساسية وجودة التشطيب
               </div>
             </div>
 
@@ -262,11 +379,11 @@ function ConstructionCalculator() {
 
               <div className="mt-5 flex flex-col gap-2">
                 <Link
-                  to="/store"
+                  to="/checkout"
                   className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-cta transition hover:bg-primary/95"
                 >
-                  تصفح المنتجات
-                  <ArrowLeft className="h-4 w-4" />
+                  <Rocket className="h-4 w-4" />
+                  ابدأ مشروعك الآن
                 </Link>
                 <button
                   type="button"
@@ -353,3 +470,6 @@ function ResultRow({ label, value }: { label: string; value: React.ReactNode }) 
     </div>
   );
 }
+
+// Suppress unused import
+void ArrowLeft;
