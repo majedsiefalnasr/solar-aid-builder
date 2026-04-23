@@ -25,11 +25,23 @@ export function FieldDashboard() {
     month: "long",
   });
 
-  // Active projects for this engineer
+  // Projects assigned to me but not yet accepted
+  const pendingAcceptance = useMemo(
+    () =>
+      store.projects.filter(
+        (p) => p.fieldEngineerName === engineerName && !p.fieldEngineerAcceptedAt,
+      ),
+    [store.projects, engineerName],
+  );
+
+  // Active projects for this engineer (accepted)
   const myProjects = useMemo(
     () =>
       store.projects.filter(
-        (p) => p.fieldEngineerName === engineerName && p.status === "in_progress",
+        (p) =>
+          p.fieldEngineerName === engineerName &&
+          !!p.fieldEngineerAcceptedAt &&
+          (p.status === "in_progress" || p.status === "verifying_payment"),
       ),
     [store.projects, engineerName],
   );
