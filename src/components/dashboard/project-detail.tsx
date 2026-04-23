@@ -53,6 +53,8 @@ export function ProjectDetail({
   const remaining = project.totalBudget - project.releasedAmount;
   const completed = project.phases.filter((p) => p.status === "completed").length;
   const reports = FIELD_REPORTS.slice(0, 4);
+  const [chatOpen, setChatOpen] = useState(false);
+  const threads = getThreadsForProject(role, project.name);
 
   const isOwner = role === "owner";
   const isContractor = role === "contractor";
