@@ -417,11 +417,12 @@ export function ProjectDetail({
         </SectionCard>
       </div>
 
-      {isOwner && (
-        <SectionCard
-          title="إجراءات سريعة"
-          subtitle="تحرير الدفعة التالية أو طلب تعديل"
-        >
+      {liveDoc && liveDoc.timeline.length > 0 && (
+        <SectionCard title="سجل المشروع" subtitle="جميع الأحداث منذ إنشاء المشروع">
+          <ProjectTimeline project={liveDoc} />
+        </SectionCard>
+      )}
+
           <div className="grid gap-3 sm:grid-cols-3">
             <button className="rounded-xl border-2 border-primary bg-primary-soft p-4 text-right transition hover:bg-primary hover:text-primary-foreground">
               <Coins className="mb-2 h-5 w-5" />
