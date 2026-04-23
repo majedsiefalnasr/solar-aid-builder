@@ -92,94 +92,180 @@ const PROJECTS_LIST = [
     name: MOCK_PROJECT.name,
     city: MOCK_PROJECT.city,
     owner: MOCK_PROJECT.owner,
-    status: "active",
+    status: "active" as const,
     progress: 42,
+    startedAt: "2026-01-12",
+    daysAgo: 102,
   },
   {
     id: "PRJ-2055",
     name: "شقة المعلا",
     city: "عدن",
     owner: "فهد المنصور",
-    status: "active",
+    status: "active" as const,
     progress: 28,
+    startedAt: "2026-03-04",
+    daysAgo: 50,
   },
   {
     id: "PRJ-2068",
     name: "محل تجاري — حي السلام",
     city: "تعز",
     owner: "خالد العبسي",
-    status: "pending",
+    status: "pending" as const,
     progress: 0,
+    startedAt: "2026-04-19",
+    daysAgo: 4,
   },
   {
     id: "PRJ-2099",
     name: "مجمع النور التجاري",
     city: "صنعاء",
     owner: "ريم السقاف",
-    status: "active",
+    status: "active" as const,
     progress: 18,
+    startedAt: "2026-04-01",
+    daysAgo: 22,
+  },
+  {
+    id: "PRJ-1988",
+    name: "فيلا الصافي",
+    city: "صنعاء",
+    owner: "م. صالح القاسمي",
+    status: "completed" as const,
+    progress: 100,
+    startedAt: "2025-08-12",
+    daysAgo: 254,
+  },
+  {
+    id: "PRJ-1820",
+    name: "شقة كريتر",
+    city: "عدن",
+    owner: "ليلى السقاف",
+    status: "completed" as const,
+    progress: 100,
+    startedAt: "2025-04-22",
+    daysAgo: 366,
   },
 ];
 
+const PERIOD_FILTERS = [
+  { k: "all", label: "كل الفترات", days: Infinity },
+  { k: "7d", label: "آخر 7 أيام", days: 7 },
+  { k: "30d", label: "آخر 30 يوم", days: 30 },
+  { k: "90d", label: "آخر 3 أشهر", days: 90 },
+  { k: "1y", label: "آخر سنة", days: 365 },
+] as const;
+
 function AdminProjects() {
+  const [period, setPeriod] = useState<typeof PERIOD_FILTERS[number]["k"]>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "completed">("all");
+
+  const filtered = useMemo(() => {
+    const days = PERIOD_FILTERS.find((p) => p.k === period)?.days ?? Infinity;
+    return PROJECTS_LIST.filter(
+      (p) => p.daysAgo <= days && (statusFilter === "all" || p.status === statusFilter),
+    );
+  }, [period, statusFilter]);
+
   return (
     <>
       <PageHeader
         title="المشاريع"
         subtitle={`${PLATFORM_STATS.activeProjects} مشروع نشط على المنصة — اضغط على أي مشروع لفتح التفاصيل`}
       />
-      <SectionCard title="جميع المشاريع">
-        <div className="overflow-hidden rounded-xl border border-border">
-          <table className="w-full text-right text-sm">
-            <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-bold">المعرف</th>
-                <th className="px-4 py-3 font-bold">المشروع</th>
-                <th className="px-4 py-3 font-bold">المدينة</th>
-                <th className="px-4 py-3 font-bold">المالك</th>
-                <th className="px-4 py-3 font-bold">الإنجاز</th>
-                <th className="px-4 py-3 font-bold">الحالة</th>
-                <th className="px-4 py-3 font-bold">إجراء</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border bg-card">
-              {PROJECTS_LIST.map((p) => (
-                <tr key={p.id} className="transition hover:bg-muted/40">
-                  <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{p.id}</td>
-                  <td className="px-4 py-3 font-bold text-ink">{p.name}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{p.city}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{p.owner}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full bg-primary" style={{ width: `${p.progress}%` }} />
-                      </div>
-                      <span className="text-xs font-bold text-ink">{p.progress}%</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Pill tone={p.status === "active" ? "primary" : "accent"}>
-                      {p.status === "active" ? "نشط" : "بانتظار"}
-                    </Pill>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      to="/dashboard"
-                      search={{
-                        role: "admin",
-                        section: "project-detail",
-                        projectId: p.id,
-                      }}
-                      className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary hover:bg-primary hover:text-primary-foreground"
-                    >
-                      <Eye className="h-3 w-3" /> عرض
-                    </Link>
-                  </td>
-                </tr>
+
+      <SectionCard
+        title="جميع المشاريع"
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+              className="rounded-full border border-input bg-background px-3 py-1.5 text-xs font-bold focus:border-primary focus:outline-none"
+            >
+              <option value="all">كل الحالات</option>
+              <option value="active">نشط</option>
+              <option value="pending">بانتظار</option>
+              <option value="completed">مكتمل</option>
+            </select>
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as typeof period)}
+              className="rounded-full border border-input bg-background px-3 py-1.5 text-xs font-bold focus:border-primary focus:outline-none"
+            >
+              {PERIOD_FILTERS.map((p) => (
+                <option key={p.k} value={p.k}>
+                  {p.label}
+                </option>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </select>
+          </div>
+        }
+      >
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+            لا توجد مشاريع ضمن هذه المعايير.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-right text-sm">
+              <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-bold">المعرف</th>
+                  <th className="px-4 py-3 font-bold">المشروع</th>
+                  <th className="px-4 py-3 font-bold">المدينة</th>
+                  <th className="px-4 py-3 font-bold">المالك</th>
+                  <th className="px-4 py-3 font-bold">تاريخ البدء</th>
+                  <th className="px-4 py-3 font-bold">الإنجاز</th>
+                  <th className="px-4 py-3 font-bold">الحالة</th>
+                  <th className="px-4 py-3 font-bold">إجراء</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border bg-card">
+                {filtered.map((p) => (
+                  <tr key={p.id} className="transition hover:bg-muted/40">
+                    <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{p.id}</td>
+                    <td className="px-4 py-3 font-bold text-ink">{p.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.city}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.owner}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{p.startedAt}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
+                          <div className="h-full bg-primary" style={{ width: `${p.progress}%` }} />
+                        </div>
+                        <span className="text-xs font-bold text-ink">{p.progress}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Pill
+                        tone={
+                          p.status === "active" ? "primary" : p.status === "completed" ? "info" : "accent"
+                        }
+                      >
+                        {p.status === "active" ? "نشط" : p.status === "completed" ? "مكتمل" : "بانتظار"}
+                      </Pill>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        to="/dashboard"
+                        search={{
+                          role: "admin",
+                          section: "project-detail",
+                          projectId: p.id,
+                        }}
+                        className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary hover:bg-primary hover:text-primary-foreground"
+                      >
+                        <Eye className="h-3 w-3" /> عرض
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </SectionCard>
     </>
   );
