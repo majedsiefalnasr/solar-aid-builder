@@ -182,6 +182,26 @@ export function ProjectDetail({
         <ArrowRight className="h-3.5 w-3.5" /> العودة إلى المشاريع
       </Link>
 
+      {/* Live status banner */}
+      {liveDoc && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-card">
+          <div className="flex items-center gap-3">
+            <ProjectStatusPill status={liveDoc.status} />
+            {liveDoc.rejectionReason && (
+              <span className="text-xs text-rose-600">سبب الرفض: {liveDoc.rejectionReason}</span>
+            )}
+          </div>
+          {isOwner && payablePhase && (
+            <button
+              onClick={() => setPayPhase(payablePhase)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-rose-500 px-4 py-2 text-xs font-bold text-white shadow-cta hover:bg-rose-600"
+            >
+              <Coins className="h-3.5 w-3.5" /> دفع مرحلة {payablePhase.name} ({fmtMoney(payablePhase.budget)})
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Hero */}
       <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-l from-primary/10 via-card to-card p-6 shadow-card md:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
