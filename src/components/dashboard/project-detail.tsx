@@ -92,11 +92,22 @@ export function ProjectDetail({
             </div>
           </div>
           <div className="flex gap-2">
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground hover:border-primary hover:text-primary">
+            <button
+              onClick={() => setChatOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground hover:border-primary hover:text-primary"
+            >
               <MessageCircle className="h-3.5 w-3.5" />
               المحادثة
+              {threads.some((t) => t.unread) && (
+                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
+                  {threads.reduce((s, t) => s + (t.unread ?? 0), 0)}
+                </span>
+              )}
             </button>
-            <button className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta">
+            <button
+              onClick={() => toast.success("تم تجهيز التقرير", { description: "سيتم تنزيله خلال لحظات." })}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta"
+            >
               <FileText className="h-3.5 w-3.5" />
               تحميل التقرير
             </button>
