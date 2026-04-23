@@ -955,16 +955,25 @@ function OwnerPurchases() {
               )}
 
               <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-3">
-                <button className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-bold text-foreground hover:border-primary hover:text-primary">
+                <button
+                  onClick={() => setDetailOrder(order)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-bold text-foreground hover:border-primary hover:text-primary"
+                >
                   <Eye className="h-3 w-3" /> تفاصيل الطلب
                 </button>
                 {order.status === "shipped" && (
-                  <button className="inline-flex items-center gap-1.5 rounded-full border border-sky-300 bg-sky-50 px-4 py-1.5 text-[11px] font-bold text-sky-700 hover:bg-sky-100">
+                  <button
+                    onClick={() => setTrackOrder(order)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-sky-300 bg-sky-50 px-4 py-1.5 text-[11px] font-bold text-sky-700 hover:bg-sky-100"
+                  >
                     <Truck className="h-3 w-3" /> تتبع الشحنة
                   </button>
                 )}
                 {order.status === "delivered" && (
-                  <button className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-1.5 text-[11px] font-bold text-rose-700 hover:bg-rose-100">
+                  <button
+                    onClick={() => setReturnOrder(order)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-1.5 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
+                  >
                     <RotateCcw className="h-3 w-3" /> طلب إرجاع
                   </button>
                 )}
@@ -977,6 +986,21 @@ function OwnerPurchases() {
             </article>
           ))}
         </div>
+      )}
+
+      {detailOrder && <OrderDetailDialog order={detailOrder} onClose={() => setDetailOrder(null)} />}
+      {trackOrder && <OrderTrackingDialog order={trackOrder} onClose={() => setTrackOrder(null)} />}
+      {returnOrder && (
+        <OrderReturnDialog
+          order={returnOrder}
+          onClose={() => setReturnOrder(null)}
+          onSubmit={(reason) => {
+            toast.success("تم إرسال طلب الإرجاع", {
+              description: `${returnOrder.id} — سيتم التواصل معك خلال 24 ساعة. السبب: ${reason}`,
+            });
+            setReturnOrder(null);
+          }}
+        />
       )}
 
       {/* Avoid unused import lint — quietly reference Layers/STATUS_LABEL/STATUS_TONE for shared modules */}
