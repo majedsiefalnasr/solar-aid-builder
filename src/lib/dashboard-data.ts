@@ -217,7 +217,7 @@ export const PAYMENT_REQUESTS: PaymentRequest[] = [
   {
     id: "PAY-303",
     phase: "البناء بالطوب — دفعة ثانية",
-    amount: 3_700,
+    amount: 3.7,
     contractor: "شركة البناء المتقن",
     submittedAt: "2026-04-22",
     status: "pending",
