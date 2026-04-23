@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Bell, Home, LogOut, Search } from "lucide-react";
+import { Home, LogOut, Search } from "lucide-react";
 import { TammMark } from "@/components/tamm-logo";
 import { ROLE_META, ROLES, type Role } from "@/lib/dashboard-data";
 import { NAV_BY_ROLE, validSection } from "@/components/dashboard/nav-config";
