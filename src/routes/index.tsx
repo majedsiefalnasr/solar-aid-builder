@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Sun,
   Calculator,
@@ -13,13 +14,14 @@ import {
   Quote,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
+import { ProductQuickView } from "@/components/product-quick-view";
 import heroImg from "@/assets/solar-hero.jpg";
 import materialsImg from "@/assets/materials-card.jpg";
 import solarImg from "@/assets/solar-card.jpg";
 import catMaterials from "@/assets/cat-materials.jpg";
 import catTools from "@/assets/cat-tools.jpg";
 import catRebar from "@/assets/cat-rebar.jpg";
-import { products } from "@/lib/products";
+import { products, type Product } from "@/lib/products";
 import { addProductToCart } from "@/lib/cart-store";
 
 export const Route = createFileRoute("/")({
@@ -43,6 +45,7 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const featured = products.slice(0, 4);
+  const [quickView, setQuickView] = useState<Product | null>(null);
 
   return (
     <div className="min-h-screen bg-background">
@@ -254,7 +257,16 @@ function HomePage() {
             {featured.map((p) => (
               <article
                 key={p.id}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated"
+                onClick={() => setQuickView(p)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setQuickView(p);
+                  }
+                }}
+                className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-border bg-card text-right transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="relative flex h-36 items-center justify-center bg-gradient-to-br from-muted to-card">
                   <Sun className="h-14 w-14 text-foreground/15" />
@@ -280,7 +292,10 @@ function HomePage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => addProductToCart(p.id, 1)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addProductToCart(p.id, 1);
+                      }}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-cta transition hover:bg-primary/95"
                       aria-label="إضافة للسلة"
                     >
@@ -293,6 +308,8 @@ function HomePage() {
           </div>
         </div>
       </section>
+
+      <ProductQuickView product={quickView} onClose={() => setQuickView(null)} />
 
       {/* Why Bunyan — features */}
       <section className="border-y border-border bg-card/40">
