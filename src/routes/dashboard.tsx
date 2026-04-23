@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Bell, Home, LogOut, Search } from "lucide-react";
+import { Home, LogOut, Search } from "lucide-react";
 import { TammMark } from "@/components/tamm-logo";
 import { ROLE_META, ROLES, type Role } from "@/lib/dashboard-data";
 import { NAV_BY_ROLE, validSection } from "@/components/dashboard/nav-config";
@@ -10,6 +10,7 @@ import { SupervisorSection } from "@/components/dashboard/supervisor-sections";
 import { FieldSection } from "@/components/dashboard/field-sections";
 import { AdminSection } from "@/components/dashboard/admin-sections";
 import { applyToDOM, useSettings } from "@/lib/settings-store";
+import { NotificationsBell } from "@/components/dashboard/notifications-bell";
 
 interface DashboardSearch {
   role: Role;
@@ -175,13 +176,7 @@ function DashboardLayout() {
                   className="w-40 bg-transparent text-xs text-ink placeholder:text-muted-foreground/60 focus:outline-none lg:w-56"
                 />
               </div>
-              <button
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground hover:border-primary hover:text-primary"
-                aria-label="الإشعارات"
-              >
-                <Bell className="h-4 w-4" />
-                <span className="absolute -top-0.5 -left-0.5 h-2 w-2 rounded-full bg-accent" />
-              </button>
+              <NotificationsBell role={role} />
               <Link
                 to="/"
                 className="hidden h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground hover:border-primary hover:text-primary md:inline-flex"
