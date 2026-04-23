@@ -35,7 +35,15 @@ import {
   XCircle,
 } from "lucide-react";
 import { DISPUTES, MOCK_PROJECT, PAYMENT_REQUESTS, PLATFORM_STATS } from "@/lib/dashboard-data";
-import { useWorkflow } from "@/lib/workflow-store";
+import {
+  approveWithdrawal,
+  contractorAvailableBalance,
+  rejectWithdrawal,
+  useWorkflow,
+  withdrawalStatusLabel,
+  type WithdrawalDoc,
+  type WithdrawalStatus,
+} from "@/lib/workflow-store";
 import { AdminDashboard } from "./admin-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
