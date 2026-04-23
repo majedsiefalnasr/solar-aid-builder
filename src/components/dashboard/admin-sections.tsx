@@ -1657,7 +1657,7 @@ function AdminStore() {
         />
         <StatCard
           label="إيرادات المتجر"
-          value={fmtMoney(85_400)}
+          value={fmtMoney(85.4)}
           hint="متوسط 68 ر.س/طلب"
           icon={<Coins className="h-5 w-5" />}
         />
