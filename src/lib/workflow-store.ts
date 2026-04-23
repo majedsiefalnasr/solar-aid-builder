@@ -699,13 +699,24 @@ export function useProject(id: string | undefined) {
 }
 
 // Hydrate from storage on mount (handles SSR / first client render mismatch)
+// كذلك يعمل تحديث دوري لتحويل السحوبات إلى "قابلة للسحب" بعد 3 أيام
 export function useHydrateWorkflow() {
   useEffect(() => {
     const stored = loadFromStorage();
     if (stored) {
       state = stored;
-      emit();
     }
+    const tick = () => {
+      const next = transitionWithdrawals(state.withdrawals);
+      if (next !== state.withdrawals) {
+        state = { ...state, withdrawals: next };
+        emit();
+      }
+    };
+    tick();
+    emit();
+    const id = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(id);
   }, []);
 }
 
