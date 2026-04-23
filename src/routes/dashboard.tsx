@@ -13,6 +13,8 @@ interface DashboardSearch {
   role: Role;
   section?: string;
   projectId?: string;
+  categoryId?: string;
+  orderId?: string;
 }
 
 export const Route = createFileRoute("/dashboard")({
@@ -21,10 +23,14 @@ export const Route = createFileRoute("/dashboard")({
     const validRole = ROLES.includes(role) ? role : "owner";
     const section = typeof search.section === "string" ? search.section : undefined;
     const projectId = typeof search.projectId === "string" ? search.projectId : undefined;
+    const categoryId = typeof search.categoryId === "string" ? search.categoryId : undefined;
+    const orderId = typeof search.orderId === "string" ? search.orderId : undefined;
     return {
       role: validRole,
       section: validSection(validRole, section),
       projectId,
+      categoryId,
+      orderId,
     };
   },
   head: () => ({
