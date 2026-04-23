@@ -377,13 +377,37 @@ function ConstructionCalculator() {
               </div>
 
               <div className="mt-5 flex flex-col gap-2">
-                <Link
-                  to="/checkout"
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      localStorage.setItem(
+                        "tamm_new_project_prefill",
+                        JSON.stringify({
+                          source: "construction-calculator",
+                          projectType: type,
+                          city,
+                          finish,
+                          area,
+                          floors,
+                          totalArea: result.totalArea,
+                          estimatedCost: result.totalCost,
+                        }),
+                      );
+                      localStorage.setItem(
+                        "tamm_login_redirect",
+                        JSON.stringify({ role: "owner", section: "new-project" }),
+                      );
+                    } catch {
+                      /* noop */
+                    }
+                    window.location.href = "/login?next=new-project";
+                  }}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-cta transition hover:bg-primary/95"
                 >
                   <Rocket className="h-4 w-4" />
                   ابدأ مشروعك الآن
-                </Link>
+                </button>
                 <button
                   type="button"
                   onClick={reset}
