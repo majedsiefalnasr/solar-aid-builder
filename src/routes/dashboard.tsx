@@ -58,10 +58,10 @@ function DashboardLayout() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="min-h-screen bg-muted/40 pb-10">
       <div className="mx-auto flex min-h-screen max-w-[1500px]">
         {/* Sidebar */}
-        <aside className="hidden w-64 shrink-0 border-l border-border bg-card md:flex md:flex-col">
+        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 self-start border-l border-border bg-card md:flex md:flex-col">
           <div className="flex h-20 items-center border-b border-border px-5">
             <Link to="/" className="flex items-center">
               <TammMark className="h-10 w-auto" />
