@@ -5,13 +5,22 @@ import {
   reportsForSupervisor,
   useWorkflow,
   type FieldReportDoc,
+  type ProjectDoc,
 } from "@/lib/workflow-store";
 import { ReportRow, ReportViewerDialog } from "./reports-shared";
+import {
+  AssignFieldEngineerDialog,
+  ProjectStatusPill,
+  SubmitQuoteDialog,
+  SupervisorAcceptDialog,
+} from "./project-flow-shared";
 import { toast } from "sonner";
 import {
   Building2,
   CheckCircle2,
   ClipboardCheck,
+  CreditCard,
+  FileText,
   HardHat,
   MapPin,
   UserPlus,
@@ -20,7 +29,7 @@ import {
 } from "lucide-react";
 import { FIELD_REPORTS, MOCK_PROJECT } from "@/lib/dashboard-data";
 import { SupervisorDashboard } from "./supervisor-dashboard";
-import { Pill, SectionCard, StatCard } from "./dashboard-ui";
+import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
