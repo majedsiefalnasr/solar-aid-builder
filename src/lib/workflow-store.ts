@@ -608,10 +608,52 @@ function seedState(): StoreState {
     },
   ];
 
+  // Seed a couple of withdrawal records for demo purposes
+  const withdrawals: WithdrawalDoc[] = [
+    {
+      id: "WTH-001",
+      projectId: "PRJ-2041",
+      phaseId: "PH-1",
+      contractorName: SINGLE_CONTRACTOR,
+      amount: 6_000,
+      iban: "YE94 0008 0000 0000 0001 9999",
+      requestedAt: daysAgo(40),
+      reviewedBy: ADMIN_USER,
+      reviewedAt: daysAgo(38),
+      txRef: "OUT-77001",
+      bankName: "بنك التضامن الإسلامي",
+      status: "withdrawable",
+      releasableAt: daysAgo(35),
+    },
+    {
+      id: "WTH-002",
+      projectId: "PRJ-2041",
+      phaseId: "PH-2",
+      contractorName: SINGLE_CONTRACTOR,
+      amount: 4_500,
+      iban: "YE94 0008 0000 0000 0001 9999",
+      requestedAt: daysAgo(2),
+      status: "pending",
+    },
+  ];
+
+  // ensure each task in seeded phases has approval state aligned with its done flag
+  const stamp = (proj: ProjectDoc): ProjectDoc => ({
+    ...proj,
+    phases: proj.phases.map((ph) => ({
+      ...ph,
+      tasks: ph.tasks.map((t) => ({
+        ...t,
+        approval: t.approval ?? (t.done ? "approved" : "todo"),
+      })),
+    })),
+  });
+
   return {
-    projects: [p1, p2, p3],
+    projects: [stamp(p1), stamp(p2), stamp(p3)],
     reports,
     threads,
+    withdrawals,
   };
 }
 
