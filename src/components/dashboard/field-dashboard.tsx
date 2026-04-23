@@ -241,6 +241,13 @@ export function FieldDashboard() {
           onClose={() => setOpenReport(null)}
         />
       )}
+      {acceptProject && (
+        <FieldEngineerAcceptDialog
+          project={acceptProject}
+          engineerName={engineerName}
+          onClose={() => setAcceptProject(null)}
+        />
+      )}
     </div>
   );
 }
