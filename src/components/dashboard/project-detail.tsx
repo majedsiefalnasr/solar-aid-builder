@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -8,6 +8,7 @@ import {
   Coins,
   FileText,
   HardHat,
+  History,
   Image as ImageIcon,
   Layers,
   Lock,
@@ -24,15 +25,86 @@ import {
   STATUS_TONE,
   type Phase,
   type PhaseStatus,
+  type Project,
 } from "@/lib/dashboard-data";
 import type { Role } from "@/lib/dashboard-data";
+import {
+  ROLE_USER,
+  reportsForOwner,
+  reportsForSupervisor,
+  reportsForFieldEngineer,
+  reportsForContractor,
+  reportsForAdmin,
+  useWorkflow,
+  type FieldReportDoc,
+  type PhaseDef,
+  type ProjectDoc,
+} from "@/lib/workflow-store";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { ChatPanel, getThreadsForProject } from "./chat-panel";
+import { PayPhaseDialog, ProjectStatusPill, ProjectTimeline } from "./project-flow-shared";
 
-// In a real app this would fetch by id; we currently return the mock for any id
-function findProject(_id?: string) {
-  return MOCK_PROJECT;
+// Map store phase status to legacy display status
+function mapPhaseStatus(s: PhaseDef["status"]): PhaseStatus {
+  switch (s) {
+    case "completed":
+      return "completed";
+    case "in_progress":
+      return "in_progress";
+    case "awaiting_payment":
+    case "verifying_payment":
+      return "awaiting_funding";
+    case "draft":
+      return "pending_review";
+    case "locked":
+    default:
+      return "locked";
+  }
 }
+
+function fmtDate(iso: string | undefined): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleDateString("ar-EG", { day: "numeric", month: "short", year: "numeric" });
+  } catch {
+    return "—";
+  }
+}
+
+// Adapt store ProjectDoc to legacy Project shape
+function adaptProject(p: ProjectDoc): Project {
+  const totalBudget = p.phases.length ? p.phases.reduce((s, ph) => s + ph.budget, 0) : p.budget;
+  const releasedAmount = p.payments
+    .filter((pm) => pm.status === "verified")
+    .reduce((s, pm) => s + pm.amount, 0);
+  const overall = p.phases.length
+    ? Math.round(p.phases.reduce((s, ph) => s + ph.progress, 0) / p.phases.length)
+    : 0;
+  return {
+    id: p.id,
+    name: p.name,
+    city: p.city,
+    owner: p.ownerName,
+    contractor: p.contractorName ?? "—",
+    supervisor: p.supervisorName ?? "—",
+    totalBudget,
+    releasedAmount,
+    overallProgress: overall,
+    phases: p.phases.map((ph) => ({
+      id: ph.id,
+      name: ph.name,
+      amount: ph.budget,
+      progress: ph.progress,
+      status: mapPhaseStatus(ph.status),
+      dueDate: ph.completedAt
+        ? fmtDate(ph.completedAt)
+        : ph.startedAt
+          ? `بدأت ${fmtDate(ph.startedAt)}`
+          : `${ph.durationDays} يوم`,
+    })),
+  };
+}
+
 
 const STATUS_ICON: Record<PhaseStatus, ReactNode> = {
   completed: <CheckCircle2 className="h-4 w-4" />,
