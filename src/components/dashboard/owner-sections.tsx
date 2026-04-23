@@ -836,6 +836,9 @@ function OwnerPayments() {
 // ---------- Owner Purchases (replaces Store) ----------
 function OwnerPurchases() {
   const [filter, setFilter] = useState<PurchaseStatus | "all">("all");
+  const [detailOrder, setDetailOrder] = useState<typeof PURCHASES[number] | null>(null);
+  const [trackOrder, setTrackOrder] = useState<typeof PURCHASES[number] | null>(null);
+  const [returnOrder, setReturnOrder] = useState<typeof PURCHASES[number] | null>(null);
   const filtered = filter === "all" ? PURCHASES : PURCHASES.filter((p) => p.status === filter);
 
   const totalSpent = PURCHASES.reduce((s, p) => s + p.total, 0);
