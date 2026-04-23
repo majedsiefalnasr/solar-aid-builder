@@ -1,26 +1,34 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Activity,
   ArrowRight,
+  ArrowUpRight,
+  Building2,
   CheckCircle2,
   Coins,
   CreditCard,
   ExternalLink,
   Eye,
   Folder,
+  Landmark,
   Package,
   PackageSearch,
   Pencil,
   Plus,
+  Save,
   Settings2,
   ShoppingBag,
   Store as StoreIcon,
   TrendingUp,
+  User,
   UserPlus,
   Users,
+  Wallet,
   Workflow,
   X,
+  XCircle,
 } from "lucide-react";
 import { DISPUTES, MOCK_PROJECT, PAYMENT_REQUESTS, PLATFORM_STATS } from "@/lib/dashboard-data";
 import { AdminDashboard } from "./admin-dashboard";
@@ -84,166 +92,408 @@ const PROJECTS_LIST = [
     name: MOCK_PROJECT.name,
     city: MOCK_PROJECT.city,
     owner: MOCK_PROJECT.owner,
-    status: "active",
+    status: "active" as const,
     progress: 42,
+    startedAt: "2026-01-12",
+    daysAgo: 102,
   },
   {
     id: "PRJ-2055",
     name: "شقة المعلا",
     city: "عدن",
     owner: "فهد المنصور",
-    status: "active",
+    status: "active" as const,
     progress: 28,
+    startedAt: "2026-03-04",
+    daysAgo: 50,
   },
   {
     id: "PRJ-2068",
     name: "محل تجاري — حي السلام",
     city: "تعز",
     owner: "خالد العبسي",
-    status: "pending",
+    status: "pending" as const,
     progress: 0,
+    startedAt: "2026-04-19",
+    daysAgo: 4,
   },
   {
     id: "PRJ-2099",
     name: "مجمع النور التجاري",
     city: "صنعاء",
     owner: "ريم السقاف",
-    status: "active",
+    status: "active" as const,
     progress: 18,
+    startedAt: "2026-04-01",
+    daysAgo: 22,
+  },
+  {
+    id: "PRJ-1988",
+    name: "فيلا الصافي",
+    city: "صنعاء",
+    owner: "م. صالح القاسمي",
+    status: "completed" as const,
+    progress: 100,
+    startedAt: "2025-08-12",
+    daysAgo: 254,
+  },
+  {
+    id: "PRJ-1820",
+    name: "شقة كريتر",
+    city: "عدن",
+    owner: "ليلى السقاف",
+    status: "completed" as const,
+    progress: 100,
+    startedAt: "2025-04-22",
+    daysAgo: 366,
   },
 ];
 
+const PERIOD_FILTERS = [
+  { k: "all", label: "كل الفترات", days: Infinity },
+  { k: "7d", label: "آخر 7 أيام", days: 7 },
+  { k: "30d", label: "آخر 30 يوم", days: 30 },
+  { k: "90d", label: "آخر 3 أشهر", days: 90 },
+  { k: "1y", label: "آخر سنة", days: 365 },
+] as const;
+
 function AdminProjects() {
+  const [period, setPeriod] = useState<typeof PERIOD_FILTERS[number]["k"]>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "completed">("all");
+
+  const filtered = useMemo(() => {
+    const days = PERIOD_FILTERS.find((p) => p.k === period)?.days ?? Infinity;
+    return PROJECTS_LIST.filter(
+      (p) => p.daysAgo <= days && (statusFilter === "all" || p.status === statusFilter),
+    );
+  }, [period, statusFilter]);
+
   return (
     <>
       <PageHeader
         title="المشاريع"
         subtitle={`${PLATFORM_STATS.activeProjects} مشروع نشط على المنصة — اضغط على أي مشروع لفتح التفاصيل`}
       />
-      <SectionCard title="جميع المشاريع">
-        <div className="overflow-hidden rounded-xl border border-border">
-          <table className="w-full text-right text-sm">
-            <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-bold">المعرف</th>
-                <th className="px-4 py-3 font-bold">المشروع</th>
-                <th className="px-4 py-3 font-bold">المدينة</th>
-                <th className="px-4 py-3 font-bold">المالك</th>
-                <th className="px-4 py-3 font-bold">الإنجاز</th>
-                <th className="px-4 py-3 font-bold">الحالة</th>
-                <th className="px-4 py-3 font-bold">إجراء</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border bg-card">
-              {PROJECTS_LIST.map((p) => (
-                <tr key={p.id} className="transition hover:bg-muted/40">
-                  <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{p.id}</td>
-                  <td className="px-4 py-3 font-bold text-ink">{p.name}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{p.city}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{p.owner}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full bg-primary" style={{ width: `${p.progress}%` }} />
-                      </div>
-                      <span className="text-xs font-bold text-ink">{p.progress}%</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Pill tone={p.status === "active" ? "primary" : "accent"}>
-                      {p.status === "active" ? "نشط" : "بانتظار"}
-                    </Pill>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      to="/dashboard"
-                      search={{
-                        role: "admin",
-                        section: "project-detail",
-                        projectId: p.id,
-                      }}
-                      className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary hover:bg-primary hover:text-primary-foreground"
-                    >
-                      <Eye className="h-3 w-3" /> عرض
-                    </Link>
-                  </td>
-                </tr>
+
+      <SectionCard
+        title="جميع المشاريع"
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+              className="rounded-full border border-input bg-background px-3 py-1.5 text-xs font-bold focus:border-primary focus:outline-none"
+            >
+              <option value="all">كل الحالات</option>
+              <option value="active">نشط</option>
+              <option value="pending">بانتظار</option>
+              <option value="completed">مكتمل</option>
+            </select>
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as typeof period)}
+              className="rounded-full border border-input bg-background px-3 py-1.5 text-xs font-bold focus:border-primary focus:outline-none"
+            >
+              {PERIOD_FILTERS.map((p) => (
+                <option key={p.k} value={p.k}>
+                  {p.label}
+                </option>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </select>
+          </div>
+        }
+      >
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+            لا توجد مشاريع ضمن هذه المعايير.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-right text-sm">
+              <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-bold">المعرف</th>
+                  <th className="px-4 py-3 font-bold">المشروع</th>
+                  <th className="px-4 py-3 font-bold">المدينة</th>
+                  <th className="px-4 py-3 font-bold">المالك</th>
+                  <th className="px-4 py-3 font-bold">تاريخ البدء</th>
+                  <th className="px-4 py-3 font-bold">الإنجاز</th>
+                  <th className="px-4 py-3 font-bold">الحالة</th>
+                  <th className="px-4 py-3 font-bold">إجراء</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border bg-card">
+                {filtered.map((p) => (
+                  <tr key={p.id} className="transition hover:bg-muted/40">
+                    <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{p.id}</td>
+                    <td className="px-4 py-3 font-bold text-ink">{p.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.city}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.owner}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{p.startedAt}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
+                          <div className="h-full bg-primary" style={{ width: `${p.progress}%` }} />
+                        </div>
+                        <span className="text-xs font-bold text-ink">{p.progress}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Pill
+                        tone={
+                          p.status === "active" ? "primary" : p.status === "completed" ? "info" : "accent"
+                        }
+                      >
+                        {p.status === "active" ? "نشط" : p.status === "completed" ? "مكتمل" : "بانتظار"}
+                      </Pill>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        to="/dashboard"
+                        search={{
+                          role: "admin",
+                          section: "project-detail",
+                          projectId: p.id,
+                        }}
+                        className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary hover:bg-primary hover:text-primary-foreground"
+                      >
+                        <Eye className="h-3 w-3" /> عرض
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </SectionCard>
     </>
   );
 }
 
 // =============================================================
-// Assignments
+// Assignments (matches mockup: pending project + engineer picker)
 // =============================================================
 
-const PENDING_ASSIGNMENTS = [
+interface PendingProject {
+  id: string;
+  name: string;
+  city: string;
+  client: string;
+  date: string;
+  area: string;
+  type: string;
+  budget: string;
+}
+
+const PENDING_PROJECTS: PendingProject[] = [
   {
-    id: "ASN-501",
-    project: "فيلا الشاطئ",
-    role: "مهندس مشرف",
-    candidate: "م. ليلى العمراني",
-    date: "2026-04-22",
+    id: "PRJ-3001",
+    name: "فيلا سكنية - تعز",
+    city: "تعز",
+    client: "نشوان صادق",
+    date: "2026-04-01",
+    area: "غير محدد م²",
+    type: "غير محدد",
+    budget: "غير محدد",
   },
   {
-    id: "ASN-502",
-    project: "محل تجاري — السلام",
-    role: "مقاول",
-    candidate: "شركة بناة الجنوب",
-    date: "2026-04-21",
-  },
-  {
-    id: "ASN-503",
-    project: "مجمع النور",
-    role: "مهندس ميداني",
-    candidate: "م. أمل الزبيدي",
-    date: "2026-04-20",
+    id: "PRJ-3002",
+    name: "شقة سكنية - عدن",
+    city: "عدن",
+    client: "محمد ياسين",
+    date: "2026-04-12",
+    area: "180 م²",
+    type: "سكني",
+    budget: "12,000K ر.ي",
   },
 ];
 
+interface Engineer {
+  id: string;
+  name: string;
+  active: number;
+}
+
+const ENGINEERS: Engineer[] = [
+  { id: "E1", name: "م. خالد الأهدل", active: 3 },
+  { id: "E2", name: "م. محمد الرشيدي", active: 5 },
+  { id: "E3", name: "م. نبيل الصنوي", active: 3 },
+  { id: "E4", name: "م. عادل العميسي", active: 5 },
+  { id: "E5", name: "م. أنس الحديدي", active: 3 },
+  { id: "E6", name: "م. طارق السقاف", active: 5 },
+];
+
 function AdminAssignments() {
+  const [projects, setProjects] = useState<PendingProject[]>(PENDING_PROJECTS);
+  const [activeId, setActiveId] = useState<string>(PENDING_PROJECTS[0].id);
+  const [selectedEngineer, setSelectedEngineer] = useState<string>("");
+
+  const active = projects.find((p) => p.id === activeId) ?? projects[0];
+
+  const assign = () => {
+    if (!selectedEngineer) {
+      toast.error("يرجى اختيار مهندس مشرف أولاً");
+      return;
+    }
+    const eng = ENGINEERS.find((e) => e.id === selectedEngineer);
+    toast.success("تم إرسال طلب التعيين", {
+      description: `تم تعيين ${eng?.name} للمشروع ${active.name}`,
+    });
+    setProjects((prev) => prev.filter((p) => p.id !== active.id));
+    setSelectedEngineer("");
+    const next = projects.find((p) => p.id !== active.id);
+    if (next) setActiveId(next.id);
+  };
+
+  const reject = () => {
+    toast("تم رفض المشروع", { description: `${active.name} — تم إعلام صاحب المشروع.` });
+    setProjects((prev) => prev.filter((p) => p.id !== active.id));
+    setSelectedEngineer("");
+  };
+
+  if (projects.length === 0) {
+    return (
+      <>
+        <PageHeader title="طلبات تعيين المهندسين" subtitle="مطابقة المهندسين بالمشاريع المناسبة" />
+        <div className="rounded-2xl border border-dashed border-border bg-card/50 p-10 text-center">
+          <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
+          <p className="mt-3 text-sm font-bold text-ink">لا توجد طلبات تعيين بانتظارك حالياً</p>
+          <p className="mt-1 text-xs text-muted-foreground">جميع المشاريع تم تعيين مشرف لها.</p>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <PageHeader title="طلبات التعيين" subtitle="مطابقة المهندسين والمقاولين بالمشاريع المناسبة" />
-      <SectionCard
-        title="طلبات بانتظار التعيين"
-        action={
-          <button className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground">
-            تعيين تلقائي
-          </button>
-        }
-      >
-        <div className="space-y-3">
-          {PENDING_ASSIGNMENTS.map((a) => (
-            <div
-              key={a.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background p-4"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <Pill tone="info">{a.id}</Pill>
-                  <span className="text-sm font-bold text-ink">{a.project}</span>
+      <PageHeader title="طلبات تعيين المهندسين" subtitle="مطابقة المهندسين بالمشاريع المناسبة" />
+
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        {/* Available engineers */}
+        <SectionCard title="المهندسين المتاحين">
+          <div className="space-y-2">
+            {ENGINEERS.map((e) => (
+              <div
+                key={e.id}
+                className="flex items-center gap-3 rounded-xl border border-border bg-background p-3"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                  <User className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-xs font-extrabold text-ink">{e.name}</div>
+                  <div className="text-[10px] text-muted-foreground">{e.active} مشاريع نشطة</div>
                 </div>
-                <div className="mt-1 text-[11px] text-muted-foreground">
-                  {a.role} مقترح: {a.candidate} • {a.date}
+                <Pill tone="primary">متاح</Pill>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+
+        {/* Pending project + assignment */}
+        <div className="space-y-4">
+          {/* Project switcher chips */}
+          {projects.length > 1 && (
+            <div className="flex flex-wrap gap-2">
+              {projects.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setActiveId(p.id);
+                    setSelectedEngineer("");
+                  }}
+                  className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
+                    p.id === active.id
+                      ? "bg-primary text-primary-foreground shadow-cta"
+                      : "border border-border bg-card text-foreground/70 hover:border-primary"
+                  }`}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <SectionCard
+            title={`مشاريع بانتظار تعيين مهندس (${projects.length})`}
+          >
+            <div className="rounded-xl border border-border bg-background p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-extrabold text-ink">{active.name}</h3>
+                  <div className="mt-1 text-xs text-muted-foreground">العميل: {active.client}</div>
+                  <div className="text-xs text-muted-foreground">تاريخ الطلب: {active.date}</div>
+                </div>
+                <Pill tone="accent">بانتظار التعيين</Pill>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl bg-muted/40 p-3 text-right">
+                  <div className="text-[10px] text-muted-foreground">المساحة</div>
+                  <div className="mt-1 text-sm font-extrabold text-ink">{active.area}</div>
+                </div>
+                <div className="rounded-xl bg-muted/40 p-3 text-right">
+                  <div className="text-[10px] text-muted-foreground">النوع</div>
+                  <div className="mt-1 text-sm font-extrabold text-ink">{active.type}</div>
+                </div>
+                <div className="rounded-xl bg-muted/40 p-3 text-right">
+                  <div className="text-[10px] text-muted-foreground">الميزانية المتوقعة</div>
+                  <div className="mt-1 text-sm font-extrabold text-ink">{active.budget}</div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button className="rounded-full border border-border bg-card px-4 py-1.5 text-xs font-bold hover:border-primary">
-                  بحث آخر
+
+              <div className="mt-6">
+                <div className="mb-3 text-xs font-bold text-ink">اختيار مهندس مشرف:</div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {ENGINEERS.map((e) => {
+                    const checked = selectedEngineer === e.id;
+                    return (
+                      <button
+                        key={e.id}
+                        type="button"
+                        onClick={() => setSelectedEngineer(e.id)}
+                        className={`flex items-center gap-3 rounded-xl border p-3 text-right transition ${
+                          checked
+                            ? "border-primary bg-primary-soft shadow-cta"
+                            : "border-border bg-background hover:border-primary/50"
+                        }`}
+                      >
+                        <span
+                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                            checked ? "border-primary" : "border-muted-foreground/40"
+                          }`}
+                        >
+                          {checked && <span className="h-2 w-2 rounded-full bg-primary" />}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs font-extrabold text-ink">{e.name}</div>
+                          <div className="text-[10px] text-muted-foreground">{e.active} مشاريع حالية</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={assign}
+                  className="flex-1 rounded-xl bg-primary px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-cta hover:bg-primary/95"
+                >
+                  تعيين وإرسال طلب
                 </button>
-                <button className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta">
-                  تأكيد التعيين
+                <button
+                  onClick={reject}
+                  className="rounded-xl border border-rose-300 bg-rose-50 px-5 py-3 text-sm font-extrabold text-rose-700 hover:bg-rose-100"
+                >
+                  رفض المشروع
                 </button>
               </div>
             </div>
-          ))}
+          </SectionCard>
         </div>
-      </SectionCard>
+      </div>
     </>
   );
 }
@@ -443,20 +693,43 @@ const WORKFLOW_STAGES = [
 ];
 
 function AdminWorkflow() {
+  const [stages, setStages] = useState(WORKFLOW_STAGES);
+  const [commission, setCommission] = useState(2.5);
+  const [holdDays, setHoldDays] = useState(3);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const tid = toast.loading("جارٍ حفظ التغييرات…");
+    await new Promise((r) => setTimeout(r, 700));
+    setSaving(false);
+    toast.success("تم حفظ إعدادات سير العمل بنجاح", {
+      id: tid,
+      description: `${stages.filter((s) => s.auto).length} خطوة تلقائية • عمولة ${commission}% • تجميد ${holdDays} أيام`,
+    });
+  };
+
+  const toggle = (id: number) =>
+    setStages((prev) => prev.map((s) => (s.id === id ? { ...s, auto: !s.auto } : s)));
+
   return (
     <>
       <PageHeader
         title="إعدادات سير العمل"
         subtitle="تحكم في خطوات إنشاء المشروع والاعتمادات"
         action={
-          <button className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">
-            <Workflow className="h-3.5 w-3.5" /> حفظ التغييرات
+          <button
+            onClick={save}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta disabled:opacity-60"
+          >
+            <Save className="h-3.5 w-3.5" /> {saving ? "جارٍ الحفظ…" : "حفظ التغييرات"}
           </button>
         }
       />
       <SectionCard title="خطوات دورة حياة المشروع">
         <div className="space-y-3">
-          {WORKFLOW_STAGES.map((s) => (
+          {stages.map((s) => (
             <div
               key={s.id}
               className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-4"
@@ -469,7 +742,12 @@ function AdminWorkflow() {
               </div>
               <label className="flex items-center gap-2 text-xs">
                 <span className="text-muted-foreground">تلقائي</span>
-                <input type="checkbox" defaultChecked={s.auto} className="h-4 w-4 accent-primary" />
+                <input
+                  type="checkbox"
+                  checked={s.auto}
+                  onChange={() => toggle(s.id)}
+                  className="h-4 w-4 accent-primary"
+                />
               </label>
             </div>
           ))}
@@ -482,7 +760,8 @@ function AdminWorkflow() {
             <span className="mb-1.5 block text-xs font-bold text-ink">عمولة المنصة (%)</span>
             <input
               type="number"
-              defaultValue={2.5}
+              value={commission}
+              onChange={(e) => setCommission(Number(e.target.value))}
               step={0.5}
               className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
@@ -491,13 +770,15 @@ function AdminWorkflow() {
             <span className="mb-1.5 block text-xs font-bold text-ink">مدة تجميد الدفعة (أيام)</span>
             <input
               type="number"
-              defaultValue={3}
+              value={holdDays}
+              onChange={(e) => setHoldDays(Number(e.target.value))}
               className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
           </label>
         </div>
         <div className="hidden">
           <Settings2 />
+          <Workflow />
         </div>
       </SectionCard>
     </>
@@ -523,45 +804,155 @@ const REVENUE_MONTHS = [
   { label: "أبريل", value: 268 },
 ];
 
+interface Withdrawal {
+  id: string;
+  contractor: string;
+  contractorOrg: string;
+  project: string;
+  amount: number; // SAR
+  bank: string;
+  iban: string;
+  status: "pending" | "completed";
+}
+
+const WITHDRAWALS_SEED: Withdrawal[] = [
+  {
+    id: "WTH-1001",
+    contractor: "مؤسسة الأهدل للمقاولات",
+    contractorOrg: "مؤسسة الأهدل للمقاولات",
+    project: "فيلا سكنية - تعز",
+    amount: 300_000,
+    bank: "بنك الكريمي الإسلامي",
+    iban: "YE12 0000 0000 0000 0000 0000",
+    status: "pending",
+  },
+  {
+    id: "WTH-1002",
+    contractor: "شركة القميري الإنشائية",
+    contractorOrg: "شركة القميري الإنشائية",
+    project: "شقة سكنية - عدن",
+    amount: 150_000,
+    bank: "بنك عدن الأول",
+    iban: "YE34 1111 2222 3333 4444 5555",
+    status: "completed",
+  },
+  {
+    id: "WTH-1003",
+    contractor: "شركة البناء المتقن",
+    contractorOrg: "شركة البناء المتقن",
+    project: "مجمع النور التجاري",
+    amount: 425_000,
+    bank: "بنك التضامن الإسلامي",
+    iban: "YE99 8888 7777 6666 5555 4444",
+    status: "pending",
+  },
+];
+
 function AdminFinance() {
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(WITHDRAWALS_SEED);
+  const [transferTarget, setTransferTarget] = useState<Withdrawal | null>(null);
+
+  const pendingCount = withdrawals.filter((w) => w.status === "pending").length;
+  const pendingTotal = withdrawals.filter((w) => w.status === "pending").reduce((s, w) => s + w.amount, 0);
+
+  const confirmTransfer = (id: string, ref: string) => {
+    setWithdrawals((prev) => prev.map((w) => (w.id === id ? { ...w, status: "completed" } : w)));
+    setTransferTarget(null);
+    toast.success("تم تنفيذ التحويل البنكي", {
+      description: `رقم المرجع: ${ref}`,
+    });
+  };
+
   return (
     <>
-      <PageHeader title="المالية" subtitle="الإيرادات والعمولات وحسابات المنصة" />
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <PageHeader title="الإدارة المالية" subtitle="الرصيد، المستحقات، وطلبات التحويل البنكية" />
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Available balance — accent green card per mockup */}
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-5 text-white shadow-card">
+          <div className="text-xs font-semibold opacity-90">الرصيد المتاح</div>
+          <div className="mt-2 text-3xl font-extrabold">2,450,000 ر.س</div>
+          <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold opacity-95">
+            <ArrowUpRight className="h-3 w-3" /> +12% عن الشهر الماضي
+          </div>
+        </div>
+
         <StatCard
-          label="إيرادات الشهر"
-          value={fmtMoney(212_500)}
-          hint="+12.5% عن الشهر السابق"
-          icon={<TrendingUp className="h-5 w-5" />}
-          tone="primary"
-        />
-        <StatCard
-          label="عمولات محصّلة"
-          value={fmtMoney(48_300)}
-          hint="2.5% متوسط العمولة"
-          icon={<Coins className="h-5 w-5" />}
+          label="مستحقات المقاولين"
+          value="850,000 ر.س"
+          hint={`${pendingCount} طلبات بانتظار الاعتماد`}
+          icon={<Wallet className="h-5 w-5" />}
           tone="accent"
         />
         <StatCard
-          label="مدفوعات معلّقة"
-          value={fmtMoney(15_700)}
-          hint="بانتظار الاعتماد"
-          icon={<CreditCard className="h-5 w-5" />}
-        />
-        <StatCard
-          label="نزاعات بمبلغ مجمَّد"
-          value={DISPUTES.length}
-          hint={`بقيمة ${fmtMoney(8_400)}`}
-          icon={<Activity className="h-5 w-5" />}
-          tone="danger"
+          label="مصروفات الشهر"
+          value="1,200,000 ر.س"
+          hint="شهر أبريل 2026"
+          icon={<TrendingUp className="h-5 w-5" />}
         />
       </div>
+
+      <SectionCard
+        title="طلبات السحب والتحويلات البنكية"
+        subtitle={`${pendingTotal.toLocaleString()} ر.س بانتظار التحويل`}
+        className="mb-6"
+      >
+        <div className="overflow-hidden rounded-xl border border-border">
+          <table className="w-full text-right text-sm">
+            <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 font-bold">المقاول</th>
+                <th className="px-4 py-3 font-bold">المشروع</th>
+                <th className="px-4 py-3 font-bold">المبلغ</th>
+                <th className="px-4 py-3 font-bold">البنك</th>
+                <th className="px-4 py-3 font-bold">الحالة</th>
+                <th className="px-4 py-3 font-bold">إجراء</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border bg-card">
+              {withdrawals.map((w) => (
+                <tr key={w.id} className="hover:bg-muted/30">
+                  <td className="px-4 py-3">
+                    <div className="text-sm font-extrabold text-ink">{w.contractor}</div>
+                    <div className="text-[11px] text-muted-foreground">{w.contractorOrg}</div>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{w.project}</td>
+                  <td className="px-4 py-3 font-extrabold text-ink">{w.amount.toLocaleString()} ر.س</td>
+                  <td className="px-4 py-3 text-muted-foreground">{w.bank}</td>
+                  <td className="px-4 py-3">
+                    <Pill tone={w.status === "completed" ? "primary" : "accent"}>
+                      {w.status === "completed" ? "تم التحويل" : "بانتظار التحويل"}
+                    </Pill>
+                  </td>
+                  <td className="px-4 py-3">
+                    {w.status === "pending" ? (
+                      <button
+                        onClick={() => setTransferTarget(w)}
+                        className="rounded-full bg-emerald-500 px-4 py-1.5 text-[11px] font-bold text-white shadow-cta hover:bg-emerald-600"
+                      >
+                        تنفيذ التحويل
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => toast(`تفاصيل التحويل ${w.id}`, { description: `${w.iban} • ${w.amount.toLocaleString()} ر.س` })}
+                        className="text-xs font-bold text-primary hover:underline"
+                      >
+                        عرض التفاصيل
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </SectionCard>
 
       <div className="mb-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <SectionCard
             title="نشاط الإيرادات الشهري"
-            subtitle="بآلاف الريالات اليمنية — آخر 12 شهراً"
+            subtitle="بآلاف الريالات — آخر 12 شهراً"
           >
             <AreaChart data={REVENUE_MONTHS} tone="primary" formatValue={(v) => fmtMoney(v)} />
           </SectionCard>
@@ -595,7 +986,113 @@ function AdminFinance() {
           formatValue={(v) => fmtMoney(v)}
         />
       </SectionCard>
+
+      <div className="hidden">
+        <Activity />
+        <CreditCard />
+        <Coins />
+        <TrendingUp />
+        <span>{DISPUTES.length}</span>
+      </div>
+
+      {transferTarget && (
+        <BankTransferDialog
+          withdrawal={transferTarget}
+          onClose={() => setTransferTarget(null)}
+          onConfirm={confirmTransfer}
+        />
+      )}
     </>
+  );
+}
+
+function BankTransferDialog({
+  withdrawal,
+  onClose,
+  onConfirm,
+}: {
+  withdrawal: Withdrawal;
+  onClose: () => void;
+  onConfirm: (id: string, ref: string) => void;
+}) {
+  const [ref, setRef] = useState("");
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ref.trim()) {
+      toast.error("يرجى إدخال رقم مرجع العملية");
+      return;
+    }
+    onConfirm(withdrawal.id, ref.trim());
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-xl overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <h2 className="text-lg font-extrabold text-ink">تنفيذ التحويل البنكي</h2>
+          <button onClick={onClose} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <form onSubmit={submit} className="space-y-5 p-5">
+          <div className="rounded-2xl border border-sky-200 bg-sky-50/60 p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-extrabold text-ink">
+              <Landmark className="h-4 w-4 text-primary" /> تفاصيل المستفيد
+            </div>
+            <div className="grid gap-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">المقاول:</span>
+                <span className="font-bold text-ink">{withdrawal.contractor}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">البنك:</span>
+                <span className="font-bold text-ink">{withdrawal.bank}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">الحساب:</span>
+                <span className="font-mono text-xs font-bold text-ink">{withdrawal.iban}</span>
+              </div>
+              <div className="mt-2 flex items-end justify-between border-t border-sky-200 pt-3">
+                <span className="text-xs text-muted-foreground">المبلغ:</span>
+                <span className="text-2xl font-extrabold text-ink">{withdrawal.amount.toLocaleString()} ر.س</span>
+              </div>
+            </div>
+          </div>
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">رقم مرجع العملية</span>
+            <input
+              autoFocus
+              value={ref}
+              onChange={(e) => setRef(e.target.value)}
+              placeholder="TRX-2026-XXX"
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-border bg-card px-5 py-3 text-sm font-bold hover:border-primary"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="flex-1 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-extrabold text-white shadow-cta hover:bg-emerald-600"
+            >
+              تأكيد التحويل
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 

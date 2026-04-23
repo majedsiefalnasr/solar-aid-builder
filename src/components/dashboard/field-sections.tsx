@@ -2,6 +2,7 @@ import { FIELD_REPORTS } from "@/lib/dashboard-data";
 import { FieldDashboard } from "./field-dashboard";
 import { Pill, SectionCard } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
+import { MessagesScreen } from "./messages-screen";
 
 export function FieldSection({ section }: { section: string }) {
   switch (section) {
@@ -9,6 +10,8 @@ export function FieldSection({ section }: { section: string }) {
       return <FieldDashboard />;
     case "reports":
       return <FieldReports />;
+    case "messages":
+      return <MessagesScreen role="field" />;
     default:
       return <FieldDashboard />;
   }

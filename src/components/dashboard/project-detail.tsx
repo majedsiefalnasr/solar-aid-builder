@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   FIELD_REPORTS,
   MOCK_PROJECT,
@@ -26,6 +27,7 @@ import {
 } from "@/lib/dashboard-data";
 import type { Role } from "@/lib/dashboard-data";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
+import { ChatPanel, getThreadsForProject } from "./chat-panel";
 
 // In a real app this would fetch by id; we currently return the mock for any id
 function findProject(_id?: string) {
@@ -51,6 +53,8 @@ export function ProjectDetail({
   const remaining = project.totalBudget - project.releasedAmount;
   const completed = project.phases.filter((p) => p.status === "completed").length;
   const reports = FIELD_REPORTS.slice(0, 4);
+  const [chatOpen, setChatOpen] = useState(false);
+  const threads = getThreadsForProject(role, project.name);
 
   const isOwner = role === "owner";
   const isContractor = role === "contractor";
@@ -88,11 +92,22 @@ export function ProjectDetail({
             </div>
           </div>
           <div className="flex gap-2">
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground hover:border-primary hover:text-primary">
+            <button
+              onClick={() => setChatOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground hover:border-primary hover:text-primary"
+            >
               <MessageCircle className="h-3.5 w-3.5" />
               المحادثة
+              {threads.some((t) => t.unread) && (
+                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
+                  {threads.reduce((s, t) => s + (t.unread ?? 0), 0)}
+                </span>
+              )}
             </button>
-            <button className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta">
+            <button
+              onClick={() => toast.success("تم تجهيز التقرير", { description: "سيتم تنزيله خلال لحظات." })}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta"
+            >
               <FileText className="h-3.5 w-3.5" />
               تحميل التقرير
             </button>
@@ -277,6 +292,13 @@ export function ProjectDetail({
       <div className="hidden">
         <span>{STATUS_TONE.completed}</span>
       </div>
+
+      <ChatPanel
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        threads={threads}
+        role={role}
+      />
     </div>
   );
 }

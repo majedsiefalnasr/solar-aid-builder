@@ -219,6 +219,45 @@ export function BarChart({
   );
 }
 
+// ---------- Horizontal Bar Chart ----------
+export function HBarChart({
+  data,
+  formatValue,
+}: {
+  data: { label: string; value: number; tone?: Tone }[];
+  formatValue?: (n: number) => string;
+}) {
+  const max = Math.max(...data.map((d) => d.value)) || 1;
+  return (
+    <div className="space-y-3">
+      {data.map((d, i) => {
+        const tone = d.tone ?? "primary";
+        const color = TONE_HEX[tone];
+        const pct = (d.value / max) * 100;
+        return (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-24 shrink-0 truncate text-xs font-bold text-ink">{d.label}</div>
+            <div className="relative flex-1">
+              <div className="h-7 w-full overflow-hidden rounded-lg bg-muted/60">
+                <div
+                  className="h-full rounded-lg transition-all duration-500"
+                  style={{
+                    width: `${pct}%`,
+                    background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+                  }}
+                />
+              </div>
+            </div>
+            <div className="w-14 shrink-0 text-left text-xs font-extrabold text-ink">
+              {formatValue ? formatValue(d.value) : d.value}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ---------- Donut Chart ----------
 export interface DonutSlice {
   label: string;
