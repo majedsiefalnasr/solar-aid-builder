@@ -25,13 +25,13 @@ import { addProductToCart } from "@/lib/cart-store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "بنيان — منصة البناء والطاقة الشمسية" },
+      { title: "تم — منصة البناء والطاقة الشمسية" },
       {
         name: "description",
         content:
-          "متجر بنيان: مواد بناء، طاقة شمسية، وأدوات هندسية متقدمة. احسب نظامك الشمسي بدقة بضغطة زر.",
+          "متجر تم: مواد بناء، طاقة شمسية، وأدوات هندسية متقدمة. احسب نظامك الشمسي بدقة بضغطة زر.",
       },
-      { property: "og:title", content: "بنيان — منصة البناء والطاقة الشمسية" },
+      { property: "og:title", content: "تم — منصة البناء والطاقة الشمسية" },
       {
         property: "og:description",
         content: "احسب نظامك الشمسي بدقة بضغطة زر. تسوق مواد البناء والطاقة الشمسية.",
@@ -299,7 +299,7 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
           <div className="mb-10 text-center">
             <span className="mb-2 inline-block rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
-              لماذا بنيان؟
+              لماذا تم؟
             </span>
             <h2 className="text-3xl font-extrabold text-ink md:text-4xl">
               شريكك من الأساس حتى التشغيل

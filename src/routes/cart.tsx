@@ -32,7 +32,7 @@ interface SolarItem {
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "السلة | بنيان" },
+      { title: "السلة | تم" },
       { name: "description", content: "راجع طلبك قبل إتمام الشراء." },
     ],
   }),
@@ -57,10 +57,10 @@ function CartPage() {
   useEffect(() => {
     refresh();
     const handler = () => refresh();
-    window.addEventListener("bunyan:cart-updated", handler);
+    window.addEventListener("tamm:cart-updated", handler);
     window.addEventListener("storage", handler);
     return () => {
-      window.removeEventListener("bunyan:cart-updated", handler);
+      window.removeEventListener("tamm:cart-updated", handler);
       window.removeEventListener("storage", handler);
     };
   }, []);

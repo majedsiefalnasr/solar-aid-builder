@@ -7,7 +7,7 @@ import { CITIES, loadState, saveState } from "@/lib/calculator";
 export const Route = createFileRoute("/calculator/")({
   head: () => ({
     meta: [
-      { title: "حاسبة الطاقة الشمسية — الموقع | بنيان" },
+      { title: "حاسبة الطاقة الشمسية — الموقع | تم" },
       {
         name: "description",
         content: "الخطوة 1: حدد مدينتك للحصول على حسابات دقيقة لنظامك الشمسي.",

@@ -14,13 +14,13 @@ import heroImg from "@/assets/solar-hero.jpg";
 export const Route = createFileRoute("/tools")({
   head: () => ({
     meta: [
-      { title: "الأدوات الهندسية | بنيان" },
+      { title: "الأدوات الهندسية | تم" },
       {
         name: "description",
         content:
           "أدوات هندسية احترافية: حاسبة الطاقة الشمسية وحاسبة كميات البناء. خطّط مشروعك بدقة.",
       },
-      { property: "og:title", content: "الأدوات الهندسية | بنيان" },
+      { property: "og:title", content: "الأدوات الهندسية | تم" },
       {
         property: "og:description",
         content: "حاسبة الطاقة الشمسية وحاسبة الإنشاءات في مكان واحد.",

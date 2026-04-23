@@ -24,13 +24,13 @@ import { CITIES } from "@/lib/calculator";
 export const Route = createFileRoute("/calculator-construction")({
   head: () => ({
     meta: [
-      { title: "حاسبة كميات البناء | بنيان" },
+      { title: "حاسبة كميات البناء | تم" },
       {
         name: "description",
         content:
           "احسب كميات الخرسانة والحديد والبلوك المطلوبة لمشروعك بناءً على نوع المشروع والمدينة وجودة التشطيب.",
       },
-      { property: "og:title", content: "حاسبة كميات البناء | بنيان" },
+      { property: "og:title", content: "حاسبة كميات البناء | تم" },
       {
         property: "og:description",
         content: "تقدير دقيق لكميات مواد البناء وتكلفتها التقديرية.",

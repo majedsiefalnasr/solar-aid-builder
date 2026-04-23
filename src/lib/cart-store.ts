@@ -31,7 +31,7 @@ export function readProductCart(): ProductCartLine[] {
 export function writeProductCart(lines: ProductCartLine[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(PRODUCT_KEY, JSON.stringify(lines));
-  window.dispatchEvent(new Event("bunyan:cart-updated"));
+  window.dispatchEvent(new Event("tamm:cart-updated"));
 }
 
 export function addProductToCart(productId: string, qty = 1) {
