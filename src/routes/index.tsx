@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Sun,
   Calculator,
@@ -13,13 +14,14 @@ import {
   Quote,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
+import { ProductQuickView } from "@/components/product-quick-view";
 import heroImg from "@/assets/solar-hero.jpg";
 import materialsImg from "@/assets/materials-card.jpg";
 import solarImg from "@/assets/solar-card.jpg";
 import catMaterials from "@/assets/cat-materials.jpg";
 import catTools from "@/assets/cat-tools.jpg";
 import catRebar from "@/assets/cat-rebar.jpg";
-import { products } from "@/lib/products";
+import { products, type Product } from "@/lib/products";
 import { addProductToCart } from "@/lib/cart-store";
 
 export const Route = createFileRoute("/")({
