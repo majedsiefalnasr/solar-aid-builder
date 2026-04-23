@@ -173,6 +173,23 @@ const PERIOD_FILTERS = [
 function AdminProjects() {
   const [period, setPeriod] = useState<typeof PERIOD_FILTERS[number]["k"]>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "completed">("all");
+  const store = useWorkflow();
+  const [reviewProjectId, setReviewProjectId] = useState<string | null>(null);
+  const [verifyPaymentInfo, setVerifyPaymentInfo] = useState<{ projectId: string; paymentId: string } | null>(null);
+
+  const pendingAdmin = store.projects.filter((p) => p.status === "pending_admin");
+  const pendingPayments = store.projects.flatMap((p) =>
+    p.payments
+      .filter((pm) => pm.status === "pending")
+      .map((pm) => ({ project: p, payment: pm })),
+  );
+
+  const reviewProject = reviewProjectId
+    ? store.projects.find((p) => p.id === reviewProjectId)
+    : null;
+  const verifyProject = verifyPaymentInfo
+    ? store.projects.find((p) => p.id === verifyPaymentInfo.projectId)
+    : null;
 
   const filtered = useMemo(() => {
     const days = PERIOD_FILTERS.find((p) => p.k === period)?.days ?? Infinity;
@@ -187,6 +204,89 @@ function AdminProjects() {
         title="المشاريع"
         subtitle={`${PLATFORM_STATS.activeProjects} مشروع نشط على المنصة — اضغط على أي مشروع لفتح التفاصيل`}
       />
+
+      {(pendingAdmin.length > 0 || pendingPayments.length > 0) && (
+        <div className="mb-6 space-y-3">
+          {pendingAdmin.length > 0 && (
+            <SectionCard
+              title={`طلبات إنشاء مشاريع جديدة (${pendingAdmin.length})`}
+              subtitle="بانتظار قبولك وتعيين مهندس مشرف"
+            >
+              <div className="space-y-2">
+                {pendingAdmin.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setReviewProjectId(p.id)}
+                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background p-3 text-right transition hover:border-primary hover:bg-primary-soft/30"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-primary">#{p.id}</span>
+                        <ProjectStatusPill status={p.status} />
+                      </div>
+                      <div className="mt-1 truncate text-sm font-bold text-ink">{p.name}</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {p.ownerName} • {p.city} • {fmtMoney(p.budget)}
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-primary-foreground">
+                      مراجعة
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </SectionCard>
+          )}
+
+          {pendingPayments.length > 0 && (
+            <SectionCard
+              title={`إثباتات دفع بانتظار التحقق (${pendingPayments.length})`}
+              subtitle="حوالات بنكية رفعها العملاء"
+            >
+              <div className="space-y-2">
+                {pendingPayments.map(({ project, payment }) => (
+                  <button
+                    key={payment.id}
+                    onClick={() =>
+                      setVerifyPaymentInfo({ projectId: project.id, paymentId: payment.id })
+                    }
+                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background p-3 text-right transition hover:border-primary hover:bg-primary-soft/30"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-bold text-primary">{payment.id}</div>
+                      <div className="mt-0.5 truncate text-sm font-bold text-ink">{project.name}</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {payment.bankName} • {payment.txRef}
+                      </div>
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-extrabold text-ink">{fmtMoney(payment.amount)}</div>
+                      <span className="mt-1 inline-block rounded-full bg-amber-500 px-3 py-0.5 text-[10px] font-bold text-white">
+                        تحقّق
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </SectionCard>
+          )}
+        </div>
+      )}
+
+      {reviewProject && (
+        <AdminReviewProjectDialog
+          project={reviewProject}
+          onClose={() => setReviewProjectId(null)}
+        />
+      )}
+      {verifyProject && verifyPaymentInfo && (
+        <VerifyPaymentDialog
+          project={verifyProject}
+          paymentId={verifyPaymentInfo.paymentId}
+          onClose={() => setVerifyPaymentInfo(null)}
+        />
+      )}
+
 
       <SectionCard
         title="جميع المشاريع"
