@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   FIELD_REPORTS,
   MOCK_PROJECT,
@@ -26,6 +27,7 @@ import {
 } from "@/lib/dashboard-data";
 import type { Role } from "@/lib/dashboard-data";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
+import { ChatPanel, getThreadsForProject } from "./chat-panel";
 
 // In a real app this would fetch by id; we currently return the mock for any id
 function findProject(_id?: string) {
