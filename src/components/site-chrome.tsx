@@ -84,10 +84,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-card">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4 md:px-8">
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <TammMark className="h-8 w-8 text-ink" />
-            <div className="text-lg font-extrabold text-ink">تم</div>
-          </div>
+          <TammMark className="h-10 w-auto" />
           <p className="text-sm leading-relaxed text-muted-foreground">
             منصة هندسية متكاملة لخدمات البناء، مواد البناء، والطاقة الشمسية.
           </p>
