@@ -121,15 +121,52 @@ export function ProjectDetail({
   role: Role;
   projectId?: string;
 }) {
-  const project = findProject(projectId);
+  const store = useWorkflow();
+  const liveDoc = useMemo<ProjectDoc | undefined>(
+    () => (projectId ? store.projects.find((p) => p.id === projectId) : undefined),
+    [store.projects, projectId],
+  );
+  const project: Project = useMemo(
+    () => (liveDoc ? adaptProject(liveDoc) : MOCK_PROJECT),
+    [liveDoc],
+  );
   const remaining = project.totalBudget - project.releasedAmount;
   const completed = project.phases.filter((p) => p.status === "completed").length;
-  const reports = FIELD_REPORTS.slice(0, 4);
+
+  // Reports: live from store if we have a live doc, else legacy mock list
+  const reportsLive: FieldReportDoc[] = useMemo(() => {
+    if (!liveDoc) return [];
+    const userName = ROLE_USER[role] ?? "";
+    let visible: FieldReportDoc[] = [];
+    switch (role) {
+      case "owner":
+        visible = reportsForOwner(store, userName);
+        break;
+      case "supervisor":
+        visible = reportsForSupervisor(store, userName);
+        break;
+      case "field":
+        visible = reportsForFieldEngineer(store, userName);
+        break;
+      case "contractor":
+        visible = reportsForContractor(store);
+        break;
+      case "admin":
+        visible = reportsForAdmin(store);
+        break;
+    }
+    return visible.filter((r) => r.projectId === liveDoc.id).slice(0, 4);
+  }, [liveDoc, store, role]);
+  const legacyReports = FIELD_REPORTS.slice(0, 4);
+
   const [chatOpen, setChatOpen] = useState(false);
+  const [payPhase, setPayPhase] = useState<PhaseDef | null>(null);
   const threads = getThreadsForProject(role, project.name);
 
   const isOwner = role === "owner";
   const isContractor = role === "contractor";
+  const payablePhase = liveDoc?.phases.find((ph) => ph.status === "awaiting_payment");
+
 
   return (
     <div className="space-y-6">
