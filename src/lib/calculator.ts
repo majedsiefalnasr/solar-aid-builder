@@ -3,6 +3,7 @@
 
 export type BatteryType = "lithium" | "gel";
 export type Autonomy = 0 | 1 | 2 | 3;
+export type CalcMode = "loads" | "bill";
 
 export interface Device {
   id: string;
@@ -22,17 +23,32 @@ export type DeviceCategory =
   | "pumps"
   | "other";
 
+export interface BillInput {
+  // Total kWh consumed over a 15-day commercial bill cycle
+  kWh15Days: number;
+  dayHours: number;
+  nightHours: number;
+}
+
 export interface CalcState {
   city: string;
   battery: BatteryType;
   autonomy: Autonomy;
+  mode: CalcMode;
   devices: Device[];
+  bill: BillInput;
 }
 
 export const defaultState: CalcState = {
   city: "عدن",
   battery: "lithium",
   autonomy: 2,
+  mode: "loads",
+  bill: {
+    kWh15Days: 450,
+    dayHours: 10,
+    nightHours: 6,
+  },
   devices: [
     {
       id: "preset-fridge",
@@ -127,18 +143,30 @@ const DOD_LITHIUM = 0.9;
 const DOD_GEL = 0.5;
 
 export function calculate(s: CalcState): CalcResult {
-  const totalDailyWh = s.devices.reduce(
-    (acc, d) => acc + d.watts * d.qty * d.hours,
-    0,
-  );
-  const nightWh = s.devices.reduce(
-    (acc, d) => acc + d.watts * d.qty * d.nightHours,
-    0,
-  );
-  const maxLoadW = s.devices.reduce((acc, d) => acc + d.watts * d.qty, 0);
+  let totalDailyKWh: number;
+  let nightKWh: number;
+  let maxLoadW: number;
 
-  const totalDailyKWh = totalDailyWh / 1000;
-  const nightKWh = nightWh / 1000;
+  if (s.mode === "bill") {
+    // Daily consumption averaged over 15 days
+    totalDailyKWh = s.bill.kWh15Days / 15;
+    const totalHours = Math.max(1, s.bill.dayHours + s.bill.nightHours);
+    nightKWh = totalDailyKWh * (s.bill.nightHours / totalHours);
+    // Approx max simultaneous load: distribute daily energy over operating hours
+    maxLoadW = (totalDailyKWh * 1000) / totalHours;
+  } else {
+    const totalDailyWh = s.devices.reduce(
+      (acc, d) => acc + d.watts * d.qty * d.hours,
+      0,
+    );
+    const nightWh = s.devices.reduce(
+      (acc, d) => acc + d.watts * d.qty * d.nightHours,
+      0,
+    );
+    maxLoadW = s.devices.reduce((acc, d) => acc + d.watts * d.qty, 0);
+    totalDailyKWh = totalDailyWh / 1000;
+    nightKWh = nightWh / 1000;
+  }
 
   const panelKWp = (totalDailyKWh / SUN_HOURS) / SYSTEM_LOSS;
   const panelCount = Math.max(1, Math.ceil((panelKWp * 1000) / PANEL_W));
