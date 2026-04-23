@@ -132,8 +132,8 @@ function ResultsPage() {
           <SectionTitle icon={<Sun className="h-5 w-5" />} title="الألواح الشمسية" />
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <Stat label="عدد الألواح" value={`${arabicNumber(result.panelCount)} لوح`} highlight />
+            <Stat label="قدرة اللوح" value="650 wh/h" />
             <Stat label="القدرة الإجمالية" value={`${result.panelKWp} kWp`} />
-            <Stat label="فقد النظام التقديري" value="~30%" />
           </div>
           <Note tone="muted">
             الحساب مبني على متوسط ساعات ذروة شمسية = 5.5 ساعة في {state.city}.
