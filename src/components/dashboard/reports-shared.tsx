@@ -428,13 +428,22 @@ export function ReportViewerDialog({
               {report.phaseName && <> • {report.phaseName}</>}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-full p-2 text-muted-foreground hover:bg-muted"
-            aria-label="إغلاق"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              onClick={() => openPrintableReport(report, project)}
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-bold text-foreground transition hover:border-primary hover:text-primary"
+              aria-label="طباعة"
+            >
+              <Printer className="h-3.5 w-3.5" /> طباعة
+            </button>
+            <button
+              onClick={onClose}
+              className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+              aria-label="إغلاق"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4 p-5">
