@@ -1,20 +1,23 @@
 import { useMemo, useState } from "react";
-import { AlertCircle, Calendar, Clock, MapPin, Plus } from "lucide-react";
+import { AlertCircle, Calendar, Clock, HardHat, MapPin, Plus } from "lucide-react";
 import {
   reportSchedule,
   reportsForFieldEngineer,
   ROLE_USER,
   useWorkflow,
   type FieldReportDoc,
+  type ProjectDoc,
 } from "@/lib/workflow-store";
 import { Pill, SectionCard, StatCard } from "./dashboard-ui";
 import { AddReportDialog, ReportRow, ReportViewerDialog } from "./reports-shared";
+import { FieldEngineerAcceptDialog, ProjectStatusPill } from "./project-flow-shared";
 
 export function FieldDashboard() {
   const store = useWorkflow();
   const engineerName = ROLE_USER.field;
   const [addOpen, setAddOpen] = useState(false);
   const [openReport, setOpenReport] = useState<FieldReportDoc | null>(null);
+  const [acceptProject, setAcceptProject] = useState<ProjectDoc | null>(null);
 
   const today = new Date().toLocaleDateString("ar-EG", {
     weekday: "long",
