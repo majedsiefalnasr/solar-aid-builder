@@ -200,9 +200,13 @@ function loadFromStorage(): StoreState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as StoreState;
+    const parsed = JSON.parse(raw) as Partial<StoreState>;
     if (!Array.isArray(parsed.projects) || !Array.isArray(parsed.reports)) return null;
-    return parsed;
+    return {
+      projects: parsed.projects,
+      reports: parsed.reports,
+      threads: Array.isArray(parsed.threads) ? parsed.threads : [],
+    };
   } catch {
     return null;
   }
