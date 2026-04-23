@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -31,7 +32,7 @@ function findProject(_id?: string) {
   return MOCK_PROJECT;
 }
 
-const STATUS_ICON: Record<PhaseStatus, JSX.Element> = {
+const STATUS_ICON: Record<PhaseStatus, ReactNode> = {
   completed: <CheckCircle2 className="h-4 w-4" />,
   in_progress: <TrendingUp className="h-4 w-4" />,
   awaiting_funding: <Coins className="h-4 w-4" />,
