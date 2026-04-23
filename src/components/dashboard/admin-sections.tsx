@@ -1436,19 +1436,42 @@ function AdminProducts() {
               {products.map((p) => (
                 <tr key={p.id}>
                   <td className="px-4 py-3 font-mono text-xs text-primary">{p.id}</td>
-                  <td className="px-4 py-3 font-bold text-ink">{p.name}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      {p.image ? (
+                        <img
+                          src={p.image}
+                          alt={p.name}
+                          className="h-10 w-10 rounded-lg border border-border object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                          <ImageIcon className="h-4 w-4" />
+                        </span>
+                      )}
+                      <span className="font-bold text-ink">{p.name}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">{p.category}</td>
                   <td className="px-4 py-3">
                     <Pill tone={p.stock < 50 ? "danger" : "primary"}>{p.stock}</Pill>
                   </td>
                   <td className="px-4 py-3 font-extrabold text-ink">${p.price}</td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => openEdit(p)}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
-                    >
-                      <Pencil className="h-3 w-3" /> تعديل
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => openEdit(p)}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                      >
+                        <Pencil className="h-3 w-3" /> تعديل
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p)}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline"
+                      >
+                        <Trash2 className="h-3 w-3" /> حذف
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
