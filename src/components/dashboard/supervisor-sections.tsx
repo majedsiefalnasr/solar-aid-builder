@@ -35,6 +35,8 @@ export function SupervisorSection({
       return <SupervisorFieldTeam />;
     case "approvals":
       return <SupervisorApprovals />;
+    case "messages":
+      return <MessagesScreen role="supervisor" />;
     default:
       return <SupervisorDashboard />;
   }

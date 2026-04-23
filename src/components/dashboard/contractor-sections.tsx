@@ -15,6 +15,7 @@ import { ContractorDashboard } from "./contractor-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
+import { MessagesScreen } from "./messages-screen";
 
 export function ContractorSection({
   section,
@@ -36,6 +37,8 @@ export function ContractorSection({
       return <ContractorWithdrawals />;
     case "buy-materials":
       return <ContractorMaterials />;
+    case "messages":
+      return <MessagesScreen role="contractor" />;
     default:
       return <ContractorDashboard />;
   }
