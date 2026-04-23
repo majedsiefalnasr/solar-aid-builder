@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -8,6 +8,7 @@ import {
   Coins,
   FileText,
   HardHat,
+  History,
   Image as ImageIcon,
   Layers,
   Lock,
@@ -24,15 +25,86 @@ import {
   STATUS_TONE,
   type Phase,
   type PhaseStatus,
+  type Project,
 } from "@/lib/dashboard-data";
 import type { Role } from "@/lib/dashboard-data";
+import {
+  ROLE_USER,
+  reportsForOwner,
+  reportsForSupervisor,
+  reportsForFieldEngineer,
+  reportsForContractor,
+  reportsForAdmin,
+  useWorkflow,
+  type FieldReportDoc,
+  type PhaseDef,
+  type ProjectDoc,
+} from "@/lib/workflow-store";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { ChatPanel, getThreadsForProject } from "./chat-panel";
+import { PayPhaseDialog, ProjectStatusPill, ProjectTimeline } from "./project-flow-shared";
 
-// In a real app this would fetch by id; we currently return the mock for any id
-function findProject(_id?: string) {
-  return MOCK_PROJECT;
+// Map store phase status to legacy display status
+function mapPhaseStatus(s: PhaseDef["status"]): PhaseStatus {
+  switch (s) {
+    case "completed":
+      return "completed";
+    case "in_progress":
+      return "in_progress";
+    case "awaiting_payment":
+    case "verifying_payment":
+      return "awaiting_funding";
+    case "draft":
+      return "pending_review";
+    case "locked":
+    default:
+      return "locked";
+  }
 }
+
+function fmtDate(iso: string | undefined): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleDateString("ar-EG", { day: "numeric", month: "short", year: "numeric" });
+  } catch {
+    return "—";
+  }
+}
+
+// Adapt store ProjectDoc to legacy Project shape
+function adaptProject(p: ProjectDoc): Project {
+  const totalBudget = p.phases.length ? p.phases.reduce((s, ph) => s + ph.budget, 0) : p.budget;
+  const releasedAmount = p.payments
+    .filter((pm) => pm.status === "verified")
+    .reduce((s, pm) => s + pm.amount, 0);
+  const overall = p.phases.length
+    ? Math.round(p.phases.reduce((s, ph) => s + ph.progress, 0) / p.phases.length)
+    : 0;
+  return {
+    id: p.id,
+    name: p.name,
+    city: p.city,
+    owner: p.ownerName,
+    contractor: p.contractorName ?? "—",
+    supervisor: p.supervisorName ?? "—",
+    totalBudget,
+    releasedAmount,
+    overallProgress: overall,
+    phases: p.phases.map((ph) => ({
+      id: ph.id,
+      name: ph.name,
+      amount: ph.budget,
+      progress: ph.progress,
+      status: mapPhaseStatus(ph.status),
+      dueDate: ph.completedAt
+        ? fmtDate(ph.completedAt)
+        : ph.startedAt
+          ? `بدأت ${fmtDate(ph.startedAt)}`
+          : `${ph.durationDays} يوم`,
+    })),
+  };
+}
+
 
 const STATUS_ICON: Record<PhaseStatus, ReactNode> = {
   completed: <CheckCircle2 className="h-4 w-4" />,
@@ -49,15 +121,52 @@ export function ProjectDetail({
   role: Role;
   projectId?: string;
 }) {
-  const project = findProject(projectId);
+  const store = useWorkflow();
+  const liveDoc = useMemo<ProjectDoc | undefined>(
+    () => (projectId ? store.projects.find((p) => p.id === projectId) : undefined),
+    [store.projects, projectId],
+  );
+  const project: Project = useMemo(
+    () => (liveDoc ? adaptProject(liveDoc) : MOCK_PROJECT),
+    [liveDoc],
+  );
   const remaining = project.totalBudget - project.releasedAmount;
   const completed = project.phases.filter((p) => p.status === "completed").length;
-  const reports = FIELD_REPORTS.slice(0, 4);
+
+  // Reports: live from store if we have a live doc, else legacy mock list
+  const reportsLive: FieldReportDoc[] = useMemo(() => {
+    if (!liveDoc) return [];
+    const userName = ROLE_USER[role] ?? "";
+    let visible: FieldReportDoc[] = [];
+    switch (role) {
+      case "owner":
+        visible = reportsForOwner(store, userName);
+        break;
+      case "supervisor":
+        visible = reportsForSupervisor(store, userName);
+        break;
+      case "field":
+        visible = reportsForFieldEngineer(store, userName);
+        break;
+      case "contractor":
+        visible = reportsForContractor(store);
+        break;
+      case "admin":
+        visible = reportsForAdmin(store);
+        break;
+    }
+    return visible.filter((r) => r.projectId === liveDoc.id).slice(0, 4);
+  }, [liveDoc, store, role]);
+  const legacyReports = FIELD_REPORTS.slice(0, 4);
+
   const [chatOpen, setChatOpen] = useState(false);
+  const [payPhase, setPayPhase] = useState<PhaseDef | null>(null);
   const threads = getThreadsForProject(role, project.name);
 
   const isOwner = role === "owner";
   const isContractor = role === "contractor";
+  const payablePhase = liveDoc?.phases.find((ph) => ph.status === "awaiting_payment");
+
 
   return (
     <div className="space-y-6">
@@ -72,6 +181,26 @@ export function ProjectDetail({
       >
         <ArrowRight className="h-3.5 w-3.5" /> العودة إلى المشاريع
       </Link>
+
+      {/* Live status banner */}
+      {liveDoc && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-card">
+          <div className="flex items-center gap-3">
+            <ProjectStatusPill status={liveDoc.status} />
+            {liveDoc.rejectionReason && (
+              <span className="text-xs text-rose-600">سبب الرفض: {liveDoc.rejectionReason}</span>
+            )}
+          </div>
+          {isOwner && payablePhase && (
+            <button
+              onClick={() => setPayPhase(payablePhase)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-rose-500 px-4 py-2 text-xs font-bold text-white shadow-cta hover:bg-rose-600"
+            >
+              <Coins className="h-3.5 w-3.5" /> دفع مرحلة {payablePhase.name} ({fmtMoney(payablePhase.budget)})
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Hero */}
       <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-l from-primary/10 via-card to-card p-6 shadow-card md:p-8">
@@ -169,40 +298,87 @@ export function ProjectDetail({
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionCard title="آخر التقارير الميدانية">
           <div className="space-y-3">
-            {reports.map((r) => (
-              <div key={r.id} className="rounded-xl border border-border bg-background p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                      <ImageIcon className="h-3.5 w-3.5" />
-                    </span>
-                    <div>
-                      <div className="text-xs font-bold text-ink">{r.phase}</div>
-                      <div className="text-[10px] text-muted-foreground">
-                        {r.engineer} • {r.date}
+            {liveDoc ? (
+              reportsLive.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                  لا توجد تقارير معتمدة بعد على هذا المشروع.
+                </div>
+              ) : (
+                reportsLive.map((r) => (
+                  <div key={r.id} className="rounded-xl border border-border bg-background p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                          <ImageIcon className="h-3.5 w-3.5" />
+                        </span>
+                        <div>
+                          <div className="text-xs font-bold text-ink">{r.title}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {r.engineer} • {fmtDate(r.date)}
+                          </div>
+                        </div>
+                      </div>
+                      <Pill
+                        tone={
+                          r.status === "approved"
+                            ? "primary"
+                            : r.status === "rejected"
+                              ? "danger"
+                              : "accent"
+                        }
+                      >
+                        {r.status === "approved"
+                          ? "معتمد"
+                          : r.status === "rejected"
+                            ? "بحاجة تعديل"
+                            : "بانتظار"}
+                      </Pill>
+                    </div>
+                    <p className="mt-2 line-clamp-2 text-[11px] text-muted-foreground">{r.note}</p>
+                    {r.photos.length > 0 && (
+                      <div className="mt-1 text-[10px] text-muted-foreground">
+                        📷 {r.photos.length} صورة
+                      </div>
+                    )}
+                  </div>
+                ))
+              )
+            ) : (
+              legacyReports.map((r) => (
+                <div key={r.id} className="rounded-xl border border-border bg-background p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                        <ImageIcon className="h-3.5 w-3.5" />
+                      </span>
+                      <div>
+                        <div className="text-xs font-bold text-ink">{r.phase}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {r.engineer} • {r.date}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <Pill
-                    tone={
-                      r.status === "approved"
-                        ? "primary"
+                    <Pill
+                      tone={
+                        r.status === "approved"
+                          ? "primary"
+                          : r.status === "rejected"
+                            ? "danger"
+                            : "accent"
+                      }
+                    >
+                      {r.status === "approved"
+                        ? "معتمد"
                         : r.status === "rejected"
-                          ? "danger"
-                          : "accent"
-                    }
-                  >
-                    {r.status === "approved"
-                      ? "معتمد"
-                      : r.status === "rejected"
-                        ? "بحاجة تعديل"
-                        : "بانتظار"}
-                  </Pill>
+                          ? "بحاجة تعديل"
+                          : "بانتظار"}
+                    </Pill>
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-[11px] text-muted-foreground">{r.note}</p>
+                  <div className="mt-1 text-[10px] text-muted-foreground">📷 {r.photos} صورة</div>
                 </div>
-                <p className="mt-2 line-clamp-2 text-[11px] text-muted-foreground">{r.note}</p>
-                <div className="mt-1 text-[10px] text-muted-foreground">📷 {r.photos} صورة</div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </SectionCard>
 
@@ -241,13 +417,20 @@ export function ProjectDetail({
         </SectionCard>
       </div>
 
+      {liveDoc && liveDoc.timeline.length > 0 && (
+        <SectionCard title="سجل المشروع" subtitle="جميع الأحداث منذ إنشاء المشروع">
+          <ProjectTimeline project={liveDoc} />
+        </SectionCard>
+      )}
+
       {isOwner && (
-        <SectionCard
-          title="إجراءات سريعة"
-          subtitle="تحرير الدفعة التالية أو طلب تعديل"
-        >
+        <SectionCard title="إجراءات سريعة" subtitle="تحرير الدفعة التالية أو طلب تعديل">
           <div className="grid gap-3 sm:grid-cols-3">
-            <button className="rounded-xl border-2 border-primary bg-primary-soft p-4 text-right transition hover:bg-primary hover:text-primary-foreground">
+            <button
+              onClick={() => payablePhase && setPayPhase(payablePhase)}
+              disabled={!payablePhase}
+              className="rounded-xl border-2 border-primary bg-primary-soft p-4 text-right transition hover:bg-primary hover:text-primary-foreground disabled:opacity-50"
+            >
               <Coins className="mb-2 h-5 w-5" />
               <div className="text-sm font-extrabold">تحرير الدفعة التالية</div>
               <div className="mt-0.5 text-[11px] opacity-80">بعد اعتماد المرحلة</div>

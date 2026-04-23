@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, Building2, Coins, ExternalLink, Eye, TrendingUp, Users, X } from "lucide-react";
+import { AlertTriangle, Building2, ChevronLeft, Coins, CreditCard, ExternalLink, Eye, FileText, TrendingUp, Users, X } from "lucide-react";
 import { DISPUTES, MOCK_PROJECT, PLATFORM_STATS } from "@/lib/dashboard-data";
+import { useWorkflow } from "@/lib/workflow-store";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { AreaChart, DonutChart, HBarChart, Sparkline } from "./charts";
 
@@ -57,9 +58,60 @@ const ALL_DISPUTES = [
 
 export function AdminDashboard() {
   const [logOpen, setLogOpen] = useState(false);
+  const store = useWorkflow();
+  const pendingAdmin = useMemo(
+    () => store.projects.filter((p) => p.status === "pending_admin"),
+    [store.projects],
+  );
+  const pendingPayments = useMemo(
+    () =>
+      store.projects.flatMap((p) =>
+        p.payments.filter((pm) => pm.status === "pending").map(() => p.id),
+      ),
+    [store.projects],
+  );
+  const pendingReports = useMemo(
+    () => store.reports.filter((r) => r.status === "pending"),
+    [store.reports],
+  );
 
   return (
     <div className="space-y-6">
+      {(pendingAdmin.length > 0 || pendingPayments.length > 0 || pendingReports.length > 0) && (
+        <div className="grid gap-3 md:grid-cols-3">
+          {pendingAdmin.length > 0 && (
+            <BannerCard
+              tone="primary"
+              icon={<Building2 className="h-4 w-4" />}
+              title={`${pendingAdmin.length} طلب مشروع جديد`}
+              subtitle="بانتظار قبولك وتعيين مشرف"
+              to="/dashboard"
+              search={{ role: "admin", section: "projects" }}
+            />
+          )}
+          {pendingPayments.length > 0 && (
+            <BannerCard
+              tone="accent"
+              icon={<CreditCard className="h-4 w-4" />}
+              title={`${pendingPayments.length} إثبات دفع للتحقق`}
+              subtitle="حوالات بنكية رفعها العملاء"
+              to="/dashboard"
+              search={{ role: "admin", section: "projects" }}
+            />
+          )}
+          {pendingReports.length > 0 && (
+            <BannerCard
+              tone="info"
+              icon={<FileText className="h-4 w-4" />}
+              title={`${pendingReports.length} تقرير ميداني`}
+              subtitle="رُفعت من المهندسين الميدانيين"
+              to="/dashboard"
+              search={{ role: "admin", section: "reports" }}
+            />
+          )}
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="مشاريع نشطة"
@@ -407,3 +459,47 @@ function DisputesLogDialog({
     </div>
   );
 }
+
+type BannerTone = "primary" | "accent" | "info" | "danger";
+
+const BANNER_STYLES: Record<BannerTone, { bg: string; text: string; ring: string; iconBg: string }> = {
+  primary: { bg: "bg-primary-soft/60", text: "text-primary", ring: "ring-primary/30", iconBg: "bg-primary text-primary-foreground" },
+  accent: { bg: "bg-amber-50", text: "text-amber-700", ring: "ring-amber-200", iconBg: "bg-amber-500 text-white" },
+  info: { bg: "bg-sky-50", text: "text-sky-700", ring: "ring-sky-200", iconBg: "bg-sky-500 text-white" },
+  danger: { bg: "bg-rose-50", text: "text-rose-700", ring: "ring-rose-200", iconBg: "bg-rose-500 text-white" },
+};
+
+export function BannerCard({
+  tone,
+  icon,
+  title,
+  subtitle,
+  to,
+  search,
+}: {
+  tone: BannerTone;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  to: string;
+  search: Record<string, string>;
+}) {
+  const s = BANNER_STYLES[tone];
+  return (
+    <Link
+      to={to}
+      search={search}
+      className={`group flex items-center gap-3 rounded-2xl ${s.bg} p-4 ring-1 ${s.ring} transition hover:ring-2`}
+    >
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${s.iconBg} shadow-sm`}>
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className={`text-sm font-extrabold ${s.text}`}>{title}</div>
+        <div className="mt-0.5 text-[11px] text-foreground/70">{subtitle}</div>
+      </div>
+      <ChevronLeft className={`h-4 w-4 ${s.text} transition group-hover:-translate-x-0.5`} />
+    </Link>
+  );
+}
+

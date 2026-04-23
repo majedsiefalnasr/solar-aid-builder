@@ -1,22 +1,61 @@
-import { useState } from "react";
-import { CheckCircle2, ClipboardList, MapPin, XCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CheckCircle2, ClipboardList, FileText, HardHat, MapPin, UserCheck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   FIELD_REPORTS,
   MOCK_PROJECT,
   PAYMENT_REQUESTS,
 } from "@/lib/dashboard-data";
+import { ROLE_USER, useWorkflow } from "@/lib/workflow-store";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
+import { BannerCard } from "./admin-dashboard";
 
 type ReportStatus = "approved" | "pending" | "rejected";
 type PayStatus = "pending" | "approved" | "released" | "rejected";
 
 export function SupervisorDashboard() {
+  const store = useWorkflow();
+  const supervisorName = ROLE_USER.supervisor;
   const [reportStatus, setReportStatus] = useState<Record<string, ReportStatus>>(() =>
     Object.fromEntries(FIELD_REPORTS.map((r) => [r.id, r.status])),
   );
   const [payStatus, setPayStatus] = useState<Record<string, PayStatus>>(() =>
     Object.fromEntries(PAYMENT_REQUESTS.map((r) => [r.id, r.status])),
+  );
+
+  // Live workflow counts
+  const newAssignments = useMemo(
+    () =>
+      store.projects.filter(
+        (p) => p.supervisorName === supervisorName && p.status === "pending_supervisor",
+      ),
+    [store.projects, supervisorName],
+  );
+  const needQuote = useMemo(
+    () =>
+      store.projects.filter(
+        (p) => p.supervisorName === supervisorName && p.status === "pending_quote",
+      ),
+    [store.projects, supervisorName],
+  );
+  const needFieldEng = useMemo(
+    () =>
+      store.projects.filter(
+        (p) =>
+          p.supervisorName === supervisorName &&
+          (p.status === "in_progress" || p.status === "verifying_payment") &&
+          !p.fieldEngineerName,
+      ),
+    [store.projects, supervisorName],
+  );
+  const liveReportsPending = useMemo(
+    () => {
+      const ids = new Set(
+        store.projects.filter((p) => p.supervisorName === supervisorName).map((p) => p.id),
+      );
+      return store.reports.filter((r) => ids.has(r.projectId) && r.status === "pending");
+    },
+    [store, supervisorName],
   );
 
   const pendingReports = FIELD_REPORTS.filter((r) => reportStatus[r.id] === "pending");
@@ -40,6 +79,54 @@ export function SupervisorDashboard() {
 
   return (
     <div className="space-y-6">
+      {(newAssignments.length > 0 ||
+        needQuote.length > 0 ||
+        needFieldEng.length > 0 ||
+        liveReportsPending.length > 0) && (
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          {newAssignments.length > 0 && (
+            <BannerCard
+              tone="primary"
+              icon={<UserCheck className="h-4 w-4" />}
+              title={`${newAssignments.length} طلب إشراف جديد`}
+              subtitle="بانتظار قبولك"
+              to="/dashboard"
+              search={{ role: "supervisor", section: "assignments" }}
+            />
+          )}
+          {needQuote.length > 0 && (
+            <BannerCard
+              tone="accent"
+              icon={<FileText className="h-4 w-4" />}
+              title={`${needQuote.length} مشروع يحتاج عرض سعر`}
+              subtitle="جهّز عرض السعر التفصيلي"
+              to="/dashboard"
+              search={{ role: "supervisor", section: "assignments" }}
+            />
+          )}
+          {needFieldEng.length > 0 && (
+            <BannerCard
+              tone="info"
+              icon={<HardHat className="h-4 w-4" />}
+              title={`${needFieldEng.length} مشروع بحاجة مهندس ميداني`}
+              subtitle="بدأ التنفيذ — عيّن مهندساً"
+              to="/dashboard"
+              search={{ role: "supervisor", section: "assignments" }}
+            />
+          )}
+          {liveReportsPending.length > 0 && (
+            <BannerCard
+              tone="danger"
+              icon={<ClipboardList className="h-4 w-4" />}
+              title={`${liveReportsPending.length} تقرير بانتظار اعتمادك`}
+              subtitle="تقارير ميدانية حديثة"
+              to="/dashboard"
+              search={{ role: "supervisor", section: "approvals" }}
+            />
+          )}
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="بانتظار المراجعة" value={pendingReports.length} icon={<ClipboardList className="h-5 w-5" />} tone="accent" />
         <StatCard label="معتمدة هذا الشهر" value={approved.length} icon={<CheckCircle2 className="h-5 w-5" />} tone="primary" />
