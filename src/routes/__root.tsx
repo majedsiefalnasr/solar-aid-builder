@@ -79,7 +79,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <>
-      <Outlet />
+      <main>
+        <Outlet />
+      </main>
       <Toaster position="top-center" richColors closeButton />
     </>
   );
