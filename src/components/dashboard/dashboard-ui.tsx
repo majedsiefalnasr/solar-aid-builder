@@ -96,7 +96,7 @@ export function Pill({
   );
 }
 
-// Display rule: only use metric prefixes (K/M/B) when the actual amount is above 10,000.
+// Display rule: only use the K metric prefix when the actual amount is above 10,000.
 // `thousands` is the amount expressed in thousands of SAR.
 export function fmtMoney(thousands: number) {
   const actual = thousands * 1000;
@@ -104,9 +104,9 @@ export function fmtMoney(thousands: number) {
   if (abs <= 10000) {
     return `${actual.toLocaleString("en-US")} ر.س`;
   }
-  const fmt = (n: number) =>
-    Number.isInteger(n) ? n.toString() : n.toFixed(1).replace(/\.0$/, "");
-  if (abs >= 1_000_000_000) return `${fmt(actual / 1_000_000_000)}B ر.س`;
-  if (abs >= 1_000_000) return `${fmt(actual / 1_000_000)}M ر.س`;
-  return `${fmt(actual / 1_000)}K ر.س`;
+  const k = actual / 1000;
+  const str = Number.isInteger(k)
+    ? k.toLocaleString("en-US")
+    : k.toFixed(1).replace(/\.0$/, "");
+  return `${str}K ر.س`;
 }
