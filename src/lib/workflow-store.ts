@@ -387,7 +387,7 @@ function seedState(): StoreState {
       {
         id: "PAY-003",
         phaseId: "PH-3",
-        amount: 7_400,
+        amount: 7.4,
         bankName: "بنك سبأ الإسلامي",
         txRef: "TX-99898765",
         uploadedAt: daysAgo(16),
