@@ -364,7 +364,7 @@ function seedState(): StoreState {
       {
         id: "PAY-001",
         phaseId: "PH-1",
-        amount: 8_000,
+        amount: 8,
         bankName: "بنك التضامن الإسلامي",
         txRef: "TX-99812345",
         notes: "دفعة المرحلة الأولى",
