@@ -1335,6 +1335,7 @@ interface ProductRow {
   category: string;
   stock: number;
   price: number;
+  image?: string;
 }
 
 const SEED_PRODUCTS: ProductRow[] = [
@@ -1364,11 +1365,19 @@ function AdminProducts() {
   const handleSave = (data: Omit<ProductRow, "id"> & { id?: string }) => {
     if (data.id) {
       setProducts((prev) => prev.map((p) => (p.id === data.id ? { ...p, ...data } as ProductRow : p)));
+      toast.success("تم حفظ تعديلات المنتج", { description: data.name });
     } else {
       const nextId = `P-${String(products.length + 1).padStart(3, "0")}`;
       setProducts((prev) => [{ id: nextId, ...data }, ...prev]);
+      toast.success("تم إضافة المنتج", { description: data.name });
     }
     setOpen(false);
+  };
+
+  const handleDelete = (p: ProductRow) => {
+    if (!confirm(`حذف المنتج "${p.name}"؟`)) return;
+    setProducts((prev) => prev.filter((x) => x.id !== p.id));
+    toast("تم حذف المنتج", { description: p.name });
   };
 
   const totalValue = products.reduce((s, p) => s + p.stock * p.price, 0);
