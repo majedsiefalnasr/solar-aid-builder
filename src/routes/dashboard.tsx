@@ -208,6 +208,16 @@ function DashboardLayout() {
           </main>
         </div>
       </div>
+
+      {/* Demo mode notice — sticky bottom */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-amber-300/60 bg-amber-50/95 backdrop-blur supports-[backdrop-filter]:bg-amber-50/80">
+        <div className="mx-auto flex max-w-[1500px] items-center justify-center gap-2 px-4 py-2 text-center text-[11px] font-semibold text-amber-900 md:text-xs">
+          <span className="inline-flex h-5 items-center rounded-full bg-amber-500/20 px-2 text-[10px] font-bold uppercase tracking-wider text-amber-800">
+            وضع تجريبي
+          </span>
+          <span>جميع البيانات المعروضة وهمية وتُستخدم لأغراض العرض فقط — لا تعكس بيانات حقيقية.</span>
+        </div>
+      </div>
     </div>
   );
 }
