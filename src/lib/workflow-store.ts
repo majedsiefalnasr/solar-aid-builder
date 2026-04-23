@@ -949,7 +949,23 @@ export function fieldEngineerAccept(projectId: string, engineerName: string) {
   }));
 }
 
-// --- Phases progress ---
+// --- Phases progress & tasks ---
+
+// نسبة الإنجاز محسوبة من المهام المعتمدة، تصل لـ 99% كحد أقصى عبر المهام،
+// و 100% فقط عند اعتماد تقرير "نهاية مرحلة" من المشرف.
+export function computePhaseProgressFromTasks(tasks: PhaseTask[]): number {
+  if (!tasks || tasks.length === 0) return 0;
+  const approvedCount = tasks.filter((t) => t.approval === "approved").length;
+  // كل مهمة = 99 / عدد المهام
+  const perTask = 99 / tasks.length;
+  return Math.min(99, Math.round(approvedCount * perTask));
+}
+
+function recomputePhaseFromTasks(ph: PhaseDef): PhaseDef {
+  // لا نعدل المرحلة المكتملة (100%) — نبقى عليها كما هي
+  if (ph.status === "completed") return ph;
+  return { ...ph, progress: computePhaseProgressFromTasks(ph.tasks) };
+}
 
 export function setPhaseProgress(projectId: string, phaseId: string, progress: number) {
   updateProject(projectId, (p) => ({
@@ -957,6 +973,106 @@ export function setPhaseProgress(projectId: string, phaseId: string, progress: n
     phases: p.phases.map((ph) =>
       ph.id === phaseId ? { ...ph, progress: Math.max(0, Math.min(100, progress)) } : ph,
     ),
+  }));
+}
+
+// المقاول يؤشر على مهمة كمنجزة → تذهب لحالة pending بانتظار اعتماد المشرف
+export function markTaskDone(projectId: string, phaseId: string, taskId: string, by: string) {
+  updateProject(projectId, (p) => ({
+    ...p,
+    phases: p.phases.map((ph) =>
+      ph.id !== phaseId
+        ? ph
+        : recomputePhaseFromTasks({
+            ...ph,
+            tasks: ph.tasks.map((t) =>
+              t.id === taskId
+                ? {
+                    ...t,
+                    done: true,
+                    approval: "pending" as TaskApprovalStatus,
+                    markedDoneAt: nowISO(),
+                    rejectionReason: undefined,
+                  }
+                : t,
+            ),
+          }),
+    ),
+    timeline: [
+      ...p.timeline,
+      {
+        at: nowISO(),
+        label: `أشّر ${by} على إنجاز مهمة بانتظار اعتماد المشرف`,
+        by,
+        kind: "info",
+      },
+    ],
+  }));
+}
+
+// المشرف يعتمد إنجاز مهمة → progress يزداد بنسبة المهمة
+export function approveTask(projectId: string, phaseId: string, taskId: string, by: string) {
+  updateProject(projectId, (p) => ({
+    ...p,
+    phases: p.phases.map((ph) =>
+      ph.id !== phaseId
+        ? ph
+        : recomputePhaseFromTasks({
+            ...ph,
+            tasks: ph.tasks.map((t) =>
+              t.id === taskId
+                ? {
+                    ...t,
+                    done: true,
+                    approval: "approved" as TaskApprovalStatus,
+                    reviewedAt: nowISO(),
+                    reviewedBy: by,
+                    rejectionReason: undefined,
+                  }
+                : t,
+            ),
+          }),
+    ),
+    timeline: [
+      ...p.timeline,
+      { at: nowISO(), label: `اعتمد المشرف إنجاز مهمة`, by, kind: "approved" },
+    ],
+  }));
+}
+
+// المشرف يرفض إنجاز مهمة → ترجع المهمة لحالة todo مع سبب
+export function rejectTask(
+  projectId: string,
+  phaseId: string,
+  taskId: string,
+  by: string,
+  reason: string,
+) {
+  updateProject(projectId, (p) => ({
+    ...p,
+    phases: p.phases.map((ph) =>
+      ph.id !== phaseId
+        ? ph
+        : recomputePhaseFromTasks({
+            ...ph,
+            tasks: ph.tasks.map((t) =>
+              t.id === taskId
+                ? {
+                    ...t,
+                    done: false,
+                    approval: "rejected" as TaskApprovalStatus,
+                    reviewedAt: nowISO(),
+                    reviewedBy: by,
+                    rejectionReason: reason,
+                  }
+                : t,
+            ),
+          }),
+    ),
+    timeline: [
+      ...p.timeline,
+      { at: nowISO(), label: `رفض المشرف إنجاز مهمة: ${reason}`, by, kind: "rejected" },
+    ],
   }));
 }
 
