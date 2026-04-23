@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, ShoppingCart } from "lucide-react";
+import { LogIn, Menu, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { TammMark } from "@/components/tamm-logo";
 
@@ -42,6 +42,13 @@ export function SiteNav() {
             <span className="text-border">|</span>
             <span>ENG</span>
           </div>
+          <Link
+            to="/login"
+            className="hidden items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95 md:inline-flex"
+          >
+            <LogIn className="h-3.5 w-3.5" />
+            دخول
+          </Link>
           <Link
             to="/cart"
             className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground transition hover:border-primary hover:text-primary"

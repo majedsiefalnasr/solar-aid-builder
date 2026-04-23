@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as StoreRouteImport } from './routes/store'
 import { Route as ResultsRouteImport } from './routes/results'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CalculatorConstructionRouteImport } from './routes/calculator-construction'
@@ -33,6 +35,16 @@ const StoreRoute = StoreRouteImport.update({
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
   path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -76,6 +88,8 @@ export interface FileRoutesByFullPath {
   '/calculator-construction': typeof CalculatorConstructionRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/results': typeof ResultsRoute
   '/store': typeof StoreRoute
   '/tools': typeof ToolsRoute
@@ -88,6 +102,8 @@ export interface FileRoutesByTo {
   '/calculator-construction': typeof CalculatorConstructionRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/results': typeof ResultsRoute
   '/store': typeof StoreRoute
   '/tools': typeof ToolsRoute
@@ -101,6 +117,8 @@ export interface FileRoutesById {
   '/calculator-construction': typeof CalculatorConstructionRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/results': typeof ResultsRoute
   '/store': typeof StoreRoute
   '/tools': typeof ToolsRoute
@@ -115,6 +133,8 @@ export interface FileRouteTypes {
     | '/calculator-construction'
     | '/cart'
     | '/checkout'
+    | '/dashboard'
+    | '/login'
     | '/results'
     | '/store'
     | '/tools'
@@ -127,6 +147,8 @@ export interface FileRouteTypes {
     | '/calculator-construction'
     | '/cart'
     | '/checkout'
+    | '/dashboard'
+    | '/login'
     | '/results'
     | '/store'
     | '/tools'
@@ -139,6 +161,8 @@ export interface FileRouteTypes {
     | '/calculator-construction'
     | '/cart'
     | '/checkout'
+    | '/dashboard'
+    | '/login'
     | '/results'
     | '/store'
     | '/tools'
@@ -152,6 +176,8 @@ export interface RootRouteChildren {
   CalculatorConstructionRoute: typeof CalculatorConstructionRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
+  DashboardRoute: typeof DashboardRoute
+  LoginRoute: typeof LoginRoute
   ResultsRoute: typeof ResultsRoute
   StoreRoute: typeof StoreRoute
   ToolsRoute: typeof ToolsRoute
@@ -181,6 +207,20 @@ declare module '@tanstack/react-router' {
       path: '/results'
       fullPath: '/results'
       preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -240,6 +280,8 @@ const rootRouteChildren: RootRouteChildren = {
   CalculatorConstructionRoute: CalculatorConstructionRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
+  DashboardRoute: DashboardRoute,
+  LoginRoute: LoginRoute,
   ResultsRoute: ResultsRoute,
   StoreRoute: StoreRoute,
   ToolsRoute: ToolsRoute,
