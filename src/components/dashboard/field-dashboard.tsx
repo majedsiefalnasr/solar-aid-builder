@@ -110,6 +110,38 @@ export function FieldDashboard() {
         </div>
       </div>
 
+      {/* Pending acceptance — projects assigned to me */}
+      {pendingAcceptance.length > 0 && (
+        <SectionCard
+          title={`مشاريع جديدة بانتظار قبولك (${pendingAcceptance.length})`}
+          subtitle="عيّنك المشرف على هذه المشاريع — اقبل لتبدأ رفع التقارير"
+        >
+          <div className="space-y-2">
+            {pendingAcceptance.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setAcceptProject(p)}
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background p-3 text-right hover:border-primary hover:bg-primary-soft/30"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-primary">#{p.id}</span>
+                    <ProjectStatusPill status={p.status} />
+                  </div>
+                  <div className="mt-0.5 truncate text-sm font-bold text-ink">{p.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {p.ownerName} • {p.city} • مشرف: {p.supervisorName}
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-purple-500 px-3 py-1 text-[11px] font-bold text-white">
+                  <HardHat className="h-3 w-3" /> مراجعة وقبول
+                </span>
+              </button>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="تقاريري اليوم" value={todayCount} icon={<Calendar className="h-5 w-5" />} />
         <StatCard
