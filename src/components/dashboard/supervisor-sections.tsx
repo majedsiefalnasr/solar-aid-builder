@@ -17,6 +17,7 @@ import { Pill, SectionCard, StatCard } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
+import { ReportsSection } from "./reports-section";
 
 export function SupervisorSection({
   section,
@@ -36,6 +37,8 @@ export function SupervisorSection({
       return <SupervisorAssignments />;
     case "field-team":
       return <SupervisorFieldTeam />;
+    case "reports":
+      return <ReportsSection role="supervisor" />;
     case "approvals":
       return <SupervisorApprovals />;
     case "messages":
