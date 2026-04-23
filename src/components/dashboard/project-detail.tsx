@@ -278,40 +278,87 @@ export function ProjectDetail({
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionCard title="آخر التقارير الميدانية">
           <div className="space-y-3">
-            {reports.map((r) => (
-              <div key={r.id} className="rounded-xl border border-border bg-background p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                      <ImageIcon className="h-3.5 w-3.5" />
-                    </span>
-                    <div>
-                      <div className="text-xs font-bold text-ink">{r.phase}</div>
-                      <div className="text-[10px] text-muted-foreground">
-                        {r.engineer} • {r.date}
+            {liveDoc ? (
+              reportsLive.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                  لا توجد تقارير معتمدة بعد على هذا المشروع.
+                </div>
+              ) : (
+                reportsLive.map((r) => (
+                  <div key={r.id} className="rounded-xl border border-border bg-background p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                          <ImageIcon className="h-3.5 w-3.5" />
+                        </span>
+                        <div>
+                          <div className="text-xs font-bold text-ink">{r.title}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {r.engineer} • {fmtDate(r.date)}
+                          </div>
+                        </div>
+                      </div>
+                      <Pill
+                        tone={
+                          r.status === "approved"
+                            ? "primary"
+                            : r.status === "rejected"
+                              ? "danger"
+                              : "accent"
+                        }
+                      >
+                        {r.status === "approved"
+                          ? "معتمد"
+                          : r.status === "rejected"
+                            ? "بحاجة تعديل"
+                            : "بانتظار"}
+                      </Pill>
+                    </div>
+                    <p className="mt-2 line-clamp-2 text-[11px] text-muted-foreground">{r.note}</p>
+                    {r.photos.length > 0 && (
+                      <div className="mt-1 text-[10px] text-muted-foreground">
+                        📷 {r.photos.length} صورة
+                      </div>
+                    )}
+                  </div>
+                ))
+              )
+            ) : (
+              legacyReports.map((r) => (
+                <div key={r.id} className="rounded-xl border border-border bg-background p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                        <ImageIcon className="h-3.5 w-3.5" />
+                      </span>
+                      <div>
+                        <div className="text-xs font-bold text-ink">{r.phase}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {r.engineer} • {r.date}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <Pill
-                    tone={
-                      r.status === "approved"
-                        ? "primary"
+                    <Pill
+                      tone={
+                        r.status === "approved"
+                          ? "primary"
+                          : r.status === "rejected"
+                            ? "danger"
+                            : "accent"
+                      }
+                    >
+                      {r.status === "approved"
+                        ? "معتمد"
                         : r.status === "rejected"
-                          ? "danger"
-                          : "accent"
-                    }
-                  >
-                    {r.status === "approved"
-                      ? "معتمد"
-                      : r.status === "rejected"
-                        ? "بحاجة تعديل"
-                        : "بانتظار"}
-                  </Pill>
+                          ? "بحاجة تعديل"
+                          : "بانتظار"}
+                    </Pill>
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-[11px] text-muted-foreground">{r.note}</p>
+                  <div className="mt-1 text-[10px] text-muted-foreground">📷 {r.photos} صورة</div>
                 </div>
-                <p className="mt-2 line-clamp-2 text-[11px] text-muted-foreground">{r.note}</p>
-                <div className="mt-1 text-[10px] text-muted-foreground">📷 {r.photos} صورة</div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </SectionCard>
 
