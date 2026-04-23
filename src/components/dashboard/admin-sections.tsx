@@ -1954,15 +1954,49 @@ function AdminCategoryDetail({ categoryId }: { categoryId?: string }) {
   const [cat, setCat] = useState<Category>(initialCat);
   const [editing, setEditing] = useState(false);
 
-  const products = SEED_PRODUCTS.filter(
-    (p) => p.category === cat.name || cat.name.includes(p.category) || p.category.includes(cat.name.split(" ")[0]),
+  const matchesCat = (p: ProductRow, name: string) =>
+    p.category === name || name.includes(p.category) || p.category.includes(name.split(" ")[0]);
+
+  const [products, setProducts] = useState<ProductRow[]>(() =>
+    SEED_PRODUCTS.filter((p) => matchesCat(p, initialCat.name)),
   );
+
+  const [productDialogOpen, setProductDialogOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const handleSave = (data: { id?: string; name: string }) => {
     setCat((c) => ({ ...c, name: data.name }));
     setEditing(false);
     toast.success("تم تحديث الفئة", { description: data.name });
   };
+
+  const handleAddNewProduct = (data: Omit<ProductRow, "id"> & { id?: string }) => {
+    const nextId = `P-${String(SEED_PRODUCTS.length + products.length + 1).padStart(3, "0")}`;
+    const newProduct: ProductRow = { id: nextId, ...data, category: cat.name };
+    setProducts((prev) => [newProduct, ...prev]);
+    setCat((c) => ({ ...c, products: c.products + 1 }));
+    setProductDialogOpen(false);
+    toast.success("تم إضافة المنتج إلى الفئة", { description: data.name });
+  };
+
+  const handleAddExistingProducts = (selected: ProductRow[]) => {
+    const newOnes = selected.filter((s) => !products.some((p) => p.id === s.id));
+    setProducts((prev) => [...newOnes.map((p) => ({ ...p, category: cat.name })), ...prev]);
+    setCat((c) => ({ ...c, products: c.products + newOnes.length }));
+    setPickerOpen(false);
+    if (newOnes.length > 0) {
+      toast.success(`تم إضافة ${newOnes.length} منتج إلى الفئة`);
+    }
+  };
+
+  const handleRemoveProduct = (p: ProductRow) => {
+    if (!confirm(`إزالة "${p.name}" من هذه الفئة؟`)) return;
+    setProducts((prev) => prev.filter((x) => x.id !== p.id));
+    setCat((c) => ({ ...c, products: Math.max(0, c.products - 1) }));
+    toast.success("تم إزالة المنتج من الفئة", { description: p.name });
+  };
+
+  const availableToAdd = SEED_PRODUCTS.filter((p) => !products.some((x) => x.id === p.id));
 
   return (
     <div className="space-y-6">
@@ -2009,10 +2043,46 @@ function AdminCategoryDetail({ categoryId }: { categoryId?: string }) {
         />
       </SectionCard>
 
-      <SectionCard title="منتجات الفئة">
+      <SectionCard
+        title="منتجات الفئة"
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setPickerOpen(true)}
+              disabled={availableToAdd.length === 0}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-[11px] font-bold text-ink hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <PackageSearch className="h-3.5 w-3.5" /> إضافة منتجات موجودة
+            </button>
+            <button
+              onClick={() => setProductDialogOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-[11px] font-bold text-primary-foreground shadow-cta hover:bg-primary/95"
+            >
+              <Plus className="h-3.5 w-3.5" /> منتج جديد
+            </button>
+          </div>
+        }
+      >
         {products.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            لا توجد منتجات بعد في هذه الفئة.
+          <div className="rounded-xl border border-dashed border-border p-8 text-center">
+            <PackageSearch className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+            <div className="text-sm font-bold text-ink">لا توجد منتجات بعد في هذه الفئة</div>
+            <p className="mt-1 text-xs text-muted-foreground">ابدأ بإضافة منتج جديد أو اختر من المنتجات الموجودة.</p>
+            <div className="mt-4 flex justify-center gap-2">
+              <button
+                onClick={() => setPickerOpen(true)}
+                disabled={availableToAdd.length === 0}
+                className="rounded-full border border-border px-4 py-1.5 text-[11px] font-bold hover:border-primary hover:text-primary disabled:opacity-50"
+              >
+                إضافة منتجات موجودة
+              </button>
+              <button
+                onClick={() => setProductDialogOpen(true)}
+                className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-cta hover:bg-primary/95"
+              >
+                + منتج جديد
+              </button>
+            </div>
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border">
@@ -2023,15 +2093,24 @@ function AdminCategoryDetail({ categoryId }: { categoryId?: string }) {
                   <th className="px-4 py-3 font-bold">المنتج</th>
                   <th className="px-4 py-3 font-bold">المخزون</th>
                   <th className="px-4 py-3 font-bold">السعر</th>
+                  <th className="px-4 py-3 font-bold">إجراء</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-card">
                 {products.map((p) => (
-                  <tr key={p.id}>
+                  <tr key={p.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3 font-mono text-xs text-primary">{p.id}</td>
                     <td className="px-4 py-3 font-bold text-ink">{p.name}</td>
                     <td className="px-4 py-3"><Pill tone={p.stock < 50 ? "danger" : "primary"}>{p.stock}</Pill></td>
-                    <td className="px-4 py-3 font-extrabold text-ink">${p.price}</td>
+                    <td className="px-4 py-3 font-extrabold text-ink">{p.price} ر.س</td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleRemoveProduct(p)}
+                        className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-[11px] font-bold text-rose-600 hover:border-rose-300 hover:bg-rose-50"
+                      >
+                        <Trash2 className="h-3 w-3" /> إزالة
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -2039,6 +2118,153 @@ function AdminCategoryDetail({ categoryId }: { categoryId?: string }) {
           </div>
         )}
       </SectionCard>
+
+      {productDialogOpen && (
+        <ProductDialog
+          initial={null}
+          onClose={() => setProductDialogOpen(false)}
+          onSave={handleAddNewProduct}
+        />
+      )}
+
+      {pickerOpen && (
+        <ProductPickerDialog
+          available={availableToAdd}
+          onClose={() => setPickerOpen(false)}
+          onConfirm={handleAddExistingProducts}
+        />
+      )}
+    </div>
+  );
+}
+
+function ProductPickerDialog({
+  available,
+  onClose,
+  onConfirm,
+}: {
+  available: ProductRow[];
+  onClose: () => void;
+  onConfirm: (selected: ProductRow[]) => void;
+}) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+
+  const toggle = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const filtered = available.filter(
+    (p) =>
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.id.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const submit = () => {
+    if (selectedIds.size === 0) {
+      toast.error("اختر منتجاً واحداً على الأقل");
+      return;
+    }
+    onConfirm(available.filter((p) => selectedIds.has(p.id)));
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <div>
+            <h2 className="text-lg font-extrabold text-ink">إضافة منتجات إلى الفئة</h2>
+            <p className="text-xs text-muted-foreground">اختر منتجاً أو أكثر من المنتجات الموجودة في المتجر</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+            aria-label="إغلاق"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4 p-5">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="ابحث باسم المنتج أو رمز SKU..."
+            className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-primary"
+          />
+
+          <div className="max-h-[360px] overflow-y-auto rounded-xl border border-border">
+            {filtered.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                لا توجد منتجات متاحة للإضافة
+              </div>
+            ) : (
+              <ul className="divide-y divide-border">
+                {filtered.map((p) => {
+                  const checked = selectedIds.has(p.id);
+                  return (
+                    <li key={p.id}>
+                      <label
+                        className={`flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors ${
+                          checked ? "bg-primary-soft" : "hover:bg-muted/40"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggle(p.id)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[11px] text-primary">{p.id}</span>
+                            <span className="text-sm font-bold text-ink">{p.name}</span>
+                          </div>
+                          <div className="mt-0.5 text-[11px] text-muted-foreground">
+                            {p.category} • مخزون {p.stock} • {p.price} ر.س
+                          </div>
+                        </div>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border pt-4">
+            <span className="text-xs text-muted-foreground">
+              {selectedIds.size} منتج محدد
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="rounded-full border border-border px-4 py-2 text-xs font-bold hover:bg-muted"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={submit}
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-cta hover:bg-primary/95"
+              >
+                <Plus className="h-3.5 w-3.5" /> إضافة المحدد
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
