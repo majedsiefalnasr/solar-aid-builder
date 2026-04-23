@@ -1545,6 +1545,35 @@ function ProductDialog({
         </div>
 
         <form onSubmit={submit} className="space-y-4">
+          <div className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">صورة المنتج</span>
+            <div className="flex items-center gap-3">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-muted">
+                {image ? (
+                  <img src={image} alt="معاينة" className="h-full w-full object-cover" />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-ink hover:border-primary hover:text-primary">
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  {image ? "تغيير الصورة" : "رفع صورة"}
+                  <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
+                </label>
+                {image && (
+                  <button
+                    type="button"
+                    onClick={() => setImage(undefined)}
+                    className="inline-flex w-fit items-center gap-1 text-[11px] font-bold text-rose-600 hover:underline"
+                  >
+                    <Trash2 className="h-3 w-3" /> إزالة
+                  </button>
+                )}
+                <span className="text-[10px] text-muted-foreground">PNG / JPG حتى 4 ميجابايت</span>
+              </div>
+            </div>
+          </div>
           <label className="block">
             <span className="mb-1.5 block text-xs font-bold text-ink">اسم المنتج</span>
             <input
@@ -1637,26 +1666,69 @@ const CATEGORIES_DATA: Category[] = [
   { id: "CAT-05", name: "الأدوات اليدوية", products: 113, revenue: 32, trend: [12, 14, 16, 18, 22, 20, 24] },
 ];
 
+interface CategoryDialogState {
+  mode: "create" | "edit";
+  category: Category | null;
+}
+
 function AdminCategories() {
+  const [categories, setCategories] = useState<Category[]>(CATEGORIES_DATA);
+  const [dialog, setDialog] = useState<CategoryDialogState | null>(null);
+
+  const openCreate = () => setDialog({ mode: "create", category: null });
+  const openEdit = (c: Category) => setDialog({ mode: "edit", category: c });
+
+  const handleSave = (data: { id?: string; name: string }) => {
+    if (data.id) {
+      setCategories((prev) => prev.map((c) => (c.id === data.id ? { ...c, name: data.name } : c)));
+      toast.success("تم تحديث الفئة", { description: data.name });
+    } else {
+      const nextId = `CAT-${String(categories.length + 1).padStart(2, "0")}`;
+      setCategories((prev) => [
+        ...prev,
+        { id: nextId, name: data.name, products: 0, revenue: 0, trend: [0, 0, 0, 0, 0, 0, 0] },
+      ]);
+      toast.success("تم إنشاء الفئة", { description: data.name });
+    }
+    setDialog(null);
+  };
+
+  const handleDelete = (c: Category, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(`حذف الفئة "${c.name}"؟ سيتم نقل منتجاتها إلى "غير مصنف".`)) return;
+    setCategories((prev) => prev.filter((x) => x.id !== c.id));
+    toast("تم حذف الفئة", { description: c.name });
+  };
+
+  const handleEditClick = (c: Category, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openEdit(c);
+  };
+
   return (
     <>
       <PageHeader
         title="الفئات"
         subtitle="فئات منتجات المتجر — اضغط على فئة لعرض منتجاتها"
         action={
-          <button className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta">
+          <button
+            onClick={openCreate}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta hover:bg-primary/95"
+          >
             <Plus className="h-3.5 w-3.5" /> فئة جديدة
           </button>
         }
       />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {CATEGORIES_DATA.map((c) => (
+        {categories.map((c) => (
           <Link
             key={c.id}
             to="/dashboard"
             search={{ role: "admin", section: "category-detail", categoryId: c.id }}
-            className="group rounded-2xl border border-border bg-card p-5 shadow-card transition hover:border-primary hover:shadow-cta"
+            className="group relative rounded-2xl border border-border bg-card p-5 shadow-card transition hover:border-primary hover:shadow-cta"
           >
             <div className="flex items-start justify-between">
               <div>
@@ -1680,10 +1752,103 @@ function AdminCategories() {
               </div>
             </div>
             <div className="mt-3"><Sparkline values={c.trend} tone="primary" /></div>
+
+            {/* Quick actions */}
+            <div className="mt-4 flex items-center justify-end gap-2 border-t border-border pt-3">
+              <button
+                onClick={(e) => handleEditClick(c, e)}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-bold text-ink hover:border-primary hover:text-primary"
+              >
+                <Pencil className="h-3 w-3" /> تعديل
+              </button>
+              <button
+                onClick={(e) => handleDelete(c, e)}
+                className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
+              >
+                <Trash2 className="h-3 w-3" /> حذف
+              </button>
+            </div>
           </Link>
         ))}
       </div>
+
+      {dialog && (
+        <CategoryDialog
+          initial={dialog.category}
+          onClose={() => setDialog(null)}
+          onSave={handleSave}
+        />
+      )}
     </>
+  );
+}
+
+function CategoryDialog({
+  initial,
+  onClose,
+  onSave,
+}: {
+  initial: Category | null;
+  onClose: () => void;
+  onSave: (data: { id?: string; name: string }) => void;
+}) {
+  const [name, setName] = useState(initial?.name ?? "");
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error("يرجى إدخال اسم الفئة");
+      return;
+    }
+    onSave({ id: initial?.id, name: name.trim() });
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <h2 className="text-lg font-extrabold text-ink">
+            {initial ? "تعديل الفئة" : "إنشاء فئة جديدة"}
+          </h2>
+          <button onClick={onClose} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <form onSubmit={submit} className="space-y-4 p-5">
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">اسم الفئة</span>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="مثلاً: مواد عزل"
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-bold hover:border-primary"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="flex-1 rounded-xl bg-primary px-5 py-2.5 text-sm font-extrabold text-primary-foreground shadow-cta hover:bg-primary/95"
+            >
+              {initial ? "حفظ التعديلات" : "إنشاء"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
