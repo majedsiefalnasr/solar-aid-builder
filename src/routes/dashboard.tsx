@@ -58,7 +58,7 @@ function DashboardLayout() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-muted/40 pb-10">
+    <div className="min-h-screen bg-muted/40">
       <div className="mx-auto flex min-h-screen max-w-[1500px]">
         {/* Sidebar */}
         <aside className="sticky top-0 hidden h-screen max-h-screen w-64 shrink-0 self-start overflow-hidden border-l border-border bg-card/70 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-card/60 md:flex md:flex-col">
