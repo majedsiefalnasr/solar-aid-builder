@@ -411,6 +411,16 @@ function NewWithdrawalDialog({
               className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
           </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">ملاحظات (اختياري)</span>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              placeholder="مثال: مستحقات مرحلة الأساسات"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
           <div className="flex gap-2 border-t border-border pt-4">
             <button type="button" onClick={onClose} className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold hover:border-primary">
               إلغاء
