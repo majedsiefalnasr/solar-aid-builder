@@ -1006,6 +1006,7 @@ const WITHDRAWALS_SEED: Withdrawal[] = [
 function AdminFinance() {
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(WITHDRAWALS_SEED);
   const [transferTarget, setTransferTarget] = useState<Withdrawal | null>(null);
+  const [detailsTarget, setDetailsTarget] = useState<Withdrawal | null>(null);
 
   const pendingCount = withdrawals.filter((w) => w.status === "pending").length;
   const pendingTotal = withdrawals.filter((w) => w.status === "pending").reduce((s, w) => s + w.amount, 0);
