@@ -1158,7 +1158,103 @@ function AdminFinance() {
           onConfirm={confirmTransfer}
         />
       )}
+
+      {detailsTarget && (
+        <WithdrawalDetailsDialog
+          withdrawal={detailsTarget}
+          onClose={() => setDetailsTarget(null)}
+        />
+      )}
     </>
+  );
+}
+
+function WithdrawalDetailsDialog({
+  withdrawal,
+  onClose,
+}: {
+  withdrawal: Withdrawal;
+  onClose: () => void;
+}) {
+  const isCompleted = withdrawal.status === "completed";
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-xl overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <div>
+            <h2 className="text-lg font-extrabold text-ink">تفاصيل التحويل البنكي</h2>
+            <p className="text-xs text-muted-foreground">رقم الطلب: {withdrawal.id}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+            aria-label="إغلاق"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-5 p-5">
+          <div className="flex items-center justify-between rounded-2xl bg-emerald-50 p-4">
+            <div>
+              <div className="text-[11px] font-semibold text-emerald-700">الحالة</div>
+              <Pill tone={isCompleted ? "primary" : "accent"}>
+                {isCompleted ? "تم التحويل بنجاح" : "بانتظار التحويل"}
+              </Pill>
+            </div>
+            <div className="text-left">
+              <div className="text-[11px] font-semibold text-emerald-700">المبلغ</div>
+              <div className="text-2xl font-extrabold text-emerald-700">
+                {withdrawal.amount.toLocaleString()} ر.س
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <DetailRow label="المقاول" value={withdrawal.contractor} />
+            <DetailRow label="المؤسسة" value={withdrawal.contractorOrg} />
+            <DetailRow label="المشروع" value={withdrawal.project} />
+            <DetailRow label="البنك" value={withdrawal.bank} />
+            <div className="sm:col-span-2">
+              <DetailRow label="رقم الآيبان (IBAN)" value={withdrawal.iban} mono />
+            </div>
+          </div>
+
+          {isCompleted && (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-sm text-emerald-800">
+              <div className="font-extrabold">تم تنفيذ التحويل البنكي بنجاح</div>
+              <div className="mt-1 text-xs">سيظهر الإيصال في سجل العمليات المالية.</div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 border-t border-border pt-4">
+            <button
+              onClick={onClose}
+              className="rounded-full border border-border px-5 py-2 text-sm font-bold hover:bg-muted"
+            >
+              إغلاق
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="rounded-xl border border-border bg-muted/30 px-3 py-2">
+      <div className="text-[11px] font-semibold text-muted-foreground">{label}</div>
+      <div className={`mt-0.5 text-sm font-extrabold text-ink ${mono ? "font-mono tracking-tight" : ""}`}>
+        {value}
+      </div>
+    </div>
   );
 }
 
