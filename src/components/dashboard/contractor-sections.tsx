@@ -1,16 +1,24 @@
 import { Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Briefcase,
   CheckCircle2,
   Clock,
-  ExternalLink,
   Eye,
   ListChecks,
+  Minus,
+  Plus,
+  Search,
   ShoppingBag,
+  ShoppingCart,
+  Star,
   Wallet,
+  X,
 } from "lucide-react";
 import { FIELD_REPORTS, MOCK_PROJECT, PAYMENT_REQUESTS } from "@/lib/dashboard-data";
+import { products as STORE_PRODUCTS, filterCategories } from "@/lib/products";
 import { ContractorDashboard } from "./contractor-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
@@ -210,6 +218,7 @@ function ContractorTasks() {
 }
 
 function ContractorWithdrawals() {
+  const [open, setOpen] = useState(false);
   const released = PAYMENT_REQUESTS.filter((x) => x.status === "released").reduce(
     (s, x) => s + x.amount,
     0,
@@ -223,25 +232,18 @@ function ContractorWithdrawals() {
       <PageHeader title="السحوبات" subtitle="مستحقاتك وطلبات السحب الحالية" />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard
-          label="رصيد متاح للسحب"
-          value={fmtMoney(released)}
-          icon={<Wallet className="h-5 w-5" />}
-          tone="primary"
-        />
-        <StatCard
-          label="قيد المراجعة"
-          value={fmtMoney(pending)}
-          icon={<Clock className="h-5 w-5" />}
-          tone="accent"
-        />
+        <StatCard label="رصيد متاح للسحب" value={fmtMoney(released)} icon={<Wallet className="h-5 w-5" />} tone="primary" />
+        <StatCard label="قيد المراجعة" value={fmtMoney(pending)} icon={<Clock className="h-5 w-5" />} tone="accent" />
         <StatCard label="عمولة المنصة" value="2.5%" hint="على المبالغ المُحرّرة" />
       </div>
 
       <SectionCard
         title="طلب سحب جديد"
         action={
-          <button className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta">
+          <button
+            onClick={() => setOpen(true)}
+            className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta"
+          >
             إنشاء طلب
           </button>
         }
@@ -254,66 +256,276 @@ function ContractorWithdrawals() {
       <SectionCard title="سجل السحوبات" className="mt-6">
         <div className="space-y-3">
           {PAYMENT_REQUESTS.map((req) => (
-            <div
-              key={req.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-4"
-            >
+            <div key={req.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-4">
               <div>
                 <div className="text-sm font-bold text-ink">{req.phase}</div>
-                <div className="text-[11px] text-muted-foreground">
-                  {req.id} • {req.submittedAt}
-                </div>
+                <div className="text-[11px] text-muted-foreground">{req.id} • {req.submittedAt}</div>
               </div>
               <div className="text-base font-extrabold text-ink">{fmtMoney(req.amount)}</div>
               <Pill
                 tone={
-                  req.status === "released"
-                    ? "primary"
-                    : req.status === "approved"
-                      ? "info"
-                      : req.status === "rejected"
-                        ? "danger"
-                        : "accent"
+                  req.status === "released" ? "primary" : req.status === "approved" ? "info" : req.status === "rejected" ? "danger" : "accent"
                 }
               >
-                {req.status === "released"
-                  ? "مُحرّرة"
-                  : req.status === "approved"
-                    ? "اعتُمدت"
-                    : req.status === "rejected"
-                      ? "مرفوضة"
-                      : "بانتظار"}
+                {req.status === "released" ? "مُحرّرة" : req.status === "approved" ? "اعتُمدت" : req.status === "rejected" ? "مرفوضة" : "بانتظار"}
               </Pill>
             </div>
           ))}
         </div>
       </SectionCard>
+
+      {open && <NewWithdrawalDialog max={released} onClose={() => setOpen(false)} />}
     </>
   );
 }
 
+function NewWithdrawalDialog({ max, onClose }: { max: number; onClose: () => void }) {
+  const [amount, setAmount] = useState<number>(0);
+  const [iban, setIban] = useState("");
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <h2 className="text-lg font-extrabold text-ink">إنشاء طلب سحب جديد</h2>
+          <button onClick={onClose} className="rounded-full p-2 text-muted-foreground hover:bg-muted" aria-label="إغلاق">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!amount || amount <= 0) {
+              toast.error("يرجى إدخال مبلغ صحيح");
+              return;
+            }
+            if (amount > max) {
+              toast.error(`الحد الأقصى المتاح ${fmtMoney(max)}`);
+              return;
+            }
+            if (!iban.trim()) {
+              toast.error("يرجى إدخال رقم الحساب البنكي");
+              return;
+            }
+            toast.success("تم إنشاء طلب السحب", {
+              description: `${fmtMoney(amount)} • سيتم التحويل خلال 3 أيام عمل`,
+            });
+            onClose();
+          }}
+          className="space-y-4 p-5"
+        >
+          <div className="rounded-xl bg-primary-soft/40 p-3 text-xs">
+            <span className="text-muted-foreground">الرصيد المتاح: </span>
+            <span className="font-extrabold text-ink">{fmtMoney(max)}</span>
+          </div>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">المبلغ (بآلاف الريالات)</span>
+            <input
+              type="number"
+              value={amount || ""}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">رقم الحساب البنكي (IBAN)</span>
+            <input
+              value={iban}
+              onChange={(e) => setIban(e.target.value)}
+              placeholder="YE12 0000 0000 0000 0000 0000"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <div className="flex gap-2 border-t border-border pt-4">
+            <button type="button" onClick={onClose} className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold hover:border-primary">
+              إلغاء
+            </button>
+            <button type="submit" className="flex-1 rounded-full bg-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-cta">
+              إرسال الطلب
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Embedded contractor store (simple grid + cart) ----------
+type CartLine = { id: string; qty: number };
+
 function ContractorMaterials() {
+  const [query, setQuery] = useState("");
+  const [cat, setCat] = useState<string>("all");
+  const [cart, setCart] = useState<CartLine[]>([]);
+
+  const items = useMemo(() => {
+    return STORE_PRODUCTS.filter(
+      (p) =>
+        (cat === "all" || p.category === cat) &&
+        (query === "" || p.name.includes(query) || p.brand.includes(query)),
+    );
+  }, [query, cat]);
+
+  const addToCart = (id: string) => {
+    setCart((prev) => {
+      const existing = prev.find((l) => l.id === id);
+      if (existing) {
+        return prev.map((l) => (l.id === id ? { ...l, qty: l.qty + 1 } : l));
+      }
+      return [...prev, { id, qty: 1 }];
+    });
+    const p = STORE_PRODUCTS.find((x) => x.id === id);
+    toast.success("تمت الإضافة للسلة", { description: p?.name });
+  };
+
+  const setQty = (id: string, qty: number) => {
+    setCart((prev) =>
+      qty <= 0 ? prev.filter((l) => l.id !== id) : prev.map((l) => (l.id === id ? { ...l, qty } : l)),
+    );
+  };
+
+  const cartLines = cart
+    .map((l) => ({ ...l, product: STORE_PRODUCTS.find((p) => p.id === l.id)! }))
+    .filter((l) => l.product);
+  const total = cartLines.reduce((s, l) => s + l.product.price * l.qty, 0);
+  const count = cart.reduce((s, l) => s + l.qty, 0);
+
   return (
     <>
-      <PageHeader title="شراء مواد" subtitle="اطلب مواد البناء بأسعار خاصة للمقاولين على منصة تم" />
-      <div className="rounded-3xl border border-border bg-gradient-to-l from-accent/10 to-card p-8 text-center shadow-card">
-        <ShoppingBag className="mx-auto h-14 w-14 text-accent" />
-        <h2 className="mt-4 text-xl font-extrabold text-ink">متجر المقاولين</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          خصومات حصرية على الإسمنت، الحديد، البلوك، والمواد الكهربائية.
-        </p>
-        <Link
-          to="/store"
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-bold text-accent-foreground shadow-cta"
-        >
-          ادخل المتجر <ExternalLink className="h-4 w-4" />
-        </Link>
+      <PageHeader
+        title="شراء مواد"
+        subtitle="متجر المقاولين على منصة تم — خصومات حصرية على مواد البناء والأدوات"
+      />
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        {/* Products grid */}
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-card">
+            <div className="flex flex-1 items-center gap-2 rounded-xl bg-muted/40 px-3 py-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="ابحث عن منتج…"
+                className="w-full bg-transparent text-sm focus:outline-none"
+              />
+            </div>
+            <select
+              value={cat}
+              onChange={(e) => setCat(e.target.value)}
+              className="rounded-xl border border-input bg-background px-3 py-2 text-xs font-bold focus:border-primary focus:outline-none"
+            >
+              <option value="all">جميع الفئات</option>
+              {filterCategories.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {items.map((p) => (
+              <article
+                key={p.id}
+                className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-card transition hover:shadow-elevated"
+              >
+                <div className="flex h-24 items-center justify-center rounded-xl bg-gradient-to-br from-primary-soft/60 to-accent/15 text-primary">
+                  <ShoppingBag className="h-10 w-10" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  {p.badge && <Pill tone="accent">{p.badge}</Pill>}
+                  <h3 className="mt-1 line-clamp-2 text-sm font-extrabold text-ink">{p.name}</h3>
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {p.rating}
+                    <span>•</span>
+                    <span>{p.brand}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-border pt-3">
+                  <div>
+                    <div className="text-base font-extrabold text-ink">
+                      {p.price} <span className="text-[10px] font-bold text-muted-foreground">ر.س / {p.unit}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => addToCart(p.id)}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground shadow-cta"
+                  >
+                    <Plus className="h-3 w-3" /> أضف
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        {/* Cart sidebar */}
+        <aside className="sticky top-24 h-fit rounded-2xl border border-border bg-card p-4 shadow-card">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShoppingCart className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-extrabold text-ink">سلة الشراء</h3>
+            </div>
+            <Pill tone="primary">{count}</Pill>
+          </div>
+          {cartLines.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border bg-background p-6 text-center text-xs text-muted-foreground">
+              السلة فارغة — أضف منتجات من القائمة
+            </div>
+          ) : (
+            <>
+              <ul className="space-y-2">
+                {cartLines.map((l) => (
+                  <li key={l.id} className="rounded-xl border border-border bg-background p-3">
+                    <div className="line-clamp-1 text-xs font-bold text-ink">{l.product.name}</div>
+                    <div className="mt-1 flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setQty(l.id, l.qty - 1)}
+                          className="flex h-6 w-6 items-center justify-center rounded-full border border-border hover:border-primary"
+                          aria-label="إنقاص"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-6 text-center text-xs font-extrabold text-ink">{l.qty}</span>
+                        <button
+                          onClick={() => setQty(l.id, l.qty + 1)}
+                          className="flex h-6 w-6 items-center justify-center rounded-full border border-border hover:border-primary"
+                          aria-label="زيادة"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <div className="text-xs font-extrabold text-ink">
+                        {(l.product.price * l.qty).toLocaleString()} ر.س
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 space-y-2 border-t border-border pt-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">الإجمالي</span>
+                  <span className="text-base font-extrabold text-ink">{total.toLocaleString()} ر.س</span>
+                </div>
+                <button
+                  onClick={() => {
+                    toast.success("تم إرسال طلب الشراء", { description: `${count} منتجات • ${total.toLocaleString()} ر.س` });
+                    setCart([]);
+                  }}
+                  className="w-full rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-cta"
+                >
+                  إتمام الطلب
+                </button>
+              </div>
+            </>
+          )}
+        </aside>
       </div>
 
-      {/* dummy use to satisfy linter for Reports import warnings */}
       <div className="hidden">
         <span>{FIELD_REPORTS.length}</span>
         <ArrowLeft />
+        <Link to="/store">store</Link>
       </div>
     </>
   );

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Calculator,
@@ -836,6 +837,9 @@ function OwnerPayments() {
 // ---------- Owner Purchases (replaces Store) ----------
 function OwnerPurchases() {
   const [filter, setFilter] = useState<PurchaseStatus | "all">("all");
+  const [detailOrder, setDetailOrder] = useState<typeof PURCHASES[number] | null>(null);
+  const [trackOrder, setTrackOrder] = useState<typeof PURCHASES[number] | null>(null);
+  const [returnOrder, setReturnOrder] = useState<typeof PURCHASES[number] | null>(null);
   const filtered = filter === "all" ? PURCHASES : PURCHASES.filter((p) => p.status === filter);
 
   const totalSpent = PURCHASES.reduce((s, p) => s + p.total, 0);
@@ -952,16 +956,25 @@ function OwnerPurchases() {
               )}
 
               <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-3">
-                <button className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-bold text-foreground hover:border-primary hover:text-primary">
+                <button
+                  onClick={() => setDetailOrder(order)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-bold text-foreground hover:border-primary hover:text-primary"
+                >
                   <Eye className="h-3 w-3" /> تفاصيل الطلب
                 </button>
                 {order.status === "shipped" && (
-                  <button className="inline-flex items-center gap-1.5 rounded-full border border-sky-300 bg-sky-50 px-4 py-1.5 text-[11px] font-bold text-sky-700 hover:bg-sky-100">
+                  <button
+                    onClick={() => setTrackOrder(order)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-sky-300 bg-sky-50 px-4 py-1.5 text-[11px] font-bold text-sky-700 hover:bg-sky-100"
+                  >
                     <Truck className="h-3 w-3" /> تتبع الشحنة
                   </button>
                 )}
                 {order.status === "delivered" && (
-                  <button className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-1.5 text-[11px] font-bold text-rose-700 hover:bg-rose-100">
+                  <button
+                    onClick={() => setReturnOrder(order)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-1.5 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
+                  >
                     <RotateCcw className="h-3 w-3" /> طلب إرجاع
                   </button>
                 )}
@@ -976,6 +989,21 @@ function OwnerPurchases() {
         </div>
       )}
 
+      {detailOrder && <OrderDetailDialog order={detailOrder} onClose={() => setDetailOrder(null)} />}
+      {trackOrder && <OrderTrackingDialog order={trackOrder} onClose={() => setTrackOrder(null)} />}
+      {returnOrder && (
+        <OrderReturnDialog
+          order={returnOrder}
+          onClose={() => setReturnOrder(null)}
+          onSubmit={(reason) => {
+            toast.success("تم إرسال طلب الإرجاع", {
+              description: `${returnOrder.id} — سيتم التواصل معك خلال 24 ساعة. السبب: ${reason}`,
+            });
+            setReturnOrder(null);
+          }}
+        />
+      )}
+
       {/* Avoid unused import lint — quietly reference Layers/STATUS_LABEL/STATUS_TONE for shared modules */}
       <div className="hidden">
         <Layers />
@@ -983,5 +1011,201 @@ function OwnerPurchases() {
         <span>{STATUS_TONE.completed}</span>
       </div>
     </>
+  );
+}
+
+// ---------- Order Detail / Tracking / Return dialogs ----------
+type PurchaseRow = (typeof PURCHASES)[number];
+
+function ModalShell({
+  title,
+  subtitle,
+  onClose,
+  children,
+  maxWidth = "max-w-lg",
+}: {
+  title: string;
+  subtitle?: string;
+  onClose: () => void;
+  children: React.ReactNode;
+  maxWidth?: string;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className={`w-full ${maxWidth} overflow-hidden rounded-3xl border border-border bg-card shadow-2xl`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between border-b border-border p-5">
+          <div>
+            <h2 className="text-lg font-extrabold text-ink">{title}</h2>
+            {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+            aria-label="إغلاق"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto p-5">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function OrderDetailDialog({ order, onClose }: { order: PurchaseRow; onClose: () => void }) {
+  return (
+    <ModalShell
+      title={`تفاصيل الطلب ${order.id}`}
+      subtitle={`${order.date} • ${order.paymentMethod}`}
+      onClose={onClose}
+    >
+      <div className="space-y-4">
+        <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3">
+          <span className="text-xs font-bold text-muted-foreground">الحالة</span>
+          <Pill tone={PURCHASE_STATUS_TONE[order.status]}>
+            {PURCHASE_STATUS_LABEL[order.status]}
+          </Pill>
+        </div>
+        <div>
+          <div className="mb-2 text-xs font-extrabold text-ink">العناصر</div>
+          <ul className="space-y-2">
+            {order.preview.map((it, i) => (
+              <li
+                key={i}
+                className="flex items-center justify-between rounded-xl border border-border bg-background p-3 text-sm"
+              >
+                <span className="font-bold text-ink">{it.name}</span>
+                <span className="text-xs text-muted-foreground">×{it.qty}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="flex items-center justify-between border-t border-border pt-3">
+          <span className="text-sm font-bold text-muted-foreground">الإجمالي</span>
+          <span className="text-xl font-extrabold text-ink">
+            {order.total.toLocaleString("en-US")} ر.س
+          </span>
+        </div>
+        {order.deliveryEta && (
+          <div className="flex items-center gap-2 rounded-xl bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700">
+            <Truck className="h-3.5 w-3.5" /> وصول متوقع: {order.deliveryEta}
+          </div>
+        )}
+      </div>
+    </ModalShell>
+  );
+}
+
+function OrderTrackingDialog({ order, onClose }: { order: PurchaseRow; onClose: () => void }) {
+  const stages = [
+    { label: "تم استلام الطلب", done: true },
+    { label: "تم تجهيز الطلب", done: true },
+    { label: "تم الشحن من المستودع", done: true },
+    { label: "في الطريق إلى عنوانك", done: order.status === "shipped" },
+    { label: "تم التسليم", done: false },
+  ];
+  return (
+    <ModalShell
+      title={`تتبع الشحنة ${order.id}`}
+      subtitle={`الناقل: شحن تم السريع • وصول متوقع: ${order.deliveryEta ?? "—"}`}
+      onClose={onClose}
+    >
+      <ol className="relative space-y-5 border-r-2 border-dashed border-border pe-0 ps-6">
+        {stages.map((s, i) => (
+          <li key={i} className="relative">
+            <span
+              className={`absolute -right-[28px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-extrabold ring-4 ring-card ${
+                s.done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {s.done ? "✓" : i + 1}
+            </span>
+            <div
+              className={`text-sm font-bold ${s.done ? "text-ink" : "text-muted-foreground"}`}
+            >
+              {s.label}
+            </div>
+          </li>
+        ))}
+      </ol>
+      <div className="mt-5 rounded-xl border border-sky-200 bg-sky-50/60 p-3 text-xs text-sky-800">
+        رقم التتبع: <span className="font-mono font-bold">TM-{order.id.replace(/\D/g, "")}-EX</span>
+      </div>
+    </ModalShell>
+  );
+}
+
+function OrderReturnDialog({
+  order,
+  onClose,
+  onSubmit,
+}: {
+  order: PurchaseRow;
+  onClose: () => void;
+  onSubmit: (reason: string) => void;
+}) {
+  const reasons = [
+    "منتج تالف",
+    "منتج لا يطابق الوصف",
+    "وصلتني كمية غير مطلوبة",
+    "تأخر التسليم",
+    "سبب آخر",
+  ];
+  const [reason, setReason] = useState(reasons[0]);
+  const [note, setNote] = useState("");
+  return (
+    <ModalShell title={`طلب إرجاع — ${order.id}`} onClose={onClose}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit(reason);
+        }}
+        className="space-y-4"
+      >
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-bold text-ink">سبب الإرجاع</span>
+          <select
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+          >
+            {reasons.map((r) => (
+              <option key={r}>{r}</option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-bold text-ink">ملاحظات (اختياري)</span>
+          <textarea
+            rows={3}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="أضف تفاصيل تساعدنا في معالجة طلبك بسرعة"
+            className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+          />
+        </label>
+        <div className="flex gap-2 border-t border-border pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-border bg-card px-5 py-2.5 text-xs font-bold hover:border-primary"
+          >
+            إلغاء
+          </button>
+          <button
+            type="submit"
+            className="flex-1 rounded-full bg-rose-500 px-5 py-2.5 text-xs font-bold text-white shadow-cta hover:bg-rose-600"
+          >
+            تأكيد طلب الإرجاع
+          </button>
+        </div>
+      </form>
+    </ModalShell>
   );
 }
