@@ -88,7 +88,7 @@ const CONTRACTOR_PROJECTS = [
     city: "صنعاء",
     progress: 18,
     activePhase: "الحفر والأساسات",
-    nextPayout: 5_200,
+    nextPayout: 5.2,
   },
 ];
 
