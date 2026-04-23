@@ -58,9 +58,60 @@ const ALL_DISPUTES = [
 
 export function AdminDashboard() {
   const [logOpen, setLogOpen] = useState(false);
+  const store = useWorkflow();
+  const pendingAdmin = useMemo(
+    () => store.projects.filter((p) => p.status === "pending_admin"),
+    [store.projects],
+  );
+  const pendingPayments = useMemo(
+    () =>
+      store.projects.flatMap((p) =>
+        p.payments.filter((pm) => pm.status === "pending").map(() => p.id),
+      ),
+    [store.projects],
+  );
+  const pendingReports = useMemo(
+    () => store.reports.filter((r) => r.status === "pending"),
+    [store.reports],
+  );
 
   return (
     <div className="space-y-6">
+      {(pendingAdmin.length > 0 || pendingPayments.length > 0 || pendingReports.length > 0) && (
+        <div className="grid gap-3 md:grid-cols-3">
+          {pendingAdmin.length > 0 && (
+            <BannerCard
+              tone="primary"
+              icon={<Building2 className="h-4 w-4" />}
+              title={`${pendingAdmin.length} طلب مشروع جديد`}
+              subtitle="بانتظار قبولك وتعيين مشرف"
+              to="/dashboard"
+              search={{ role: "admin", section: "projects" }}
+            />
+          )}
+          {pendingPayments.length > 0 && (
+            <BannerCard
+              tone="accent"
+              icon={<CreditCard className="h-4 w-4" />}
+              title={`${pendingPayments.length} إثبات دفع للتحقق`}
+              subtitle="حوالات بنكية رفعها العملاء"
+              to="/dashboard"
+              search={{ role: "admin", section: "projects" }}
+            />
+          )}
+          {pendingReports.length > 0 && (
+            <BannerCard
+              tone="info"
+              icon={<FileText className="h-4 w-4" />}
+              title={`${pendingReports.length} تقرير ميداني`}
+              subtitle="رُفعت من المهندسين الميدانيين"
+              to="/dashboard"
+              search={{ role: "admin", section: "reports" }}
+            />
+          )}
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="مشاريع نشطة"
