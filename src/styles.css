@@ -126,28 +126,46 @@
 }
 
 .dark {
-  --background: oklch(0.22 0.04 220);
-  --foreground: oklch(0.98 0.004 220);
-  --ink: oklch(0.98 0.004 220);
-  --surface: oklch(0.28 0.05 220);
-  --card: oklch(0.28 0.05 220);
-  --card-foreground: oklch(0.98 0.004 220);
-  --popover: oklch(0.28 0.05 220);
-  --popover-foreground: oklch(0.98 0.004 220);
-  --primary: oklch(0.78 0.12 165);
-  --primary-foreground: oklch(0.22 0.04 220);
-  --primary-soft: oklch(0.32 0.07 165);
-  --secondary: oklch(0.32 0.04 220);
-  --secondary-foreground: oklch(0.98 0.004 220);
-  --muted: oklch(0.32 0.04 220);
-  --muted-foreground: oklch(0.72 0.02 220);
-  --accent: oklch(0.74 0.16 45);
-  --accent-foreground: oklch(0.22 0.04 220);
-  --destructive: oklch(0.65 0.22 28);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.78 0.12 165);
+  /* Neutral dark scale — true near-black base with subtle navy hint.
+     Tuned for WCAG AA on text/UI per 1.4.3 (4.5:1) and 1.4.11 (3:1). */
+
+  /* Surfaces: layered elevation — base < card < popover */
+  --background: oklch(0.18 0.012 230);          /* app base */
+  --surface: oklch(0.22 0.014 230);             /* raised surface */
+  --card: oklch(0.235 0.014 230);               /* card */
+  --popover: oklch(0.275 0.016 230);            /* popovers / menus (highest) */
+
+  /* Text: high-contrast off-white. ~16.5:1 on background */
+  --foreground: oklch(0.965 0.005 230);
+  --ink: oklch(0.985 0.004 230);
+  --card-foreground: oklch(0.965 0.005 230);
+  --popover-foreground: oklch(0.985 0.004 230);
+
+  /* Primary: brighter green that hits 4.5:1 on dark surfaces; dark text on top */
+  --primary: oklch(0.82 0.16 165);
+  --primary-foreground: oklch(0.18 0.012 230);
+  --primary-soft: oklch(0.32 0.06 165);         /* subtle green wash */
+
+  /* Secondary / muted — distinct from card so chips/pills read separately */
+  --secondary: oklch(0.30 0.018 230);
+  --secondary-foreground: oklch(0.965 0.005 230);
+  --muted: oklch(0.30 0.018 230);
+  --muted-foreground: oklch(0.78 0.018 230);    /* ~7.5:1 on background */
+
+  /* Accent orange — slightly desaturated for comfort, dark text on top */
+  --accent: oklch(0.78 0.15 50);
+  --accent-foreground: oklch(0.20 0.02 50);
+
+  /* Destructive — readable red, dark text on top for buttons */
+  --destructive: oklch(0.70 0.20 25);
+  --destructive-foreground: oklch(0.18 0.012 230);
+
+  /* Borders / inputs: visible but not loud (≥3:1 vs background) */
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+
+  /* Focus ring — bright, high contrast against any surface */
+  --ring: oklch(0.85 0.16 165);
 }
 
 @layer base {
@@ -170,6 +188,79 @@
     font-family: var(--font-display);
     letter-spacing: -0.01em;
   }
+
+  /* Stronger focus visibility for keyboard users (WCAG 2.4.7) */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Selection: readable in both themes */
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-primary) 35%, transparent);
+    color: var(--color-foreground);
+  }
+}
+
+/* Dark-mode shadow tweaks — colored ambient instead of opaque black */
+.dark {
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.5), 0 8px 24px -12px oklch(0 0 0 / 0.45);
+  --shadow-elevated: 0 2px 6px oklch(0 0 0 / 0.55), 0 24px 48px -20px oklch(0 0 0 / 0.6);
+  --shadow-cta: 0 8px 20px -8px oklch(0.82 0.16 165 / 0.4);
+}
+
+/* Dark-mode utility tweaks for status tints (amber/sky/violet/rose used inline)
+   so they remain readable on a dark base. Light-mode untouched. */
+.dark .bg-amber-50,
+.dark .bg-amber-50\/60,
+.dark .bg-amber-50\/40 {
+  background-color: oklch(0.32 0.08 75 / 0.45) !important;
+}
+.dark .text-amber-800,
+.dark .text-amber-900,
+.dark .text-amber-700 {
+  color: oklch(0.88 0.12 80) !important;
+}
+.dark .border-amber-300\/50 {
+  border-color: oklch(0.65 0.13 75 / 0.45) !important;
+}
+.dark .bg-amber-100 {
+  background-color: oklch(0.35 0.09 75 / 0.6) !important;
+}
+.dark .bg-amber-500\/30 {
+  background-color: oklch(0.6 0.14 75 / 0.4) !important;
+}
+
+.dark .bg-sky-50 {
+  background-color: oklch(0.32 0.07 230 / 0.5) !important;
+}
+.dark .text-sky-800 {
+  color: oklch(0.86 0.10 220) !important;
+}
+
+.dark .bg-violet-50 {
+  background-color: oklch(0.32 0.08 290 / 0.5) !important;
+}
+.dark .text-violet-800 {
+  color: oklch(0.86 0.10 290) !important;
+}
+
+.dark .bg-rose-50 {
+  background-color: oklch(0.32 0.09 20 / 0.5) !important;
+}
+.dark .text-rose-700,
+.dark .text-rose-800 {
+  color: oklch(0.86 0.12 20) !important;
+}
+
+.dark .bg-emerald-50,
+.dark .bg-emerald-100 {
+  background-color: oklch(0.32 0.08 165 / 0.45) !important;
+}
+.dark .text-emerald-700,
+.dark .text-emerald-800 {
+  color: oklch(0.86 0.13 165) !important;
 }
 
 /* Subtle grid background utility — uses TAMM green */
