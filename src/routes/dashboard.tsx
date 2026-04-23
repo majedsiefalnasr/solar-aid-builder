@@ -197,7 +197,13 @@ function DashboardLayout() {
           </div>
 
           <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
-            <DashboardContent role={role} section={currentSection} projectId={projectId} />
+            <DashboardContent
+              role={role}
+              section={currentSection}
+              projectId={projectId}
+              categoryId={categoryId}
+              orderId={orderId}
+            />
             <Outlet />
           </main>
         </div>
@@ -210,10 +216,14 @@ function DashboardContent({
   role,
   section,
   projectId,
+  categoryId,
+  orderId,
 }: {
   role: Role;
   section: string;
   projectId?: string;
+  categoryId?: string;
+  orderId?: string;
 }) {
   switch (role) {
     case "owner":
@@ -225,6 +235,13 @@ function DashboardContent({
     case "field":
       return <FieldSection section={section} />;
     case "admin":
-      return <AdminSection section={section} projectId={projectId} />;
+      return (
+        <AdminSection
+          section={section}
+          projectId={projectId}
+          categoryId={categoryId}
+          orderId={orderId}
+        />
+      );
   }
 }
