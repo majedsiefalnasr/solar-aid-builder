@@ -41,6 +41,8 @@ import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { ReportsSection } from "./reports-section";
+import { MessagesScreen } from "./messages-screen";
+import { SettingsSection } from "./settings-section";
 import {
   AdminReviewProjectDialog,
   ProjectStatusPill,
@@ -90,6 +92,10 @@ export function AdminSection({
       return <AdminOrders />;
     case "order-detail":
       return <AdminOrderDetail orderId={orderId} />;
+    case "messages":
+      return <MessagesScreen role="admin" />;
+    case "settings":
+      return <SettingsSection role="admin" />;
     default:
       return <AdminDashboard />;
   }

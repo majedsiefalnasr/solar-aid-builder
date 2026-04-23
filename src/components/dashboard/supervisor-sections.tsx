@@ -34,6 +34,7 @@ import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
 import { ReportsSection } from "./reports-section";
+import { SettingsSection } from "./settings-section";
 
 export function SupervisorSection({
   section,
@@ -59,6 +60,8 @@ export function SupervisorSection({
       return <SupervisorApprovals />;
     case "messages":
       return <MessagesScreen role="supervisor" />;
+    case "settings":
+      return <SettingsSection role="supervisor" />;
     default:
       return <SupervisorDashboard />;
   }

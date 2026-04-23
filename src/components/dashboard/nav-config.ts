@@ -14,6 +14,7 @@ import {
   PackageSearch,
   PlusSquare,
   Receipt,
+  Settings,
   Settings2,
   ShoppingBag,
   Store,
@@ -47,6 +48,8 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { key: "products", label: "إدارة المنتجات", icon: PackageSearch, group: "المتجر" },
     { key: "categories", label: "الفئات", icon: Folder, group: "المتجر" },
     { key: "orders", label: "الطلبات", icon: ShoppingBag, group: "المتجر" },
+    { key: "messages", label: "المحادثات", icon: MessageSquare, group: "أخرى" },
+    { key: "settings", label: "الإعدادات", icon: Settings, group: "أخرى" },
   ],
   owner: [
     { key: "overview", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -56,6 +59,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { key: "payments", label: "المدفوعات", icon: CreditCard },
     { key: "messages", label: "المحادثات", icon: MessageSquare },
     { key: "purchases", label: "مشترياتي", icon: Receipt },
+    { key: "settings", label: "الإعدادات", icon: Settings, group: "أخرى" },
   ],
   contractor: [
     { key: "overview", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -65,6 +69,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { key: "messages", label: "المحادثات", icon: MessageSquare },
     { key: "withdrawals", label: "السحوبات", icon: Wallet },
     { key: "buy-materials", label: "شراء مواد", icon: ShoppingBag },
+    { key: "settings", label: "الإعدادات", icon: Settings, group: "أخرى" },
   ],
   supervisor: [
     { key: "overview", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -74,11 +79,13 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { key: "reports", label: "التقارير", icon: ClipboardList },
     { key: "approvals", label: "الاعتمادات", icon: ClipboardCheck },
     { key: "messages", label: "المحادثات", icon: MessageSquare },
+    { key: "settings", label: "الإعدادات", icon: Settings, group: "أخرى" },
   ],
   field: [
     { key: "overview", label: "لوحة التحكم", icon: LayoutDashboard },
     { key: "reports", label: "تقاريري", icon: ClipboardList },
     { key: "messages", label: "المحادثات", icon: MessageSquare },
+    { key: "settings", label: "الإعدادات", icon: Settings, group: "أخرى" },
   ],
 };
 
