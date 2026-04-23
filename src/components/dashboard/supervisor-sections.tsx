@@ -1,5 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  ROLE_USER,
+  reportsForSupervisor,
+  useWorkflow,
+  type FieldReportDoc,
+} from "@/lib/workflow-store";
+import { ReportRow, ReportViewerDialog } from "./reports-shared";
 import { toast } from "sonner";
 import {
   Building2,
