@@ -101,22 +101,21 @@ export function OwnerDashboard() {
             />
           </SectionCard>
         </div>
-        <SectionCard title="نسبة الإنجاز">
-          <div className="flex items-center justify-between gap-4">
-            <ProgressRing value={p.overallProgress} size={110} tone="primary" label="إنجاز كلي" />
-            <div className="flex-1">
-              <DonutChart
-                size={110}
-                centerLabel="مرحلة"
-                centerValue={`${p.phases.filter((x) => x.status === "completed").length}/${p.phases.length}`}
-                data={[
-                  { label: "مكتملة", value: p.phases.filter((x) => x.status === "completed").length, tone: "primary" },
-                  { label: "قيد التنفيذ", value: p.phases.filter((x) => x.status === "in_progress").length || 1, tone: "accent" },
-                  { label: "بانتظار", value: p.phases.filter((x) => x.status === "awaiting_funding").length || 1, tone: "danger" },
-                  { label: "مقفلة", value: p.phases.filter((x) => x.status === "locked").length || 1, tone: "info" },
-                ]}
-              />
-            </div>
+        <SectionCard title="نسبة الإنجاز" subtitle="توزيع حالات المراحل">
+          <div className="flex flex-col items-center gap-5">
+            <ProgressRing value={p.overallProgress} size={130} tone="primary" label="إنجاز كلي" />
+            <div className="h-px w-full bg-border" />
+            <DonutChart
+              size={130}
+              centerLabel="مرحلة"
+              centerValue={`${p.phases.filter((x) => x.status === "completed").length}/${p.phases.length}`}
+              data={[
+                { label: "مكتملة", value: p.phases.filter((x) => x.status === "completed").length, tone: "primary" },
+                { label: "قيد التنفيذ", value: p.phases.filter((x) => x.status === "in_progress").length || 1, tone: "accent" },
+                { label: "بانتظار", value: p.phases.filter((x) => x.status === "awaiting_funding").length || 1, tone: "danger" },
+                { label: "مقفلة", value: p.phases.filter((x) => x.status === "locked").length || 1, tone: "info" },
+              ]}
+            />
           </div>
         </SectionCard>
       </div>
