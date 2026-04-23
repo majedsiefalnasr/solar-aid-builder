@@ -436,7 +436,7 @@ function seedState(): StoreState {
     city: "عدن",
     type: "apartment",
     area: 180,
-    budget: 22_000,
+    budget: 22,
     ownerName: "فهد المنصور",
     contractorName: SINGLE_CONTRACTOR,
     supervisorName: "م. خالد الأهدل",
