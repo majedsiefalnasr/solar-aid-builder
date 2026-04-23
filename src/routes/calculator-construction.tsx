@@ -469,6 +469,3 @@ function ResultRow({ label, value }: { label: string; value: React.ReactNode }) 
     </div>
   );
 }
-
-// Suppress unused import
-void ArrowLeft;
