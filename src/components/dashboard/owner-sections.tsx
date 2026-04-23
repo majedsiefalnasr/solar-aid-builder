@@ -81,45 +81,21 @@ export function OwnerSection({
   }
 }
 
-const MY_PROJECTS = [
-  {
-    id: MOCK_PROJECT.id,
-    name: MOCK_PROJECT.name,
-    city: MOCK_PROJECT.city,
-    contractor: MOCK_PROJECT.contractor,
-    supervisor: MOCK_PROJECT.supervisor,
-    totalBudget: MOCK_PROJECT.totalBudget,
-    releasedAmount: MOCK_PROJECT.releasedAmount,
-    overallProgress: MOCK_PROJECT.overallProgress,
-  },
-  {
-    id: "PRJ-2055",
-    name: "شقة المعلا",
-    city: "عدن",
-    contractor: "مؤسسة بناة الجنوب",
-    supervisor: "م. هدى الصبيحي",
-    totalBudget: 22_000,
-    releasedAmount: 6_500,
-    overallProgress: 28,
-  },
-  {
-    id: "PRJ-2068",
-    name: "محل تجاري — حي السلام",
-    city: "تعز",
-    contractor: "—",
-    supervisor: "—",
-    totalBudget: 9_500,
-    releasedAmount: 0,
-    overallProgress: 0,
-  },
-];
-
 function OwnerProjects() {
+  const store = useWorkflow();
+  const ownerName = ROLE_USER.owner;
+  const myProjects = useMemo(
+    () => store.projects.filter((p) => p.ownerName === ownerName),
+    [store.projects, ownerName],
+  );
+
+  const [payPhase, setPayPhase] = useState<{ project: ProjectDoc; phase: PhaseDef } | null>(null);
+
   return (
     <>
       <PageHeader
         title="مشاريعي"
-        subtitle="جميع مشاريعك النشطة على منصة تم"
+        subtitle="جميع مشاريعك على منصة تم — تابع كل خطوة في رحلة التنفيذ"
         action={
           <Link
             to="/dashboard"
@@ -131,57 +107,204 @@ function OwnerProjects() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {MY_PROJECTS.map((p) => (
-          <article
-            key={p.id}
-            className="overflow-hidden rounded-2xl border border-border bg-card shadow-card transition hover:shadow-elevated"
-          >
-            <div className="border-b border-border bg-gradient-to-l from-primary/8 to-transparent p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-[11px] font-bold text-primary">#{p.id}</div>
-                  <h3 className="mt-1 text-lg font-extrabold text-ink">{p.name}</h3>
-                  <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" /> {p.city}
-                  </div>
-                </div>
-                <div className="text-left text-xs">
-                  <div className="text-muted-foreground">الميزانية</div>
-                  <div className="text-base font-extrabold text-ink">{fmtMoney(p.totalBudget)}</div>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-3 p-5">
-              <div>
-                <div className="mb-1 flex justify-between text-[11px] font-semibold text-muted-foreground">
-                  <span>الإنجاز</span>
-                  <span className="text-ink">{p.overallProgress}%</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-l from-primary to-emerald-400"
-                    style={{ width: `${p.overallProgress}%` }}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>المقاول: {p.contractor}</span>
-                <span>المشرف: {p.supervisor}</span>
-              </div>
-              <Link
-                to="/dashboard"
-                search={{ role: "owner", section: "project-detail", projectId: p.id }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground transition hover:border-primary hover:bg-primary-soft hover:text-primary"
-              >
-                <Eye className="h-3.5 w-3.5" />
-                فتح تفاصيل المشروع
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
+      {myProjects.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+          <Layers className="mx-auto h-10 w-10 text-muted-foreground" />
+          <p className="mt-3 text-sm font-bold text-ink">لا توجد لديك مشاريع بعد</p>
+          <p className="mt-1 text-xs text-muted-foreground">ابدأ بإنشاء مشروعك الأول.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {myProjects.map((p) => (
+            <OwnerProjectCard
+              key={p.id}
+              project={p}
+              onPay={(phase) => setPayPhase({ project: p, phase })}
+            />
+          ))}
+        </div>
+      )}
+
+      {payPhase && (
+        <PayPhaseDialog
+          project={payPhase.project}
+          phase={payPhase.phase}
+          onClose={() => setPayPhase(null)}
+        />
+      )}
     </>
+  );
+}
+
+function OwnerProjectCard({
+  project,
+  onPay,
+}: {
+  project: ProjectDoc;
+  onPay: (phase: PhaseDef) => void;
+}) {
+  const totalBudget = project.phases.reduce((s, ph) => s + ph.budget, 0) || project.budget;
+  const paid = project.payments
+    .filter((pm) => pm.status === "verified")
+    .reduce((s, pm) => s + pm.amount, 0);
+  const overall =
+    project.phases.length === 0
+      ? 0
+      : Math.round(
+          project.phases.reduce((s, ph) => s + ph.progress, 0) / project.phases.length,
+        );
+
+  const phaseNeedingPayment = project.phases.find((ph) => ph.status === "awaiting_payment");
+  const phaseVerifying = project.phases.find((ph) => ph.status === "verifying_payment");
+
+  return (
+    <article className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+      <div className="border-b border-border bg-gradient-to-l from-primary/8 to-transparent p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-bold text-primary">#{project.id}</span>
+              <ProjectStatusPill status={project.status} />
+            </div>
+            <h3 className="mt-1 text-lg font-extrabold text-ink">{project.name}</h3>
+            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3" /> {project.city}
+              {project.supervisorName && (
+                <>
+                  <span className="mx-1">•</span>
+                  <span>المشرف: {project.supervisorName}</span>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="text-left text-xs">
+            <div className="text-muted-foreground">الميزانية</div>
+            <div className="text-base font-extrabold text-ink">{fmtMoney(totalBudget)}</div>
+            {paid > 0 && (
+              <div className="mt-0.5 text-[10px] text-primary">دُفع {fmtMoney(paid)}</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {project.status === "pending_admin" && (
+        <div className="border-b border-border bg-amber-50/60 px-5 py-3 text-xs text-amber-800">
+          <Clock className="me-1.5 inline h-3.5 w-3.5" />
+          مشروعك قيد المراجعة من قبل إدارة المنصة.
+        </div>
+      )}
+      {project.status === "pending_supervisor" && (
+        <div className="border-b border-border bg-sky-50 px-5 py-3 text-xs text-sky-800">
+          <Clock className="me-1.5 inline h-3.5 w-3.5" />
+          تم تعيين المشرف ({project.supervisorName})، بانتظار قبوله.
+        </div>
+      )}
+      {project.status === "pending_quote" && (
+        <div className="border-b border-border bg-violet-50 px-5 py-3 text-xs text-violet-800">
+          <Clock className="me-1.5 inline h-3.5 w-3.5" />
+          المشرف يُعد عرض السعر التفصيلي بالمراحل.
+        </div>
+      )}
+      {phaseNeedingPayment && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-primary-soft/40 px-5 py-3">
+          <div className="text-xs font-bold text-primary">
+            <CreditCard className="me-1.5 inline h-3.5 w-3.5" />
+            مطلوب دفع مرحلة "{phaseNeedingPayment.name}" — {fmtMoney(phaseNeedingPayment.budget)}
+          </div>
+          <button
+            onClick={() => onPay(phaseNeedingPayment)}
+            className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-cta hover:bg-primary/95"
+          >
+            ادفع الآن
+          </button>
+        </div>
+      )}
+      {phaseVerifying && (
+        <div className="border-b border-border bg-amber-50/60 px-5 py-3 text-xs text-amber-800">
+          <Clock className="me-1.5 inline h-3.5 w-3.5" />
+          الإدارة تتحقق من تحويلك لمرحلة "{phaseVerifying.name}".
+        </div>
+      )}
+      {project.status === "rejected" && project.rejectionReason && (
+        <div className="border-b border-border bg-rose-50 px-5 py-3 text-xs text-rose-700">
+          <XCircle className="me-1.5 inline h-3.5 w-3.5" />
+          سبب الرفض: {project.rejectionReason}
+        </div>
+      )}
+
+      <div className="grid gap-5 p-5 lg:grid-cols-2">
+        <div className="space-y-3">
+          {project.phases.length > 0 && (
+            <div>
+              <div className="mb-1 flex justify-between text-[11px] font-semibold text-muted-foreground">
+                <span>الإنجاز الكلي</span>
+                <span className="text-ink">{overall}%</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-gradient-to-l from-primary to-emerald-400"
+                  style={{ width: `${overall}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {project.phases.length > 0 && (
+            <div className="space-y-1.5">
+              {project.phases.map((ph) => (
+                <div
+                  key={ph.id}
+                  className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2 text-xs"
+                >
+                  <span className="font-bold text-ink">{ph.name}</span>
+                  <Pill
+                    tone={
+                      ph.status === "completed"
+                        ? "primary"
+                        : ph.status === "in_progress"
+                          ? "info"
+                          : ph.status === "awaiting_payment" || ph.status === "verifying_payment"
+                            ? "accent"
+                            : "muted"
+                    }
+                  >
+                    {ph.status === "completed"
+                      ? "مكتملة"
+                      : ph.status === "in_progress"
+                        ? `${ph.progress}%`
+                        : ph.status === "awaiting_payment"
+                          ? "بانتظار الدفع"
+                          : ph.status === "verifying_payment"
+                            ? "تحقق الدفع"
+                            : "مقفلة"}
+                  </Pill>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {project.status === "in_progress" && (
+            <Link
+              to="/dashboard"
+              search={{ role: "owner", section: "project-detail", projectId: project.id }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground transition hover:border-primary hover:bg-primary-soft hover:text-primary"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              فتح تفاصيل المشروع
+            </Link>
+          )}
+        </div>
+
+        <div>
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            الجدول الزمني
+          </div>
+          <div className="max-h-72 overflow-y-auto rounded-xl border border-border bg-background/50 p-3">
+            <ProjectTimeline project={project} />
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }
 
