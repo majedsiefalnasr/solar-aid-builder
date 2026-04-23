@@ -196,7 +196,7 @@ function DashboardLayout() {
             </select>
           </div>
 
-          <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+          <main className="flex-1 px-4 pb-16 pt-6 md:px-8 md:pb-20 md:pt-8">
             <DashboardContent
               role={role}
               section={currentSection}
