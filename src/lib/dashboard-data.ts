@@ -258,3 +258,88 @@ export const PLATFORM_STATS = {
   totalTracked: 8_400_000, // YER (thousands)
   openDisputes: 7,
 };
+
+// ---------- Purchases (Owner shopping orders) ----------
+export type PurchaseStatus =
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "returned"
+  | "cancelled";
+
+export interface PurchaseOrder {
+  id: string;
+  date: string;
+  itemsCount: number;
+  total: number; // SAR
+  status: PurchaseStatus;
+  paymentMethod: string;
+  deliveryEta?: string;
+  preview: { name: string; qty: number }[];
+}
+
+export const PURCHASES: PurchaseOrder[] = [
+  {
+    id: "ORD-7821",
+    date: "2026-04-21",
+    itemsCount: 4,
+    total: 1_240,
+    status: "shipped",
+    paymentMethod: "بطاقة بنكية",
+    deliveryEta: "2026-04-25",
+    preview: [
+      { name: "إسمنت بورتلاندي 50كغ", qty: 20 },
+      { name: "حديد تسليح 12مم", qty: 50 },
+    ],
+  },
+  {
+    id: "ORD-7798",
+    date: "2026-04-15",
+    itemsCount: 2,
+    total: 480,
+    status: "delivered",
+    paymentMethod: "الدفع عند الاستلام",
+    preview: [
+      { name: "لوح طاقة شمسية 550W", qty: 4 },
+    ],
+  },
+  {
+    id: "ORD-7755",
+    date: "2026-04-09",
+    itemsCount: 1,
+    total: 95,
+    status: "returned",
+    paymentMethod: "محفظة إلكترونية",
+    preview: [{ name: "مفتاح كهربائي ذكي", qty: 2 }],
+  },
+  {
+    id: "ORD-7820",
+    date: "2026-04-22",
+    itemsCount: 6,
+    total: 2_180,
+    status: "processing",
+    paymentMethod: "بطاقة بنكية",
+    deliveryEta: "2026-04-28",
+    preview: [
+      { name: "بلوك خرساني 20سم", qty: 200 },
+      { name: "أكياس إسمنت", qty: 30 },
+    ],
+  },
+];
+
+export const PURCHASE_STATUS_LABEL: Record<PurchaseStatus, string> = {
+  processing: "قيد التحضير",
+  shipped: "تم الشحن",
+  delivered: "تم التسليم",
+  returned: "مُرجع",
+  cancelled: "ملغي",
+};
+
+export const PURCHASE_STATUS_TONE: Record<PurchaseStatus, "muted" | "primary" | "accent" | "danger" | "info"> = {
+  processing: "accent",
+  shipped: "info",
+  delivered: "primary",
+  returned: "danger",
+  cancelled: "muted",
+};
+

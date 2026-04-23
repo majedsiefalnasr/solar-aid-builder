@@ -20,7 +20,13 @@ import { AdminDashboard } from "./admin-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 
-export function AdminSection({ section }: { section: string }) {
+export function AdminSection({
+  section,
+  projectId: _projectId,
+}: {
+  section: string;
+  projectId?: string;
+}) {
   switch (section) {
     case "overview":
       return <AdminDashboard />;

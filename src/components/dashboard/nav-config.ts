@@ -12,6 +12,7 @@ import {
   ListChecks,
   PackageSearch,
   PlusSquare,
+  Receipt,
   Settings2,
   ShoppingBag,
   Store,
@@ -48,7 +49,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { key: "projects", label: "مشاريعي", icon: Folder },
     { key: "new-project", label: "مشروع جديد", icon: PlusSquare },
     { key: "payments", label: "المدفوعات", icon: CreditCard },
-    { key: "store", label: "المتجر", icon: Store },
+    { key: "purchases", label: "مشترياتي", icon: Receipt },
   ],
   contractor: [
     { key: "overview", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -70,10 +71,21 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   ],
 };
 
+// Sections that exist as detail pages (accessed via projectId) but are not in the sidebar
+export const DETAIL_SECTIONS: Record<Role, string[]> = {
+  admin: ["project-detail"],
+  owner: ["project-detail"],
+  contractor: ["project-detail"],
+  supervisor: ["project-detail"],
+  field: [],
+};
+
 export function validSection(role: Role, section: string | undefined): string {
   const items = NAV_BY_ROLE[role];
   if (!section) return items[0].key;
-  return items.find((i) => i.key === section)?.key ?? items[0].key;
+  if (items.find((i) => i.key === section)) return section;
+  if (DETAIL_SECTIONS[role].includes(section)) return section;
+  return items[0].key;
 }
 
 export { Coins, Settings2, CheckCircle2 };
