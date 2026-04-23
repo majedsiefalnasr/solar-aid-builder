@@ -1,29 +1,28 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
-import {
-  Bell,
-  Building2,
-  CreditCard,
-  FileText,
-  Home,
-  LayoutDashboard,
-  LogOut,
-  Search,
-  Settings,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { Bell, Home, LogOut, Search } from "lucide-react";
 import { TammMark } from "@/components/tamm-logo";
 import { ROLE_META, ROLES, type Role } from "@/lib/dashboard-data";
+import { NAV_BY_ROLE, validSection } from "@/components/dashboard/nav-config";
+import { OwnerSection } from "@/components/dashboard/owner-sections";
+import { ContractorSection } from "@/components/dashboard/contractor-sections";
+import { SupervisorSection } from "@/components/dashboard/supervisor-sections";
+import { FieldSection } from "@/components/dashboard/field-sections";
+import { AdminSection } from "@/components/dashboard/admin-sections";
 
 interface DashboardSearch {
   role: Role;
+  section?: string;
 }
 
 export const Route = createFileRoute("/dashboard")({
   validateSearch: (search: Record<string, unknown>): DashboardSearch => {
     const role = search.role as Role;
+    const validRole = ROLES.includes(role) ? role : "owner";
+    const section =
+      typeof search.section === "string" ? search.section : undefined;
     return {
-      role: ROLES.includes(role) ? role : "owner",
+      role: validRole,
+      section: validSection(validRole, section),
     };
   },
   head: () => ({
@@ -35,44 +34,20 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardLayout,
 });
 
-const NAV_BY_ROLE: Record<
-  Role,
-  { label: string; icon: typeof Home; key: string }[]
-> = {
-  owner: [
-    { label: "نظرة عامة", icon: LayoutDashboard, key: "overview" },
-    { label: "مشاريعي", icon: Building2, key: "projects" },
-    { label: "الدفعات", icon: CreditCard, key: "payments" },
-    { label: "التقارير", icon: FileText, key: "reports" },
-  ],
-  contractor: [
-    { label: "نظرة عامة", icon: LayoutDashboard, key: "overview" },
-    { label: "أعمالي", icon: Building2, key: "projects" },
-    { label: "طلب دفعة", icon: CreditCard, key: "payments" },
-    { label: "رفع تقرير", icon: FileText, key: "reports" },
-  ],
-  supervisor: [
-    { label: "نظرة عامة", icon: LayoutDashboard, key: "overview" },
-    { label: "للمراجعة", icon: ShieldCheck, key: "review" },
-    { label: "المشاريع", icon: Building2, key: "projects" },
-  ],
-  field: [
-    { label: "اليوم", icon: LayoutDashboard, key: "today" },
-    { label: "تقاريري", icon: FileText, key: "reports" },
-  ],
-  admin: [
-    { label: "نظرة عامة", icon: LayoutDashboard, key: "overview" },
-    { label: "المستخدمون", icon: Users, key: "users" },
-    { label: "النزاعات", icon: ShieldCheck, key: "disputes" },
-    { label: "الإعدادات", icon: Settings, key: "settings" },
-  ],
-};
-
 function DashboardLayout() {
-  const { role } = Route.useSearch();
+  const { role, section } = Route.useSearch();
   const navigate = useNavigate();
   const meta = ROLE_META[role];
   const nav = NAV_BY_ROLE[role];
+  const currentSection = section ?? nav[0].key;
+
+  // Group items
+  const grouped = nav.reduce<Record<string, typeof nav>>((acc, item) => {
+    const g = item.group ?? "main";
+    acc[g] = acc[g] ?? [];
+    acc[g].push(item);
+    return acc;
+  }, {});
 
   return (
     <div className="min-h-screen bg-muted/40">
@@ -108,19 +83,39 @@ function DashboardLayout() {
             </select>
           </div>
 
-          <nav className="flex-1 space-y-1 p-3">
-            {nav.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.key}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground/80 transition hover:bg-muted hover:text-primary first:bg-primary-soft first:text-primary"
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </button>
-              );
-            })}
+          <nav className="flex-1 space-y-4 overflow-y-auto p-3">
+            {Object.entries(grouped).map(([groupName, items]) => (
+              <div key={groupName} className="space-y-1">
+                {groupName !== "main" && (
+                  <div className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {groupName}
+                  </div>
+                )}
+                {items.map((item) => {
+                  const Icon = item.icon;
+                  const active = item.key === currentSection;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() =>
+                        navigate({
+                          to: "/dashboard",
+                          search: { role, section: item.key },
+                        })
+                      }
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                        active
+                          ? "bg-primary-soft text-primary"
+                          : "text-foreground/80 hover:bg-muted hover:text-primary"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
 
           <div className="border-t border-border p-3">
@@ -173,8 +168,28 @@ function DashboardLayout() {
             </div>
           </header>
 
+          {/* Mobile section selector */}
+          <div className="border-b border-border bg-card px-4 py-2 md:hidden">
+            <select
+              value={currentSection}
+              onChange={(e) =>
+                navigate({
+                  to: "/dashboard",
+                  search: { role, section: e.target.value },
+                })
+              }
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm font-bold focus:border-primary focus:outline-none"
+            >
+              {nav.map((item) => (
+                <option key={item.key} value={item.key}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
-            <DashboardContent role={role} />
+            <DashboardContent role={role} section={currentSection} />
             <Outlet />
           </main>
         </div>
@@ -183,23 +198,17 @@ function DashboardLayout() {
   );
 }
 
-import { OwnerDashboard } from "@/components/dashboard/owner-dashboard";
-import { ContractorDashboard } from "@/components/dashboard/contractor-dashboard";
-import { SupervisorDashboard } from "@/components/dashboard/supervisor-dashboard";
-import { FieldDashboard } from "@/components/dashboard/field-dashboard";
-import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
-
-function DashboardContent({ role }: { role: Role }) {
+function DashboardContent({ role, section }: { role: Role; section: string }) {
   switch (role) {
     case "owner":
-      return <OwnerDashboard />;
+      return <OwnerSection section={section} />;
     case "contractor":
-      return <ContractorDashboard />;
+      return <ContractorSection section={section} />;
     case "supervisor":
-      return <SupervisorDashboard />;
+      return <SupervisorSection section={section} />;
     case "field":
-      return <FieldDashboard />;
+      return <FieldSection section={section} />;
     case "admin":
-      return <AdminDashboard />;
+      return <AdminSection section={section} />;
   }
 }
