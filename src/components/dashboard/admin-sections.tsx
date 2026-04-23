@@ -1853,10 +1853,19 @@ function CategoryDialog({
 }
 
 function AdminCategoryDetail({ categoryId }: { categoryId?: string }) {
-  const cat = CATEGORIES_DATA.find((c) => c.id === categoryId) ?? CATEGORIES_DATA[0];
+  const initialCat = CATEGORIES_DATA.find((c) => c.id === categoryId) ?? CATEGORIES_DATA[0];
+  const [cat, setCat] = useState<Category>(initialCat);
+  const [editing, setEditing] = useState(false);
+
   const products = SEED_PRODUCTS.filter(
     (p) => p.category === cat.name || cat.name.includes(p.category) || p.category.includes(cat.name.split(" ")[0]),
   );
+
+  const handleSave = (data: { id?: string; name: string }) => {
+    setCat((c) => ({ ...c, name: data.name }));
+    setEditing(false);
+    toast.success("تم تحديث الفئة", { description: data.name });
+  };
 
   return (
     <div className="space-y-6">
@@ -1877,11 +1886,18 @@ function AdminCategoryDetail({ categoryId }: { categoryId?: string }) {
               {cat.products} منتج • إيرادات الشهر {fmtMoney(cat.revenue)}
             </p>
           </div>
-          <button className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta">
+          <button
+            onClick={() => setEditing(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta hover:bg-primary/95"
+          >
             <Pencil className="h-3.5 w-3.5" /> تعديل الفئة
           </button>
         </div>
       </div>
+
+      {editing && (
+        <CategoryDialog initial={cat} onClose={() => setEditing(false)} onSave={handleSave} />
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="عدد المنتجات" value={cat.products} icon={<PackageSearch className="h-5 w-5" />} tone="primary" />
@@ -2094,8 +2110,14 @@ function AdminOrders() {
   );
 }
 
+const ORDER_STATUS_FLOW: OrderRow["status"][] = ["processing", "shipped", "delivered"];
+
 function AdminOrderDetail({ orderId }: { orderId?: string }) {
-  const order = ORDERS_DATA.find((o) => o.id === orderId) ?? ORDERS_DATA[0];
+  const initial = ORDERS_DATA.find((o) => o.id === orderId) ?? ORDERS_DATA[0];
+  const [order, setOrder] = useState<OrderRow>(initial);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+
   const total = totalOf(order);
 
   const timeline = [
@@ -2105,6 +2127,24 @@ function AdminOrderDetail({ orderId }: { orderId?: string }) {
     { label: "تم الشحن", date: "—", done: order.status === "shipped" || order.status === "delivered" },
     { label: "تم التسليم", date: "—", done: order.status === "delivered" },
   ];
+
+  const advance = () => {
+    const idx = ORDER_STATUS_FLOW.indexOf(order.status);
+    if (idx === -1 || idx === ORDER_STATUS_FLOW.length - 1) {
+      toast("الطلب وصل المرحلة النهائية", { description: ORDER_STATUS_LABEL[order.status] });
+      return;
+    }
+    const next = ORDER_STATUS_FLOW[idx + 1];
+    setOrder((o) => ({ ...o, status: next }));
+    setStatusOpen(false);
+    toast.success("تم تحديث حالة الطلب", { description: ORDER_STATUS_LABEL[next] });
+  };
+
+  const setStatus = (s: OrderRow["status"]) => {
+    setOrder((o) => ({ ...o, status: s }));
+    setStatusOpen(false);
+    toast.success("تم تحديث حالة الطلب", { description: ORDER_STATUS_LABEL[s] });
+  };
 
   return (
     <div className="space-y-6">
@@ -2201,14 +2241,149 @@ function AdminOrderDetail({ orderId }: { orderId?: string }) {
           </ol>
 
           <div className="mt-5 space-y-2">
-            <button className="w-full rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta">
-              تحديث حالة الطلب
+            <button
+              onClick={() => setStatusOpen(true)}
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta hover:bg-primary/95"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> تحديث حالة الطلب
             </button>
-            <button className="w-full rounded-full border border-border bg-card px-4 py-2 text-xs font-bold hover:border-primary">
-              تواصل مع العميل
+            <button
+              onClick={() => setContactOpen(true)}
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold hover:border-primary hover:text-primary"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> تواصل مع العميل
             </button>
           </div>
         </SectionCard>
+      </div>
+
+      {statusOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onClick={() => setStatusOpen(false)}
+        >
+          <div
+            className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border p-5">
+              <h2 className="text-lg font-extrabold text-ink">تحديث حالة الطلب</h2>
+              <button
+                onClick={() => setStatusOpen(false)}
+                className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-2 p-5">
+              {(["processing", "shipped", "delivered", "cancelled"] as OrderRow["status"][]).map((s) => {
+                const active = s === order.status;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setStatus(s)}
+                    className={`flex w-full items-center justify-between gap-3 rounded-xl border p-4 text-right transition ${
+                      active
+                        ? "border-primary bg-primary-soft"
+                        : "border-border bg-background hover:border-primary/50"
+                    }`}
+                  >
+                    <span className="text-sm font-extrabold text-ink">{ORDER_STATUS_LABEL[s]}</span>
+                    {active && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                  </button>
+                );
+              })}
+              <button
+                onClick={advance}
+                className="mt-2 w-full rounded-xl bg-primary px-5 py-2.5 text-sm font-extrabold text-primary-foreground shadow-cta hover:bg-primary/95"
+              >
+                الانتقال للمرحلة التالية تلقائياً
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {contactOpen && (
+        <ContactCustomerDialog
+          customer={order.customer}
+          orderId={order.id}
+          onClose={() => setContactOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function ContactCustomerDialog({
+  customer,
+  orderId,
+  onClose,
+}: {
+  customer: string;
+  orderId: string;
+  onClose: () => void;
+}) {
+  const [message, setMessage] = useState("");
+
+  const send = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim()) {
+      toast.error("يرجى كتابة رسالة قبل الإرسال");
+      return;
+    }
+    toast.success("تم إرسال الرسالة للعميل", { description: customer });
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <div>
+            <h2 className="text-lg font-extrabold text-ink">تواصل مع العميل</h2>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">
+              {customer} • طلب #{orderId}
+            </div>
+          </div>
+          <button onClick={onClose} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <form onSubmit={send} className="space-y-4 p-5">
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">الرسالة</span>
+            <textarea
+              autoFocus
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={4}
+              placeholder="اكتب رسالتك هنا…"
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-bold hover:border-primary"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="flex-1 rounded-xl bg-primary px-5 py-2.5 text-sm font-extrabold text-primary-foreground shadow-cta hover:bg-primary/95"
+            >
+              إرسال الرسالة
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
