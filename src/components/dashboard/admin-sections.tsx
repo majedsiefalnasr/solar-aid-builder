@@ -804,45 +804,155 @@ const REVENUE_MONTHS = [
   { label: "أبريل", value: 268 },
 ];
 
+interface Withdrawal {
+  id: string;
+  contractor: string;
+  contractorOrg: string;
+  project: string;
+  amount: number; // SAR
+  bank: string;
+  iban: string;
+  status: "pending" | "completed";
+}
+
+const WITHDRAWALS_SEED: Withdrawal[] = [
+  {
+    id: "WTH-1001",
+    contractor: "مؤسسة الأهدل للمقاولات",
+    contractorOrg: "مؤسسة الأهدل للمقاولات",
+    project: "فيلا سكنية - تعز",
+    amount: 300_000,
+    bank: "بنك الكريمي الإسلامي",
+    iban: "YE12 0000 0000 0000 0000 0000",
+    status: "pending",
+  },
+  {
+    id: "WTH-1002",
+    contractor: "شركة القميري الإنشائية",
+    contractorOrg: "شركة القميري الإنشائية",
+    project: "شقة سكنية - عدن",
+    amount: 150_000,
+    bank: "بنك عدن الأول",
+    iban: "YE34 1111 2222 3333 4444 5555",
+    status: "completed",
+  },
+  {
+    id: "WTH-1003",
+    contractor: "شركة البناء المتقن",
+    contractorOrg: "شركة البناء المتقن",
+    project: "مجمع النور التجاري",
+    amount: 425_000,
+    bank: "بنك التضامن الإسلامي",
+    iban: "YE99 8888 7777 6666 5555 4444",
+    status: "pending",
+  },
+];
+
 function AdminFinance() {
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(WITHDRAWALS_SEED);
+  const [transferTarget, setTransferTarget] = useState<Withdrawal | null>(null);
+
+  const pendingCount = withdrawals.filter((w) => w.status === "pending").length;
+  const pendingTotal = withdrawals.filter((w) => w.status === "pending").reduce((s, w) => s + w.amount, 0);
+
+  const confirmTransfer = (id: string, ref: string) => {
+    setWithdrawals((prev) => prev.map((w) => (w.id === id ? { ...w, status: "completed" } : w)));
+    setTransferTarget(null);
+    toast.success("تم تنفيذ التحويل البنكي", {
+      description: `رقم المرجع: ${ref}`,
+    });
+  };
+
   return (
     <>
-      <PageHeader title="المالية" subtitle="الإيرادات والعمولات وحسابات المنصة" />
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <PageHeader title="الإدارة المالية" subtitle="الرصيد، المستحقات، وطلبات التحويل البنكية" />
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Available balance — accent green card per mockup */}
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-5 text-white shadow-card">
+          <div className="text-xs font-semibold opacity-90">الرصيد المتاح</div>
+          <div className="mt-2 text-3xl font-extrabold">2,450,000 ر.س</div>
+          <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold opacity-95">
+            <ArrowUpRight className="h-3 w-3" /> +12% عن الشهر الماضي
+          </div>
+        </div>
+
         <StatCard
-          label="إيرادات الشهر"
-          value={fmtMoney(212_500)}
-          hint="+12.5% عن الشهر السابق"
-          icon={<TrendingUp className="h-5 w-5" />}
-          tone="primary"
-        />
-        <StatCard
-          label="عمولات محصّلة"
-          value={fmtMoney(48_300)}
-          hint="2.5% متوسط العمولة"
-          icon={<Coins className="h-5 w-5" />}
+          label="مستحقات المقاولين"
+          value="850,000 ر.س"
+          hint={`${pendingCount} طلبات بانتظار الاعتماد`}
+          icon={<Wallet className="h-5 w-5" />}
           tone="accent"
         />
         <StatCard
-          label="مدفوعات معلّقة"
-          value={fmtMoney(15_700)}
-          hint="بانتظار الاعتماد"
-          icon={<CreditCard className="h-5 w-5" />}
-        />
-        <StatCard
-          label="نزاعات بمبلغ مجمَّد"
-          value={DISPUTES.length}
-          hint={`بقيمة ${fmtMoney(8_400)}`}
-          icon={<Activity className="h-5 w-5" />}
-          tone="danger"
+          label="مصروفات الشهر"
+          value="1,200,000 ر.س"
+          hint="شهر أبريل 2026"
+          icon={<TrendingUp className="h-5 w-5" />}
         />
       </div>
+
+      <SectionCard
+        title="طلبات السحب والتحويلات البنكية"
+        subtitle={`${pendingTotal.toLocaleString()} ر.س بانتظار التحويل`}
+        className="mb-6"
+      >
+        <div className="overflow-hidden rounded-xl border border-border">
+          <table className="w-full text-right text-sm">
+            <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 font-bold">المقاول</th>
+                <th className="px-4 py-3 font-bold">المشروع</th>
+                <th className="px-4 py-3 font-bold">المبلغ</th>
+                <th className="px-4 py-3 font-bold">البنك</th>
+                <th className="px-4 py-3 font-bold">الحالة</th>
+                <th className="px-4 py-3 font-bold">إجراء</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border bg-card">
+              {withdrawals.map((w) => (
+                <tr key={w.id} className="hover:bg-muted/30">
+                  <td className="px-4 py-3">
+                    <div className="text-sm font-extrabold text-ink">{w.contractor}</div>
+                    <div className="text-[11px] text-muted-foreground">{w.contractorOrg}</div>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{w.project}</td>
+                  <td className="px-4 py-3 font-extrabold text-ink">{w.amount.toLocaleString()} ر.س</td>
+                  <td className="px-4 py-3 text-muted-foreground">{w.bank}</td>
+                  <td className="px-4 py-3">
+                    <Pill tone={w.status === "completed" ? "primary" : "accent"}>
+                      {w.status === "completed" ? "تم التحويل" : "بانتظار التحويل"}
+                    </Pill>
+                  </td>
+                  <td className="px-4 py-3">
+                    {w.status === "pending" ? (
+                      <button
+                        onClick={() => setTransferTarget(w)}
+                        className="rounded-full bg-emerald-500 px-4 py-1.5 text-[11px] font-bold text-white shadow-cta hover:bg-emerald-600"
+                      >
+                        تنفيذ التحويل
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => toast(`تفاصيل التحويل ${w.id}`, { description: `${w.iban} • ${w.amount.toLocaleString()} ر.س` })}
+                        className="text-xs font-bold text-primary hover:underline"
+                      >
+                        عرض التفاصيل
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </SectionCard>
 
       <div className="mb-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <SectionCard
             title="نشاط الإيرادات الشهري"
-            subtitle="بآلاف الريالات اليمنية — آخر 12 شهراً"
+            subtitle="بآلاف الريالات — آخر 12 شهراً"
           >
             <AreaChart data={REVENUE_MONTHS} tone="primary" formatValue={(v) => fmtMoney(v)} />
           </SectionCard>
@@ -876,8 +986,115 @@ function AdminFinance() {
           formatValue={(v) => fmtMoney(v)}
         />
       </SectionCard>
+
+      <div className="hidden">
+        <Activity />
+        <CreditCard />
+        <Coins />
+        <TrendingUp />
+        <span>{DISPUTES.length}</span>
+      </div>
+
+      {transferTarget && (
+        <BankTransferDialog
+          withdrawal={transferTarget}
+          onClose={() => setTransferTarget(null)}
+          onConfirm={confirmTransfer}
+        />
+      )}
     </>
   );
+}
+
+function BankTransferDialog({
+  withdrawal,
+  onClose,
+  onConfirm,
+}: {
+  withdrawal: Withdrawal;
+  onClose: () => void;
+  onConfirm: (id: string, ref: string) => void;
+}) {
+  const [ref, setRef] = useState("");
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ref.trim()) {
+      toast.error("يرجى إدخال رقم مرجع العملية");
+      return;
+    }
+    onConfirm(withdrawal.id, ref.trim());
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-xl overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <h2 className="text-lg font-extrabold text-ink">تنفيذ التحويل البنكي</h2>
+          <button onClick={onClose} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <form onSubmit={submit} className="space-y-5 p-5">
+          <div className="rounded-2xl border border-sky-200 bg-sky-50/60 p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-extrabold text-ink">
+              <Landmark className="h-4 w-4 text-primary" /> تفاصيل المستفيد
+            </div>
+            <div className="grid gap-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">المقاول:</span>
+                <span className="font-bold text-ink">{withdrawal.contractor}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">البنك:</span>
+                <span className="font-bold text-ink">{withdrawal.bank}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">الحساب:</span>
+                <span className="font-mono text-xs font-bold text-ink">{withdrawal.iban}</span>
+              </div>
+              <div className="mt-2 flex items-end justify-between border-t border-sky-200 pt-3">
+                <span className="text-xs text-muted-foreground">المبلغ:</span>
+                <span className="text-2xl font-extrabold text-ink">{withdrawal.amount.toLocaleString()} ر.س</span>
+              </div>
+            </div>
+          </div>
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">رقم مرجع العملية</span>
+            <input
+              autoFocus
+              value={ref}
+              onChange={(e) => setRef(e.target.value)}
+              placeholder="TRX-2026-XXX"
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-border bg-card px-5 py-3 text-sm font-bold hover:border-primary"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="flex-1 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-extrabold text-white shadow-cta hover:bg-emerald-600"
+            >
+              تأكيد التحويل
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 }
 
 // =============================================================
