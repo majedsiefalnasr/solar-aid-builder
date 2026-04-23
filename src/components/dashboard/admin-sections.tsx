@@ -1125,7 +1125,6 @@ function AdminFinance() {
           value={approved.length}
           hint="3 أيام انتظار قبل الإفراج"
           icon={<Activity className="h-5 w-5" />}
-          tone="info"
         />
         <StatCard
           label="قابلة للسحب"
