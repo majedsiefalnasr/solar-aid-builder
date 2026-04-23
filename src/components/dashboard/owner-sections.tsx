@@ -418,7 +418,26 @@ function OwnerNewProject() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          if (!name.trim()) {
+            toast.error("يرجى إدخال اسم المشروع");
+            return;
+          }
+          if (!budget || budget <= 0) {
+            toast.error("يرجى إدخال الميزانية التقديرية");
+            return;
+          }
+          createProject({
+            name: name.trim(),
+            city,
+            type,
+            area: area || undefined,
+            budget,
+            ownerName: ROLE_USER.owner,
+          });
           localStorage.removeItem("tamm_new_project_prefill");
+          toast.success("تم إنشاء المشروع وإرساله للإدارة", {
+            description: "ستراجع الإدارة الطلب وتعيّن مهندساً مشرفاً",
+          });
           setSubmitted(true);
         }}
         className="space-y-6 rounded-3xl border border-border bg-card p-6 shadow-card md:p-8"
