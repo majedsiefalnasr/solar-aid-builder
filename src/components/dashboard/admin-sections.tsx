@@ -1090,8 +1090,8 @@ function AdminFinance() {
                       </button>
                     ) : (
                       <button
-                        onClick={() => toast(`تفاصيل التحويل ${w.id}`, { description: `${w.iban} • ${w.amount.toLocaleString()} ر.س` })}
-                        className="text-xs font-bold text-primary hover:underline"
+                        onClick={() => setDetailsTarget(w)}
+                        className="rounded-full border border-border px-4 py-1.5 text-[11px] font-bold text-primary hover:border-primary hover:bg-primary-soft"
                       >
                         عرض التفاصيل
                       </button>
