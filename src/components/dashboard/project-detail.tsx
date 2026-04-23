@@ -493,7 +493,7 @@ export function ProjectDetail({
       <ChatPanel
         open={chatOpen}
         onClose={() => setChatOpen(false)}
-        projectId={projectId}
+        projectId={activeProjectId}
         role={role}
       />
     </div>
