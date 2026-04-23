@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   Plus,
   Trash2,
@@ -12,6 +11,8 @@ import {
   Droplets,
   Box,
   Zap,
+  Receipt,
+  ListChecks,
 } from "lucide-react";
 import { CalculatorShell } from "@/components/calculator-shell";
 import {
@@ -22,8 +23,10 @@ import {
   PUMP_PRESETS,
   loadState,
   saveState,
+  type CalcMode,
   type Device,
   type DeviceCategory,
+  type BillInput,
 } from "@/lib/calculator";
 
 export const Route = createFileRoute("/calculator/devices")({
@@ -57,11 +60,20 @@ const categoryMeta: {
 
 function StepDevices() {
   const navigate = useNavigate();
+  const [mode, setMode] = useState<CalcMode>("loads");
   const [devices, setDevices] = useState<Device[]>([]);
+  const [bill, setBill] = useState<BillInput>({
+    kWh15Days: 450,
+    dayHours: 10,
+    nightHours: 6,
+  });
   const [activeCat, setActiveCat] = useState<DeviceCategory>("fridges");
 
   useEffect(() => {
-    setDevices(loadState().devices);
+    const s = loadState();
+    setMode(s.mode);
+    setDevices(s.devices);
+    setBill(s.bill);
   }, []);
 
   const filtered = devices.filter((d) => d.category === activeCat);
@@ -92,7 +104,7 @@ function StepDevices() {
   };
 
   const goCalculate = () => {
-    saveState({ ...loadState(), devices });
+    saveState({ ...loadState(), mode, devices, bill });
     navigate({ to: "/results" });
   };
 
@@ -103,84 +115,79 @@ function StepDevices() {
           <Box className="h-6 w-6" />
         </div>
         <div className="flex-1">
-          <h2 className="text-2xl font-extrabold text-ink">اختر الأجهزة المستهدفة</h2>
+          <h2 className="text-2xl font-extrabold text-ink">بيانات الاستهلاك</h2>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            حدد الأجهزة التي ترغب في تشغيلها للحصول على أفضل تقدير.
+            اختر طريقة الحساب الأنسب لك للحصول على أفضل تقدير.
           </p>
         </div>
       </div>
 
-      {/* Category tabs */}
-      <div className="mt-6 grid grid-cols-3 gap-2.5 md:grid-cols-6">
-        {categoryMeta.map((c) => {
-          const Icon = c.Icon;
-          const active = activeCat === c.id;
-          const count = devices.filter((d) => d.category === c.id).length;
-          return (
-            <button
-              key={c.id}
-              onClick={() => setActiveCat(c.id)}
-              className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 px-2 py-4 text-xs font-bold transition ${
-                active
-                  ? "border-primary bg-primary text-primary-foreground shadow-cta"
-                  : "border-border bg-card text-foreground/80 hover:border-primary/40"
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-              {c.label}
-              {count > 0 && (
-                <span
-                  className={`absolute -left-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] ${
-                    active ? "bg-white text-primary" : "bg-primary text-primary-foreground"
-                  }`}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Devices list for active category */}
-      <div className="mt-7 rounded-2xl border border-border bg-card p-5">
-        <div className="mb-5 flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-base font-extrabold text-ink">
-            <meta.Icon className="h-5 w-5 text-primary" />
-            تفاصيل {meta.label}
-          </h3>
-          <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-foreground/70">
-            {filtered.length} جهاز · {totalWatts}W
-          </span>
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
-            لا توجد أجهزة بعد. اضغط "إضافة جهاز" للبدء.
+      {/* Mode selector */}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => setMode("loads")}
+          className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-right transition ${
+            mode === "loads"
+              ? "border-primary bg-primary-soft"
+              : "border-border bg-card hover:border-primary/40"
+          }`}
+        >
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+              mode === "loads" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground/60"
+            }`}
+          >
+            <ListChecks className="h-5 w-5" />
           </div>
-        ) : (
-          <div className="space-y-5">
-            {filtered.map((d, i) => (
-              <DeviceRow
-                key={d.id}
-                device={d}
-                index={i + 1}
-                presets={meta.presets}
-                onChange={(p) => update(d.id, p)}
-                onRemove={() => remove(d.id)}
-              />
-            ))}
+          <div>
+            <div className="text-sm font-extrabold text-ink">بحسب الأحمال</div>
+            <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              حدد كل جهاز وقدرته وساعات تشغيله.
+            </div>
           </div>
-        )}
+        </button>
 
         <button
-          onClick={add}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-background py-3 text-sm font-bold text-foreground/70 transition hover:border-primary hover:text-primary"
+          type="button"
+          onClick={() => setMode("bill")}
+          className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-right transition ${
+            mode === "bill"
+              ? "border-primary bg-primary-soft"
+              : "border-border bg-card hover:border-primary/40"
+          }`}
         >
-          <Plus className="h-4 w-4" />
-          إضافة {meta.label === "أجهزة أخرى" ? "جهاز مخصص" : "جديد"}
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+              mode === "bill" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground/60"
+            }`}
+          >
+            <Receipt className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-sm font-extrabold text-ink">بحسب الفاتورة</div>
+            <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              أدخل استهلاكك من فاتورة الكهرباء التجارية لـ 15 يوم.
+            </div>
+          </div>
         </button>
       </div>
+
+      {mode === "bill" ? (
+        <BillForm bill={bill} onChange={setBill} />
+      ) : (
+        <DevicesContent
+          devices={devices}
+          activeCat={activeCat}
+          setActiveCat={setActiveCat}
+          filtered={filtered}
+          meta={meta}
+          totalWatts={totalWatts}
+          add={add}
+          update={update}
+          remove={remove}
+        />
+      )}
 
       <hr className="my-8 border-border" />
 
@@ -328,5 +335,151 @@ function NumberField({
         </button>
       </div>
     </label>
+  );
+}
+
+function DevicesContent({
+  devices,
+  activeCat,
+  setActiveCat,
+  filtered,
+  meta,
+  totalWatts,
+  add,
+  update,
+  remove,
+}: {
+  devices: Device[];
+  activeCat: DeviceCategory;
+  setActiveCat: (c: DeviceCategory) => void;
+  filtered: Device[];
+  meta: (typeof categoryMeta)[number];
+  totalWatts: number;
+  add: () => void;
+  update: (id: string, patch: Partial<Device>) => void;
+  remove: (id: string) => void;
+}) {
+  const MetaIcon = meta.Icon;
+  return (
+    <>
+      {/* Category tabs */}
+      <div className="mt-6 grid grid-cols-3 gap-2.5 md:grid-cols-6">
+        {categoryMeta.map((c) => {
+          const Icon = c.Icon;
+          const active = activeCat === c.id;
+          const count = devices.filter((d) => d.category === c.id).length;
+          return (
+            <button
+              key={c.id}
+              onClick={() => setActiveCat(c.id)}
+              className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 px-2 py-4 text-xs font-bold transition ${
+                active
+                  ? "border-primary bg-primary text-primary-foreground shadow-cta"
+                  : "border-border bg-card text-foreground/80 hover:border-primary/40"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              {c.label}
+              {count > 0 && (
+                <span
+                  className={`absolute -left-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] ${
+                    active ? "bg-white text-primary" : "bg-primary text-primary-foreground"
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Devices list for active category */}
+      <div className="mt-7 rounded-2xl border border-border bg-card p-5">
+        <div className="mb-5 flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-base font-extrabold text-ink">
+            <MetaIcon className="h-5 w-5 text-primary" />
+            تفاصيل {meta.label}
+          </h3>
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-foreground/70">
+            {filtered.length} جهاز · {totalWatts}W
+          </span>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
+            لا توجد أجهزة بعد. اضغط "إضافة جهاز" للبدء.
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {filtered.map((d, i) => (
+              <DeviceRow
+                key={d.id}
+                device={d}
+                index={i + 1}
+                presets={meta.presets}
+                onChange={(p) => update(d.id, p)}
+                onRemove={() => remove(d.id)}
+              />
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={add}
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-background py-3 text-sm font-bold text-foreground/70 transition hover:border-primary hover:text-primary"
+        >
+          <Plus className="h-4 w-4" />
+          إضافة {meta.label === "أجهزة أخرى" ? "جهاز مخصص" : "جديد"}
+        </button>
+      </div>
+    </>
+  );
+}
+
+function BillForm({
+  bill,
+  onChange,
+}: {
+  bill: BillInput;
+  onChange: (b: BillInput) => void;
+}) {
+  const dailyAvg = (bill.kWh15Days / 15).toFixed(1);
+  return (
+    <div className="mt-7 rounded-2xl border border-border bg-card p-5 md:p-6">
+      <div className="mb-5 flex items-center gap-2">
+        <Receipt className="h-5 w-5 text-primary" />
+        <h3 className="text-base font-extrabold text-ink">بيانات فاتورة الكهرباء</h3>
+      </div>
+
+      <div className="space-y-5">
+        <NumberField
+          label="استهلاك فاتورة الكهرباء التجارية لـ 15 يوم (kWh)"
+          value={bill.kWh15Days}
+          onChange={(v) => onChange({ ...bill, kWh15Days: Math.max(0, v) })}
+        />
+        <div className="grid gap-4 md:grid-cols-2">
+          <NumberField
+            label="عدد ساعات النهار"
+            value={bill.dayHours}
+            onChange={(v) =>
+              onChange({ ...bill, dayHours: Math.max(0, Math.min(24, v)) })
+            }
+          />
+          <NumberField
+            label="عدد ساعات الليل"
+            value={bill.nightHours}
+            onChange={(v) =>
+              onChange({ ...bill, nightHours: Math.max(0, Math.min(24, v)) })
+            }
+          />
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-xl bg-primary-soft px-4 py-3 text-sm">
+        <strong className="text-primary">متوسط الاستهلاك اليومي:</strong>{" "}
+        <span className="font-bold text-ink">{dailyAvg} kWh</span>
+      </div>
+    </div>
   );
 }

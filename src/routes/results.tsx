@@ -92,19 +92,34 @@ function ResultsPage() {
         {/* Loads summary */}
         <Card>
           <SectionTitle icon={<Zap className="h-5 w-5" />} title="ملخص الأحمال" />
-          <div className="mt-4 space-y-2.5">
-            {state.devices.map((d) => (
-              <div
-                key={d.id}
-                className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3 text-sm"
-              >
-                <span className="font-bold text-ink">{d.label}</span>
+          {state.mode === "bill" ? (
+            <div className="mt-4 rounded-xl border border-border bg-background px-4 py-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-ink">حساب بحسب الفاتورة التجارية</span>
                 <span className="text-muted-foreground">
-                  {arabicNumber(d.qty)}× {d.watts}W · {arabicNumber(d.hours)}h
+                  {arabicNumber(state.bill.kWh15Days)} kWh / 15 يوم
                 </span>
               </div>
-            ))}
-          </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                نهار: {arabicNumber(state.bill.dayHours)}h · ليل:{" "}
+                {arabicNumber(state.bill.nightHours)}h
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-2.5">
+              {state.devices.map((d) => (
+                <div
+                  key={d.id}
+                  className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3 text-sm"
+                >
+                  <span className="font-bold text-ink">{d.label}</span>
+                  <span className="text-muted-foreground">
+                    {arabicNumber(d.qty)}× {d.watts}W · {arabicNumber(d.hours)}h
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
             <Stat label="إجمالي يومي" value={`${result.totalDailyKWh} kWh`} />
             <Stat label="استهلاك ليلي" value={`${result.nightKWh} kWh`} />
