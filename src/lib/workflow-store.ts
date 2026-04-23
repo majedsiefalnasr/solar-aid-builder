@@ -1168,6 +1168,140 @@ export function rejectReport(reportId: string, reviewer: string, reason: string)
 }
 
 // ============================================================
+// Withdrawals
+// ============================================================
+
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
+function mutateWithdrawals(fn: (w: WithdrawalDoc[]) => WithdrawalDoc[]) {
+  state = { ...state, withdrawals: fn(state.withdrawals) };
+  emit();
+}
+
+// تطبيق منطق "بعد 3 أيام تصبح قابلة للسحب"
+function transitionWithdrawals(items: WithdrawalDoc[]): WithdrawalDoc[] {
+  const now = Date.now();
+  let changed = false;
+  const next = items.map((w) => {
+    if (w.status === "approved" && w.releasableAt && new Date(w.releasableAt).getTime() <= now) {
+      changed = true;
+      return { ...w, status: "withdrawable" as const };
+    }
+    return w;
+  });
+  return changed ? next : items;
+}
+
+// إجمالي ميزانية المراحل المكتملة للمقاول (الرصيد المكتسب)
+export function contractorEarnedTotal(s: StoreState, contractorName: string): number {
+  return s.projects
+    .filter((p) => p.contractorName === contractorName)
+    .flatMap((p) => p.phases)
+    .filter((ph) => ph.status === "completed")
+    .reduce((sum, ph) => sum + ph.budget, 0);
+}
+
+// المبالغ التي بدأ صرفها (pending أو approved أو withdrawable) — تخصم من المتاح
+export function contractorWithdrawnOrLocked(s: StoreState, contractorName: string): number {
+  return s.withdrawals
+    .filter((w) => w.contractorName === contractorName)
+    .filter((w) => w.status === "approved" || w.status === "withdrawable" || w.status === "pending")
+    .reduce((sum, w) => sum + w.amount, 0);
+}
+
+export function contractorAvailableBalance(s: StoreState, contractorName: string): number {
+  return Math.max(0, contractorEarnedTotal(s, contractorName) - contractorWithdrawnOrLocked(s, contractorName));
+}
+
+export function withdrawalsForContractor(s: StoreState, contractorName: string): WithdrawalDoc[] {
+  return s.withdrawals.filter((w) => w.contractorName === contractorName);
+}
+
+export function withdrawalsForAdmin(s: StoreState): WithdrawalDoc[] {
+  return s.withdrawals;
+}
+
+export function requestWithdrawal(input: {
+  contractorName: string;
+  amount: number;
+  iban?: string;
+  notes?: string;
+  projectId?: string;
+  phaseId?: string;
+}): WithdrawalDoc {
+  const doc: WithdrawalDoc = {
+    id: uid("WTH"),
+    contractorName: input.contractorName,
+    amount: input.amount,
+    iban: input.iban,
+    notes: input.notes,
+    projectId: input.projectId,
+    phaseId: input.phaseId,
+    requestedAt: nowISO(),
+    status: "pending",
+  };
+  mutateWithdrawals((items) => [doc, ...items]);
+  return doc;
+}
+
+export function approveWithdrawal(input: {
+  id: string;
+  by: string;
+  txRef: string;
+  bankName: string;
+  imageDataUrl?: string;
+  notes?: string;
+}) {
+  const releasable = new Date(Date.now() + THREE_DAYS_MS).toISOString();
+  mutateWithdrawals((items) =>
+    items.map((w) =>
+      w.id === input.id
+        ? {
+            ...w,
+            status: "approved" as const,
+            reviewedAt: nowISO(),
+            reviewedBy: input.by,
+            txRef: input.txRef,
+            bankName: input.bankName,
+            imageDataUrl: input.imageDataUrl,
+            notes: input.notes ?? w.notes,
+            releasableAt: releasable,
+          }
+        : w,
+    ),
+  );
+}
+
+export function rejectWithdrawal(id: string, by: string, reason: string) {
+  mutateWithdrawals((items) =>
+    items.map((w) =>
+      w.id === id
+        ? {
+            ...w,
+            status: "rejected" as const,
+            reviewedAt: nowISO(),
+            reviewedBy: by,
+            rejectionReason: reason,
+          }
+        : w,
+    ),
+  );
+}
+
+export function withdrawalStatusLabel(s: WithdrawalStatus): string {
+  switch (s) {
+    case "pending":
+      return "بانتظار الإدارة";
+    case "approved":
+      return "معتمد (في فترة الانتظار)";
+    case "withdrawable":
+      return "قابل للسحب";
+    case "rejected":
+      return "مرفوض";
+  }
+}
+
+// ============================================================
 // Selectors / computed
 // ============================================================
 
