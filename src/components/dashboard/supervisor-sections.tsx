@@ -14,6 +14,7 @@ import { Pill, SectionCard, StatCard } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 
 import { ProjectDetail } from "./project-detail";
+import { MessagesScreen } from "./messages-screen";
 
 export function SupervisorSection({
   section,
