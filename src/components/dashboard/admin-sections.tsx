@@ -1508,11 +1508,24 @@ function ProductDialog({
   const [category, setCategory] = useState(initial?.category ?? CATEGORY_OPTIONS[0]);
   const [stock, setStock] = useState(initial?.stock ?? 0);
   const [price, setPrice] = useState(initial?.price ?? 0);
+  const [image, setImage] = useState<string | undefined>(initial?.image);
+
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      toast.error("حجم الصورة يجب ألا يتجاوز 4 ميجابايت");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setImage(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    onSave({ id: initial?.id, name: name.trim(), category, stock: Number(stock), price: Number(price) });
+    onSave({ id: initial?.id, name: name.trim(), category, stock: Number(stock), price: Number(price), image });
   };
 
   return (
