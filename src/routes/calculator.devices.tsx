@@ -60,11 +60,20 @@ const categoryMeta: {
 
 function StepDevices() {
   const navigate = useNavigate();
+  const [mode, setMode] = useState<CalcMode>("loads");
   const [devices, setDevices] = useState<Device[]>([]);
+  const [bill, setBill] = useState<BillInput>({
+    kWh15Days: 450,
+    dayHours: 10,
+    nightHours: 6,
+  });
   const [activeCat, setActiveCat] = useState<DeviceCategory>("fridges");
 
   useEffect(() => {
-    setDevices(loadState().devices);
+    const s = loadState();
+    setMode(s.mode);
+    setDevices(s.devices);
+    setBill(s.bill);
   }, []);
 
   const filtered = devices.filter((d) => d.category === activeCat);
@@ -95,7 +104,7 @@ function StepDevices() {
   };
 
   const goCalculate = () => {
-    saveState({ ...loadState(), devices });
+    saveState({ ...loadState(), mode, devices, bill });
     navigate({ to: "/results" });
   };
 
