@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   HardHat,
-  ArrowLeft,
   ArrowRight,
   Home,
   Building2,
