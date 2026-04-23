@@ -1095,7 +1095,6 @@ function BankTransferDialog({
     </div>
   );
 }
-}
 
 // =============================================================
 // Store overview (with charts)
