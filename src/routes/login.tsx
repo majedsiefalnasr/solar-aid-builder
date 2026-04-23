@@ -75,7 +75,17 @@ function LoginPage() {
 
             <Link
               to="/dashboard"
-              search={{ role: "owner" as Role }}
+              search={(() => {
+                try {
+                  const raw = localStorage.getItem("tamm_login_redirect");
+                  if (raw) {
+                    const parsed = JSON.parse(raw);
+                    localStorage.removeItem("tamm_login_redirect");
+                    return { role: (parsed.role ?? "owner") as Role, section: parsed.section };
+                  }
+                } catch { /* noop */ }
+                return { role: "owner" as Role };
+              })()}
               className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95"
             >
               تسجيل الدخول
