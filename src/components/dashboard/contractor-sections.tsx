@@ -34,6 +34,7 @@ import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
 import { ReportsSection } from "./reports-section";
+import { SettingsSection } from "./settings-section";
 
 export function ContractorSection({
   section,
@@ -59,6 +60,8 @@ export function ContractorSection({
       return <ReportsSection role="contractor" />;
     case "messages":
       return <MessagesScreen role="contractor" />;
+    case "settings":
+      return <SettingsSection role="contractor" />;
     default:
       return <ContractorDashboard />;
   }

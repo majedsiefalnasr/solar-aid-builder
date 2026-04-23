@@ -16,6 +16,30 @@
 }
 
 @font-face {
+  font-family: "Tajawal";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/tajawal/v11/Iura6YBj_oCad4k1nzGBC5xLhLE.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/ibmplexsansarabic/v12/Qw3CZRtWPQCuHme67tEYUIx3Kh0PHR9N6bs61vSbfdlA.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Noto Sans Arabic";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/notosansarabic/v18/nwpxtLGrOAZMl5nJ_wfgRg3DrWFZWsnVBJ_sS6tlqHHFlhQ5l3sQWIHPqzCfyG0.woff2") format("woff2");
+}
+
+@font-face {
   font-family: "Inter";
   font-style: normal;
   font-weight: 100 900;
@@ -154,4 +178,18 @@
     linear-gradient(to right, oklch(0.72 0.12 165 / 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, oklch(0.72 0.12 165 / 0.05) 1px, transparent 1px);
   background-size: 32px 32px;
+}
+
+/* Reduced motion preference */
+html[data-reduced-motion="true"] *,
+html[data-reduced-motion="true"] *::before,
+html[data-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Compact density */
+html[data-density="compact"] {
+  --radius: 0.625rem;
 }

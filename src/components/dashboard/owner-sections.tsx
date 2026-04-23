@@ -46,6 +46,7 @@ import { PageHeader, EmptyHint } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
 import { ReportsSection } from "./reports-section";
+import { SettingsSection } from "./settings-section";
 import {
   PayPhaseDialog,
   ProjectStatusPill,
@@ -76,6 +77,8 @@ export function OwnerSection({
       return <ReportsSection role="owner" />;
     case "messages":
       return <MessagesScreen role="owner" />;
+    case "settings":
+      return <SettingsSection role="owner" />;
     default:
       return <OwnerDashboard />;
   }
