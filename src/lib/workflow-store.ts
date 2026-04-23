@@ -1136,13 +1136,19 @@ export function createReport(input: {
 }
 
 export function approveReport(reportId: string, reviewer: string) {
+  let reportSnapshot: FieldReportDoc | undefined;
   mutateReports((reports) =>
-    reports.map((r) =>
-      r.id === reportId
-        ? { ...r, status: "approved" as const, reviewedBy: reviewer, reviewedAt: nowISO() }
-        : r,
-    ),
+    reports.map((r) => {
+      if (r.id !== reportId) return r;
+      const next = { ...r, status: "approved" as const, reviewedBy: reviewer, reviewedAt: nowISO() };
+      reportSnapshot = next;
+      return next;
+    }),
   );
+  // إذا كان تقرير "نهاية مرحلة" → نكمل المرحلة (نسبة 100% + فتح المرحلة التالية)
+  if (reportSnapshot && reportSnapshot.type === "phase_end" && reportSnapshot.phaseId) {
+    completePhase(reportSnapshot.projectId, reportSnapshot.phaseId, reviewer);
+  }
 }
 
 export function rejectReport(reportId: string, reviewer: string, reason: string) {
