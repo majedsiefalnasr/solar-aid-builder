@@ -13,6 +13,8 @@ interface DashboardSearch {
   role: Role;
   section?: string;
   projectId?: string;
+  categoryId?: string;
+  orderId?: string;
 }
 
 export const Route = createFileRoute("/dashboard")({
@@ -21,10 +23,14 @@ export const Route = createFileRoute("/dashboard")({
     const validRole = ROLES.includes(role) ? role : "owner";
     const section = typeof search.section === "string" ? search.section : undefined;
     const projectId = typeof search.projectId === "string" ? search.projectId : undefined;
+    const categoryId = typeof search.categoryId === "string" ? search.categoryId : undefined;
+    const orderId = typeof search.orderId === "string" ? search.orderId : undefined;
     return {
       role: validRole,
       section: validSection(validRole, section),
       projectId,
+      categoryId,
+      orderId,
     };
   },
   head: () => ({
@@ -37,7 +43,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function DashboardLayout() {
-  const { role, section, projectId } = Route.useSearch();
+  const { role, section, projectId, categoryId, orderId } = Route.useSearch();
   const navigate = useNavigate();
   const meta = ROLE_META[role];
   const nav = NAV_BY_ROLE[role];
@@ -191,7 +197,13 @@ function DashboardLayout() {
           </div>
 
           <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
-            <DashboardContent role={role} section={currentSection} projectId={projectId} />
+            <DashboardContent
+              role={role}
+              section={currentSection}
+              projectId={projectId}
+              categoryId={categoryId}
+              orderId={orderId}
+            />
             <Outlet />
           </main>
         </div>
@@ -204,10 +216,14 @@ function DashboardContent({
   role,
   section,
   projectId,
+  categoryId,
+  orderId,
 }: {
   role: Role;
   section: string;
   projectId?: string;
+  categoryId?: string;
+  orderId?: string;
 }) {
   switch (role) {
     case "owner":
@@ -219,6 +235,13 @@ function DashboardContent({
     case "field":
       return <FieldSection section={section} />;
     case "admin":
-      return <AdminSection section={section} projectId={projectId} />;
+      return (
+        <AdminSection
+          section={section}
+          projectId={projectId}
+          categoryId={categoryId}
+          orderId={orderId}
+        />
+      );
   }
 }

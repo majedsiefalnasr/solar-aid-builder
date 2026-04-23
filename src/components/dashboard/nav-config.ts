@@ -42,7 +42,8 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { key: "finance", label: "المالية", icon: TrendingUp },
     { key: "store", label: "المتجر", icon: Store, group: "المتجر" },
     { key: "products", label: "إدارة المنتجات", icon: PackageSearch, group: "المتجر" },
-    { key: "orders", label: "الفئات والطلبات", icon: ShoppingBag, group: "المتجر" },
+    { key: "categories", label: "الفئات", icon: Folder, group: "المتجر" },
+    { key: "orders", label: "الطلبات", icon: ShoppingBag, group: "المتجر" },
   ],
   owner: [
     { key: "overview", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -73,7 +74,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
 
 // Sections that exist as detail pages (accessed via projectId) but are not in the sidebar
 export const DETAIL_SECTIONS: Record<Role, string[]> = {
-  admin: ["project-detail"],
+  admin: ["project-detail", "category-detail", "order-detail"],
   owner: ["project-detail"],
   contractor: ["project-detail"],
   supervisor: ["project-detail"],

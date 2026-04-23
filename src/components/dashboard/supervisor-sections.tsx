@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import {
   Building2,
   CheckCircle2,
@@ -51,30 +52,42 @@ function SupervisorProjects() {
       <PageHeader title="المشاريع" subtitle="مشاريع تحت إشرافك الفني" />
       <div className="grid gap-4 lg:grid-cols-2">
         {SUPERVISED.map((p) => (
-          <article key={p.id} className="rounded-2xl border border-border bg-card p-5 shadow-card">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-[11px] font-bold text-sky-600">#{p.id}</div>
-                <h3 className="mt-1 text-lg font-extrabold text-ink">{p.name}</h3>
-                <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" /> {p.city}
+          <Link
+            key={p.id}
+            to="/dashboard"
+            search={{ role: "supervisor", section: "project-detail", projectId: p.id }}
+            className="group block rounded-2xl border border-border bg-card p-5 shadow-card transition hover:border-primary hover:shadow-cta"
+          >
+            <article>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-bold text-sky-600">#{p.id}</div>
+                  <h3 className="mt-1 text-lg font-extrabold text-ink group-hover:text-primary">
+                    {p.name}
+                  </h3>
+                  <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" /> {p.city}
+                  </div>
+                </div>
+                <Pill tone="info">{p.phase}</Pill>
+              </div>
+              <div className="mt-4">
+                <div className="mb-1 flex justify-between text-[11px] font-semibold text-muted-foreground">
+                  <span>الإنجاز</span>
+                  <span className="text-ink">{p.progress}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-l from-sky-500 to-sky-300"
+                    style={{ width: `${p.progress}%` }}
+                  />
                 </div>
               </div>
-              <Pill tone="info">{p.phase}</Pill>
-            </div>
-            <div className="mt-4">
-              <div className="mb-1 flex justify-between text-[11px] font-semibold text-muted-foreground">
-                <span>الإنجاز</span>
-                <span className="text-ink">{p.progress}%</span>
+              <div className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold text-primary opacity-0 transition group-hover:opacity-100">
+                فتح تفاصيل المشروع ←
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-gradient-to-l from-sky-500 to-sky-300"
-                  style={{ width: `${p.progress}%` }}
-                />
-              </div>
-            </div>
-          </article>
+            </article>
+          </Link>
         ))}
       </div>
     </>
