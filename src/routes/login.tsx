@@ -75,7 +75,19 @@ function LoginPage() {
 
             <Link
               to="/dashboard"
-              search={{ role: "owner" as Role }}
+              search={(() => {
+                try {
+                  const raw = localStorage.getItem("tamm_login_redirect");
+                  if (raw) {
+                    const parsed = JSON.parse(raw);
+                    localStorage.removeItem("tamm_login_redirect");
+                    return { role: (parsed.role ?? "owner") as Role, section: parsed.section };
+                  }
+                } catch {
+                  /* noop */
+                }
+                return { role: "owner" as Role };
+              })()}
               className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95"
             >
               تسجيل الدخول
@@ -99,8 +111,8 @@ function LoginPage() {
           </div>
           <h2 className="mt-3 text-2xl font-extrabold text-ink">جرّب لوحة كل دور</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            استكشف منصة تم من زاوية كل مستخدم — صاحب المشروع، المقاول، المهندس،
-            الميداني، أو إدارة المنصة.
+            استكشف منصة تم من زاوية كل مستخدم — صاحب المشروع، المقاول، المهندس، الميداني، أو إدارة
+            المنصة.
           </p>
 
           <div className="mt-6 grid gap-3">
