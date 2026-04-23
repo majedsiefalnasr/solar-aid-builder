@@ -15,10 +15,10 @@ export function SiteNav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:h-20 md:px-8">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 md:h-24 md:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center" aria-label="تم — الصفحة الرئيسية">
-          <TammMark className="h-9 w-auto md:h-11" />
+          <TammMark className="h-12 w-auto md:h-14" />
         </Link>
 
         {/* Desktop nav */}
@@ -84,7 +84,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-card">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4 md:px-8">
         <div className="space-y-3">
-          <TammMark className="h-10 w-auto" />
+          <TammMark className="h-14 w-auto" />
           <p className="text-sm leading-relaxed text-muted-foreground">
             منصة هندسية متكاملة لخدمات البناء، مواد البناء، والطاقة الشمسية.
           </p>
