@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { CheckCircle2, ClipboardList, MapPin, XCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CheckCircle2, ClipboardList, FileText, HardHat, MapPin, UserCheck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   FIELD_REPORTS,
   MOCK_PROJECT,
   PAYMENT_REQUESTS,
 } from "@/lib/dashboard-data";
+import { ROLE_USER, useWorkflow } from "@/lib/workflow-store";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
+import { BannerCard } from "./admin-dashboard";
 
 type ReportStatus = "approved" | "pending" | "rejected";
 type PayStatus = "pending" | "approved" | "released" | "rejected";
