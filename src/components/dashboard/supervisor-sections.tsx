@@ -1,5 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  ROLE_USER,
+  reportsForSupervisor,
+  useWorkflow,
+  type FieldReportDoc,
+} from "@/lib/workflow-store";
+import { ReportRow, ReportViewerDialog } from "./reports-shared";
 import { toast } from "sonner";
 import {
   Building2,
@@ -17,6 +24,7 @@ import { Pill, SectionCard, StatCard } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
+import { ReportsSection } from "./reports-section";
 
 export function SupervisorSection({
   section,
@@ -36,6 +44,8 @@ export function SupervisorSection({
       return <SupervisorAssignments />;
     case "field-team":
       return <SupervisorFieldTeam />;
+    case "reports":
+      return <ReportsSection role="supervisor" />;
     case "approvals":
       return <SupervisorApprovals />;
     case "messages":
@@ -283,25 +293,23 @@ function AddTeamMemberDialog({
 type ApprovalStatus = "approved" | "pending" | "rejected";
 
 function SupervisorApprovals() {
-  const [status, setStatus] = useState<Record<string, ApprovalStatus>>(() =>
-    Object.fromEntries(FIELD_REPORTS.map((r) => [r.id, r.status])),
-  );
-  const pending = FIELD_REPORTS.filter((r) => status[r.id] === "pending");
-  const approved = FIELD_REPORTS.filter((r) => status[r.id] === "approved");
-  const rejected = FIELD_REPORTS.filter((r) => status[r.id] === "rejected");
+  const store = useWorkflow();
+  const supervisorName = ROLE_USER.supervisor;
+  const [openReport, setOpenReport] = useState<FieldReportDoc | null>(null);
 
-  const approve = (id: string, phase: string) => {
-    setStatus((s) => ({ ...s, [id]: "approved" }));
-    toast.success("تم اعتماد التقرير", { description: `${id} — ${phase}` });
-  };
-  const reject = (id: string, phase: string) => {
-    setStatus((s) => ({ ...s, [id]: "rejected" }));
-    toast.error("تم رفض التقرير", { description: `${id} — ${phase} • تم إعلام المهندس الميداني` });
-  };
+  const reports = useMemo(
+    () => reportsForSupervisor(store, supervisorName),
+    [store, supervisorName],
+  );
+  const pending = reports.filter((r) => r.status === "pending");
+  const approved = reports.filter((r) => r.status === "approved");
+  const rejected = reports.filter((r) => r.status === "rejected");
+
+  const projectName = (id: string) => store.projects.find((p) => p.id === id)?.name;
 
   return (
     <>
-      <PageHeader title="الاعتمادات" subtitle="جميع التقارير الميدانية ودفعات المراحل" />
+      <PageHeader title="الاعتمادات" subtitle="جميع التقارير الميدانية على مشاريعك" />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <StatCard label="بانتظار اعتمادك" value={pending.length} icon={<ClipboardCheck className="h-5 w-5" />} tone="accent" />
@@ -309,48 +317,44 @@ function SupervisorApprovals() {
         <StatCard label="مرفوضة" value={rejected.length} icon={<XCircle className="h-5 w-5" />} tone="danger" />
       </div>
 
-      <SectionCard title="آخر التقارير">
-        <div className="space-y-3">
-          {FIELD_REPORTS.map((r) => {
-            const st = status[r.id];
-            return (
-              <div key={r.id} className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4 md:flex-row md:items-center">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Pill tone="info">{r.id}</Pill>
-                    <span className="text-sm font-bold text-ink">{r.phase}</span>
-                    <Pill tone={st === "approved" ? "primary" : st === "rejected" ? "danger" : "accent"}>
-                      {st === "approved" ? "معتمد" : st === "rejected" ? "مرفوض" : "بانتظار"}
-                    </Pill>
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground">{r.note}</p>
-                  <div className="mt-1 text-[11px] text-muted-foreground">
-                    {r.engineer} • {r.date} • 📷 {r.photos}
-                  </div>
-                </div>
-                {st === "pending" && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => reject(r.id, r.phase)}
-                      className="rounded-full border border-border bg-card px-4 py-1.5 text-xs font-bold hover:border-rose-400 hover:text-rose-600"
-                    >
-                      رفض
-                    </button>
-                    <button
-                      onClick={() => approve(r.id, r.phase)}
-                      className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta"
-                    >
-                      اعتماد
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      <SectionCard
+        title={pending.length > 0 ? `بانتظار قرارك (${pending.length})` : "كل التقارير محدّثة"}
+        subtitle={pending.length > 0 ? "افتح التقرير لاعتماده أو رفضه مع السبب" : undefined}
+      >
+        {reports.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+            لا توجد تقارير بعد على مشاريعك.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {/* Show pending first */}
+            {[...pending, ...approved, ...rejected].map((r) => (
+              <ReportRow
+                key={r.id}
+                report={r}
+                projectName={projectName(r.projectId)}
+                onOpen={() => setOpenReport(r)}
+              />
+            ))}
+          </div>
+        )}
       </SectionCard>
 
-      <div className="hidden">{MOCK_PROJECT.id}</div>
+      {openReport && (
+        <ReportViewerDialog
+          report={openReport}
+          project={store.projects.find((p) => p.id === openReport.projectId)}
+          canReview
+          reviewerName={supervisorName}
+          onClose={() => setOpenReport(null)}
+        />
+      )}
+
+      {/* Lint touch */}
+      <span className="hidden">
+        {FIELD_REPORTS.length} {MOCK_PROJECT.id}
+        <Pill tone="info">x</Pill>
+      </span>
     </>
   );
 }

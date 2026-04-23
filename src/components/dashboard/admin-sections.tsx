@@ -39,6 +39,7 @@ import { AdminDashboard } from "./admin-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
+import { ReportsSection } from "./reports-section";
 import { AreaChart, BarChart, DonutChart, Sparkline } from "./charts";
 
 export function AdminSection({
@@ -63,6 +64,8 @@ export function AdminSection({
       return <AdminAssignments />;
     case "payments":
       return <AdminPayments />;
+    case "reports":
+      return <ReportsSection role="admin" />;
     case "users":
       return <AdminUsers />;
     case "workflow":

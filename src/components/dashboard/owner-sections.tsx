@@ -38,6 +38,7 @@ import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader, EmptyHint } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
+import { ReportsSection } from "./reports-section";
 
 export function OwnerSection({
   section,
@@ -59,6 +60,8 @@ export function OwnerSection({
       return <OwnerPayments />;
     case "purchases":
       return <OwnerPurchases />;
+    case "reports":
+      return <ReportsSection role="owner" />;
     case "messages":
       return <MessagesScreen role="owner" />;
     default:
