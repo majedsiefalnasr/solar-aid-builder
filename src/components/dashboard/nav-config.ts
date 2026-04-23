@@ -38,6 +38,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { key: "projects", label: "المشاريع", icon: Building2 },
     { key: "assignments", label: "طلبات التعيين", icon: UserPlus },
     { key: "payments", label: "المدفوعات", icon: CreditCard },
+    { key: "reports", label: "التقارير", icon: ClipboardList },
     { key: "messages", label: "المحادثات", icon: MessageSquare },
     { key: "users", label: "المستخدمون", icon: Users },
     { key: "workflow", label: "إعدادات سير العمل", icon: Workflow },
