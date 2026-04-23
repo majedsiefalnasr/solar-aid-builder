@@ -161,7 +161,15 @@ export function ProjectDetail({
 
   const [chatOpen, setChatOpen] = useState(false);
   const [payPhase, setPayPhase] = useState<PhaseDef | null>(null);
-  const threads = getThreadsForProject(role, project.name);
+  const projectId = liveDoc?.id ?? project.id;
+  const projectThreads = useMemo(
+    () => threadsForRole(store, role as ChatRole, ROLE_USER[role]).filter((t) => t.projectId === projectId),
+    [store, role, projectId],
+  );
+  const projectUnread = projectThreads.reduce(
+    (s, t) => s + unreadCountForRole(t, role as ChatRole),
+    0,
+  );
 
   const isOwner = role === "owner";
   const isContractor = role === "contractor";
@@ -227,9 +235,9 @@ export function ProjectDetail({
             >
               <MessageCircle className="h-3.5 w-3.5" />
               المحادثة
-              {threads.some((t) => t.unread) && (
+              {projectUnread > 0 && (
                 <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
-                  {threads.reduce((s, t) => s + (t.unread ?? 0), 0)}
+                  {projectUnread}
                 </span>
               )}
             </button>
@@ -479,7 +487,7 @@ export function ProjectDetail({
       <ChatPanel
         open={chatOpen}
         onClose={() => setChatOpen(false)}
-        threads={threads}
+        projectId={projectId}
         role={role}
       />
     </div>
