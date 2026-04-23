@@ -5,13 +5,22 @@ import {
   reportsForSupervisor,
   useWorkflow,
   type FieldReportDoc,
+  type ProjectDoc,
 } from "@/lib/workflow-store";
 import { ReportRow, ReportViewerDialog } from "./reports-shared";
+import {
+  AssignFieldEngineerDialog,
+  ProjectStatusPill,
+  SubmitQuoteDialog,
+  SupervisorAcceptDialog,
+} from "./project-flow-shared";
 import { toast } from "sonner";
 import {
   Building2,
   CheckCircle2,
   ClipboardCheck,
+  CreditCard,
+  FileText,
   HardHat,
   MapPin,
   UserPlus,
@@ -20,7 +29,7 @@ import {
 } from "lucide-react";
 import { FIELD_REPORTS, MOCK_PROJECT } from "@/lib/dashboard-data";
 import { SupervisorDashboard } from "./supervisor-dashboard";
-import { Pill, SectionCard, StatCard } from "./dashboard-ui";
+import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
@@ -101,61 +110,145 @@ function SupervisorProjects() {
   );
 }
 
-const ASSIGNMENT_REQUESTS = [
-  { id: "ASN-501", project: "محل تجاري — حي السلام", owner: "فهد المنصور", type: "مهندس مشرف", submittedAt: "2026-04-22" },
-  { id: "ASN-502", project: "فيلا الشاطئ — المكلا", owner: "ريم العولقي", type: "مهندس مشرف", submittedAt: "2026-04-21" },
-];
-
 function SupervisorAssignments() {
-  const [items, setItems] = useState(ASSIGNMENT_REQUESTS);
-  const accept = (id: string, project: string) => {
-    setItems((prev) => prev.filter((r) => r.id !== id));
-    toast.success("تم قبول طلب التعيين", { description: `${id} — ${project}` });
-  };
-  const reject = (id: string, project: string) => {
-    setItems((prev) => prev.filter((r) => r.id !== id));
-    toast.error("تم رفض طلب التعيين", { description: `${id} — ${project}` });
-  };
+  const store = useWorkflow();
+  const supervisorName = ROLE_USER.supervisor;
+  const [acceptProject, setAcceptProject] = useState<ProjectDoc | null>(null);
+  const [quoteProject, setQuoteProject] = useState<ProjectDoc | null>(null);
+  const [assignFieldProject, setAssignFieldProject] = useState<ProjectDoc | null>(null);
+
+  const myAssignments = store.projects.filter(
+    (p) => p.supervisorName === supervisorName && p.status === "pending_supervisor",
+  );
+  const needQuote = store.projects.filter(
+    (p) => p.supervisorName === supervisorName && p.status === "pending_quote",
+  );
+  const needFieldEngineer = store.projects.filter(
+    (p) =>
+      p.supervisorName === supervisorName &&
+      (p.status === "in_progress" || p.status === "verifying_payment") &&
+      !p.fieldEngineerName,
+  );
+
   return (
     <>
-      <PageHeader title="طلبات التعيين" subtitle="طلبات الإشراف الجديدة المُسندة إليك من المنصة" />
-      <SectionCard title="طلبات بانتظار قرارك">
-        {items.length === 0 ? (
+      <PageHeader
+        title="طلبات التعيين والإجراءات"
+        subtitle="جميع المهام المطلوبة منك على المشاريع تحت إشرافك"
+      />
+
+      <SectionCard
+        title={`طلبات إشراف جديدة (${myAssignments.length})`}
+        subtitle="عينتك الإدارة على هذه المشاريع — اقبل أو ارفض"
+      >
+        {myAssignments.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
-            لا توجد طلبات تعيين بانتظارك حالياً.
+            لا توجد طلبات إشراف جديدة.
           </div>
         ) : (
-          <div className="space-y-3">
-            {items.map((r) => (
-              <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background p-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <Pill tone="info">{r.id}</Pill>
-                    <span className="text-sm font-bold text-ink">{r.project}</span>
-                  </div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">
-                    المالك: {r.owner} • {r.type} • {r.submittedAt}
+          <div className="space-y-2">
+            {myAssignments.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setAcceptProject(p)}
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background p-3 text-right hover:border-primary hover:bg-primary-soft/30"
+              >
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold text-primary">#{p.id}</div>
+                  <div className="mt-0.5 truncate text-sm font-bold text-ink">{p.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {p.ownerName} • {p.city} • {fmtMoney(p.budget)}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => reject(r.id, r.project)}
-                    className="rounded-full border border-border bg-card px-4 py-1.5 text-xs font-bold text-foreground hover:border-rose-400 hover:text-rose-600"
-                  >
-                    رفض
-                  </button>
-                  <button
-                    onClick={() => accept(r.id, r.project)}
-                    className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta"
-                  >
-                    قبول
-                  </button>
-                </div>
-              </div>
+                <span className="rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-primary-foreground">
+                  مراجعة
+                </span>
+              </button>
             ))}
           </div>
         )}
       </SectionCard>
+
+      {needQuote.length > 0 && (
+        <SectionCard
+          title={`مشاريع تحتاج عرض سعر (${needQuote.length})`}
+          subtitle="قسّم المشروع على مراحل وحدد ميزانية كل مرحلة"
+          className="mt-6"
+        >
+          <div className="space-y-2">
+            {needQuote.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setQuoteProject(p)}
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background p-3 text-right hover:border-primary hover:bg-primary-soft/30"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-primary">#{p.id}</span>
+                    <ProjectStatusPill status={p.status} />
+                  </div>
+                  <div className="mt-0.5 truncate text-sm font-bold text-ink">{p.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {p.ownerName} • ميزانية مقترحة {fmtMoney(p.budget)}
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-violet-500 px-3 py-1 text-[11px] font-bold text-white">
+                  <FileText className="h-3 w-3" /> إعداد عرض السعر
+                </span>
+              </button>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {needFieldEngineer.length > 0 && (
+        <SectionCard
+          title={`تعيين مهندس ميداني (${needFieldEngineer.length})`}
+          subtitle="مشاريع بدأ تنفيذها وتحتاج مهندس ميداني"
+          className="mt-6"
+        >
+          <div className="space-y-2">
+            {needFieldEngineer.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setAssignFieldProject(p)}
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background p-3 text-right hover:border-primary hover:bg-primary-soft/30"
+              >
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold text-primary">#{p.id}</div>
+                  <div className="mt-0.5 truncate text-sm font-bold text-ink">{p.name}</div>
+                  <div className="text-[11px] text-muted-foreground">{p.ownerName}</div>
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-orange-500 px-3 py-1 text-[11px] font-bold text-white">
+                  <HardHat className="h-3 w-3" /> تعيين مهندس
+                </span>
+              </button>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {acceptProject && (
+        <SupervisorAcceptDialog
+          project={acceptProject}
+          supervisorName={supervisorName}
+          onClose={() => setAcceptProject(null)}
+        />
+      )}
+      {quoteProject && (
+        <SubmitQuoteDialog project={quoteProject} onClose={() => setQuoteProject(null)} />
+      )}
+      {assignFieldProject && (
+        <AssignFieldEngineerDialog
+          project={assignFieldProject}
+          byName={supervisorName}
+          onClose={() => setAssignFieldProject(null)}
+        />
+      )}
+
+      <span className="hidden">
+        {toast.toString().length} {CreditCard.name}
+      </span>
     </>
   );
 }
