@@ -1,12 +1,18 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Activity,
+  ArrowRight,
   CheckCircle2,
   Coins,
   CreditCard,
   ExternalLink,
+  Eye,
   Folder,
   Package,
+  PackageSearch,
+  Pencil,
+  Plus,
   Settings2,
   ShoppingBag,
   Store as StoreIcon,
@@ -14,24 +20,33 @@ import {
   UserPlus,
   Users,
   Workflow,
+  X,
 } from "lucide-react";
 import { DISPUTES, MOCK_PROJECT, PAYMENT_REQUESTS, PLATFORM_STATS } from "@/lib/dashboard-data";
 import { AdminDashboard } from "./admin-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader } from "./section-shell";
+import { ProjectDetail } from "./project-detail";
+import { AreaChart, BarChart, DonutChart, Sparkline } from "./charts";
 
 export function AdminSection({
   section,
-  projectId: _projectId,
+  projectId,
+  categoryId,
+  orderId,
 }: {
   section: string;
   projectId?: string;
+  categoryId?: string;
+  orderId?: string;
 }) {
   switch (section) {
     case "overview":
       return <AdminDashboard />;
     case "projects":
       return <AdminProjects />;
+    case "project-detail":
+      return <ProjectDetail role="admin" projectId={projectId} />;
     case "assignments":
       return <AdminAssignments />;
     case "payments":
@@ -46,12 +61,22 @@ export function AdminSection({
       return <AdminStore />;
     case "products":
       return <AdminProducts />;
+    case "categories":
+      return <AdminCategories />;
+    case "category-detail":
+      return <AdminCategoryDetail categoryId={categoryId} />;
     case "orders":
       return <AdminOrders />;
+    case "order-detail":
+      return <AdminOrderDetail orderId={orderId} />;
     default:
       return <AdminDashboard />;
   }
 }
+
+// =============================================================
+// Projects (clickable rows -> project detail)
+// =============================================================
 
 const PROJECTS_LIST = [
   {
@@ -93,7 +118,7 @@ function AdminProjects() {
     <>
       <PageHeader
         title="المشاريع"
-        subtitle={`${PLATFORM_STATS.activeProjects} مشروع نشط على المنصة`}
+        subtitle={`${PLATFORM_STATS.activeProjects} مشروع نشط على المنصة — اضغط على أي مشروع لفتح التفاصيل`}
       />
       <SectionCard title="جميع المشاريع">
         <div className="overflow-hidden rounded-xl border border-border">
@@ -106,11 +131,12 @@ function AdminProjects() {
                 <th className="px-4 py-3 font-bold">المالك</th>
                 <th className="px-4 py-3 font-bold">الإنجاز</th>
                 <th className="px-4 py-3 font-bold">الحالة</th>
+                <th className="px-4 py-3 font-bold">إجراء</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border bg-card">
               {PROJECTS_LIST.map((p) => (
-                <tr key={p.id}>
+                <tr key={p.id} className="transition hover:bg-muted/40">
                   <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{p.id}</td>
                   <td className="px-4 py-3 font-bold text-ink">{p.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{p.city}</td>
@@ -128,6 +154,19 @@ function AdminProjects() {
                       {p.status === "active" ? "نشط" : "بانتظار"}
                     </Pill>
                   </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      to="/dashboard"
+                      search={{
+                        role: "admin",
+                        section: "project-detail",
+                        projectId: p.id,
+                      }}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary hover:bg-primary hover:text-primary-foreground"
+                    >
+                      <Eye className="h-3 w-3" /> عرض
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -137,6 +176,10 @@ function AdminProjects() {
     </>
   );
 }
+
+// =============================================================
+// Assignments
+// =============================================================
 
 const PENDING_ASSIGNMENTS = [
   {
@@ -205,6 +248,19 @@ function AdminAssignments() {
   );
 }
 
+// =============================================================
+// Payments
+// =============================================================
+
+const PAYMENTS_TREND = [
+  { label: "نوفمبر", value: 180 },
+  { label: "ديسمبر", value: 230 },
+  { label: "يناير", value: 200 },
+  { label: "فبراير", value: 280 },
+  { label: "مارس", value: 320 },
+  { label: "أبريل", value: 410 },
+];
+
 function AdminPayments() {
   const total = PAYMENT_REQUESTS.reduce((s, x) => s + x.amount, 0);
   return (
@@ -225,6 +281,18 @@ function AdminPayments() {
         />
         <StatCard label="عمولة المنصة" value="2.5%" icon={<CreditCard className="h-5 w-5" />} />
       </div>
+
+      <SectionCard
+        title="حركة الدفعات الشهرية"
+        subtitle="إجمالي المبالغ المُحرّرة خلال آخر 6 أشهر (بآلاف الريالات)"
+        className="mb-6"
+      >
+        <AreaChart
+          data={PAYMENTS_TREND}
+          tone="primary"
+          formatValue={(v) => fmtMoney(v)}
+        />
+      </SectionCard>
 
       <SectionCard title="آخر الحركات">
         <div className="space-y-3">
@@ -267,6 +335,10 @@ function AdminPayments() {
   );
 }
 
+// =============================================================
+// Users
+// =============================================================
+
 const USERS = [
   { name: "م. أحمد الشامي", role: "صاحب مشروع", joined: "2026-01-12", status: "active" },
   { name: "شركة البناء المتقن", role: "مقاول", joined: "2025-11-08", status: "active" },
@@ -287,6 +359,36 @@ function AdminUsers() {
           </button>
         }
       />
+
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <SectionCard title="توزيع المستخدمين">
+          <DonutChart
+            size={160}
+            centerLabel="إجمالي"
+            centerValue={String(PLATFORM_STATS.contractors)}
+            data={[
+              { label: "أصحاب مشاريع", value: 142, tone: "primary" },
+              { label: "مقاولون", value: 86, tone: "accent" },
+              { label: "مهندسون مشرفون", value: 48, tone: "info" },
+              { label: "مهندسون ميدانيون", value: 36, tone: "danger" },
+            ]}
+          />
+        </SectionCard>
+
+        <div className="grid grid-cols-2 gap-4 lg:col-span-2">
+          <SectionCard title="تسجيلات هذا الأسبوع">
+            <div className="text-3xl font-extrabold text-ink">+24</div>
+            <div className="mt-1 text-[11px] text-muted-foreground">مقارنة بـ +18 الأسبوع الماضي</div>
+            <div className="mt-3"><Sparkline values={[8, 12, 9, 14, 10, 16, 24]} tone="primary" /></div>
+          </SectionCard>
+          <SectionCard title="نشاط يومي">
+            <div className="text-3xl font-extrabold text-ink">312</div>
+            <div className="mt-1 text-[11px] text-muted-foreground">مستخدم نشط اليوم</div>
+            <div className="mt-3"><Sparkline values={[120, 180, 150, 240, 210, 280, 312]} tone="accent" /></div>
+          </SectionCard>
+        </div>
+      </div>
+
       <SectionCard title="قاعدة المستخدمين">
         <div className="overflow-hidden rounded-xl border border-border">
           <table className="w-full text-right text-sm">
@@ -326,6 +428,10 @@ function AdminUsers() {
     </>
   );
 }
+
+// =============================================================
+// Workflow
+// =============================================================
 
 const WORKFLOW_STAGES = [
   { id: 1, name: "استلام طلب المشروع", auto: true },
@@ -398,6 +504,25 @@ function AdminWorkflow() {
   );
 }
 
+// =============================================================
+// Finance (with charts)
+// =============================================================
+
+const REVENUE_MONTHS = [
+  { label: "مايو", value: 132 },
+  { label: "يونيو", value: 158 },
+  { label: "يوليو", value: 142 },
+  { label: "أغسطس", value: 178 },
+  { label: "سبتمبر", value: 168 },
+  { label: "أكتوبر", value: 192 },
+  { label: "نوفمبر", value: 184 },
+  { label: "ديسمبر", value: 215 },
+  { label: "يناير", value: 198 },
+  { label: "فبراير", value: 232 },
+  { label: "مارس", value: 248 },
+  { label: "أبريل", value: 268 },
+];
+
 function AdminFinance() {
   return (
     <>
@@ -406,44 +531,77 @@ function AdminFinance() {
         <StatCard
           label="إيرادات الشهر"
           value={fmtMoney(212_500)}
+          hint="+12.5% عن الشهر السابق"
           icon={<TrendingUp className="h-5 w-5" />}
           tone="primary"
         />
         <StatCard
           label="عمولات محصّلة"
           value={fmtMoney(48_300)}
+          hint="2.5% متوسط العمولة"
           icon={<Coins className="h-5 w-5" />}
           tone="accent"
         />
         <StatCard
           label="مدفوعات معلّقة"
           value={fmtMoney(15_700)}
+          hint="بانتظار الاعتماد"
           icon={<CreditCard className="h-5 w-5" />}
         />
         <StatCard
           label="نزاعات بمبلغ مجمَّد"
           value={DISPUTES.length}
+          hint={`بقيمة ${fmtMoney(8_400)}`}
           icon={<Activity className="h-5 w-5" />}
           tone="danger"
         />
       </div>
 
-      <SectionCard title="نشاط الإيرادات الشهري">
-        <div className="flex h-56 items-end gap-2">
-          {[55, 70, 60, 85, 65, 95, 80, 92, 75, 100, 88, 110].map((v, i) => (
-            <div key={i} className="flex flex-1 flex-col items-center gap-1">
-              <div
-                className="w-full rounded-t-md bg-gradient-to-t from-primary to-emerald-300"
-                style={{ height: `${(v / 110) * 100}%` }}
-              />
-              <span className="text-[10px] text-muted-foreground">{i + 1}</span>
-            </div>
-          ))}
+      <div className="mb-6 grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <SectionCard
+            title="نشاط الإيرادات الشهري"
+            subtitle="بآلاف الريالات اليمنية — آخر 12 شهراً"
+          >
+            <AreaChart data={REVENUE_MONTHS} tone="primary" formatValue={(v) => fmtMoney(v)} />
+          </SectionCard>
         </div>
+        <SectionCard title="مصادر الإيرادات">
+          <DonutChart
+            size={160}
+            centerLabel="هذا الشهر"
+            centerValue={fmtMoney(212)}
+            data={[
+              { label: "عمولات الدفعات", value: 48, tone: "primary" },
+              { label: "مبيعات المتجر", value: 85, tone: "accent" },
+              { label: "اشتراكات شهرية", value: 62, tone: "info" },
+              { label: "خدمات إضافية", value: 17, tone: "danger" },
+            ]}
+          />
+        </SectionCard>
+      </div>
+
+      <SectionCard title="مقارنة العمولات حسب الفئة">
+        <BarChart
+          tone="accent"
+          data={[
+            { label: "بناء", value: 28 },
+            { label: "كهرباء", value: 12 },
+            { label: "سباكة", value: 9 },
+            { label: "طاقة", value: 18 },
+            { label: "تشطيبات", value: 22 },
+            { label: "أخرى", value: 6 },
+          ]}
+          formatValue={(v) => fmtMoney(v)}
+        />
       </SectionCard>
     </>
   );
 }
+
+// =============================================================
+// Store overview (with charts)
+// =============================================================
 
 function AdminStore() {
   return (
@@ -453,20 +611,53 @@ function AdminStore() {
         <StatCard
           label="منتجات نشطة"
           value="847"
+          hint="من أصل 912 منتج"
           icon={<Package className="h-5 w-5" />}
           tone="primary"
         />
         <StatCard
           label="طلبات الشهر"
           value="1,243"
+          hint="+18% عن الشهر السابق"
           icon={<ShoppingBag className="h-5 w-5" />}
           tone="accent"
         />
         <StatCard
           label="إيرادات المتجر"
           value={fmtMoney(85_400)}
+          hint="متوسط 68 ر.ي/طلب"
           icon={<Coins className="h-5 w-5" />}
         />
+      </div>
+
+      <div className="mb-6 grid gap-6 lg:grid-cols-2">
+        <SectionCard title="مبيعات آخر 7 أيام" subtitle="عدد الطلبات اليومية">
+          <BarChart
+            tone="primary"
+            data={[
+              { label: "س", value: 32 },
+              { label: "ح", value: 48 },
+              { label: "ن", value: 41 },
+              { label: "ث", value: 56 },
+              { label: "ر", value: 62 },
+              { label: "خ", value: 58 },
+              { label: "ج", value: 72 },
+            ]}
+          />
+        </SectionCard>
+        <SectionCard title="أكثر الفئات مبيعاً">
+          <DonutChart
+            size={160}
+            centerLabel="فئة"
+            centerValue="5"
+            data={[
+              { label: "مواد البناء", value: 312, tone: "primary" },
+              { label: "كهرباء", value: 184, tone: "accent" },
+              { label: "طاقة شمسية", value: 142, tone: "info" },
+              { label: "سباكة", value: 96, tone: "danger" },
+            ]}
+          />
+        </SectionCard>
       </div>
 
       <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-card">
@@ -484,7 +675,19 @@ function AdminStore() {
   );
 }
 
-const PRODUCTS = [
+// =============================================================
+// Products (with working "Add Product" dialog)
+// =============================================================
+
+interface ProductRow {
+  id: string;
+  name: string;
+  category: string;
+  stock: number;
+  price: number;
+}
+
+const SEED_PRODUCTS: ProductRow[] = [
   { id: "P-001", name: "إسمنت بورتلاندي 50كغ", category: "مواد بناء", stock: 1240, price: 28 },
   { id: "P-002", name: "حديد تسليح 12مم", category: "مواد بناء", stock: 580, price: 4.2 },
   { id: "P-003", name: "بلوك إسمنتي 20×40", category: "مواد بناء", stock: 8500, price: 3.5 },
@@ -492,18 +695,71 @@ const PRODUCTS = [
   { id: "P-005", name: "لوح شمسي 550W", category: "طاقة", stock: 64, price: 380 },
 ];
 
+const CATEGORY_OPTIONS = ["مواد بناء", "كهرباء", "سباكة", "طاقة", "أدوات يدوية"];
+
 function AdminProducts() {
+  const [products, setProducts] = useState<ProductRow[]>(SEED_PRODUCTS);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<ProductRow | null>(null);
+
+  const openNew = () => {
+    setEditing(null);
+    setOpen(true);
+  };
+  const openEdit = (p: ProductRow) => {
+    setEditing(p);
+    setOpen(true);
+  };
+
+  const handleSave = (data: Omit<ProductRow, "id"> & { id?: string }) => {
+    if (data.id) {
+      setProducts((prev) => prev.map((p) => (p.id === data.id ? { ...p, ...data } as ProductRow : p)));
+    } else {
+      const nextId = `P-${String(products.length + 1).padStart(3, "0")}`;
+      setProducts((prev) => [{ id: nextId, ...data }, ...prev]);
+    }
+    setOpen(false);
+  };
+
+  const totalValue = products.reduce((s, p) => s + p.stock * p.price, 0);
+  const lowStock = products.filter((p) => p.stock < 50).length;
+
   return (
     <>
       <PageHeader
         title="إدارة المنتجات"
         subtitle="أضف وعدّل منتجات متجر تم"
         action={
-          <button className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta">
-            + منتج جديد
+          <button
+            onClick={openNew}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta"
+          >
+            <Plus className="h-3.5 w-3.5" /> منتج جديد
           </button>
         }
       />
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        <StatCard
+          label="إجمالي المنتجات"
+          value={products.length}
+          icon={<PackageSearch className="h-5 w-5" />}
+          tone="primary"
+        />
+        <StatCard
+          label="قيمة المخزون"
+          value={`$${totalValue.toLocaleString()}`}
+          icon={<Coins className="h-5 w-5" />}
+          tone="accent"
+        />
+        <StatCard
+          label="منتجات بمخزون منخفض"
+          value={lowStock}
+          icon={<Activity className="h-5 w-5" />}
+          tone={lowStock > 0 ? "danger" : "default"}
+        />
+      </div>
+
       <SectionCard title="المخزون الحالي">
         <div className="overflow-hidden rounded-xl border border-border">
           <table className="w-full text-right text-sm">
@@ -518,7 +774,7 @@ function AdminProducts() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border bg-card">
-              {PRODUCTS.map((p) => (
+              {products.map((p) => (
                 <tr key={p.id}>
                   <td className="px-4 py-3 font-mono text-xs text-primary">{p.id}</td>
                   <td className="px-4 py-3 font-bold text-ink">{p.name}</td>
@@ -528,8 +784,11 @@ function AdminProducts() {
                   </td>
                   <td className="px-4 py-3 font-extrabold text-ink">${p.price}</td>
                   <td className="px-4 py-3">
-                    <button className="text-xs font-bold text-primary hover:underline">
-                      تعديل
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                    >
+                      <Pencil className="h-3 w-3" /> تعديل
                     </button>
                   </td>
                 </tr>
@@ -539,6 +798,14 @@ function AdminProducts() {
         </div>
       </SectionCard>
 
+      {open && (
+        <ProductDialog
+          initial={editing}
+          onClose={() => setOpen(false)}
+          onSave={handleSave}
+        />
+      )}
+
       <div className="hidden">
         <Folder />
       </div>
@@ -546,109 +813,543 @@ function AdminProducts() {
   );
 }
 
-const CATEGORIES = [
-  { name: "مواد البناء", products: 312 },
-  { name: "الكهرباء", products: 184 },
-  { name: "السباكة", products: 96 },
-  { name: "الطاقة الشمسية", products: 142 },
-  { name: "الأدوات اليدوية", products: 113 },
-];
+function ProductDialog({
+  initial,
+  onClose,
+  onSave,
+}: {
+  initial: ProductRow | null;
+  onClose: () => void;
+  onSave: (data: Omit<ProductRow, "id"> & { id?: string }) => void;
+}) {
+  const [name, setName] = useState(initial?.name ?? "");
+  const [category, setCategory] = useState(initial?.category ?? CATEGORY_OPTIONS[0]);
+  const [stock, setStock] = useState(initial?.stock ?? 0);
+  const [price, setPrice] = useState(initial?.price ?? 0);
 
-const ORDERS = [
-  {
-    id: "ORD-9012",
-    customer: "شركة البناء المتقن",
-    total: 4_850,
-    status: "shipped",
-    date: "2026-04-23",
-  },
-  {
-    id: "ORD-9011",
-    customer: "م. أحمد الشامي",
-    total: 1_200,
-    status: "processing",
-    date: "2026-04-22",
-  },
-  {
-    id: "ORD-9010",
-    customer: "مؤسسة بناة الجنوب",
-    total: 7_320,
-    status: "delivered",
-    date: "2026-04-21",
-  },
-  { id: "ORD-9009", customer: "فهد المنصور", total: 980, status: "cancelled", date: "2026-04-20" },
-];
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onSave({ id: initial?.id, name: name.trim(), category, stock: Number(stock), price: Number(price) });
+  };
 
-function AdminOrders() {
   return (
-    <>
-      <PageHeader title="الفئات والطلبات" subtitle="إدارة فئات المتجر ومتابعة الطلبات" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-3xl border border-border bg-card p-6 shadow-2xl">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-lg font-extrabold text-ink">
+            {initial ? "تعديل المنتج" : "إضافة منتج جديد"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"
+            aria-label="إغلاق"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <SectionCard title="الفئات">
-          <div className="space-y-2">
-            {CATEGORIES.map((c) => (
-              <div
-                key={c.name}
-                className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3"
-              >
-                <span className="text-sm font-bold text-ink">{c.name}</span>
-                <Pill tone="muted">{c.products}</Pill>
-              </div>
-            ))}
-            <button className="mt-3 w-full rounded-xl border-2 border-dashed border-border py-3 text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary">
-              + فئة جديدة
+        <form onSubmit={submit} className="space-y-4">
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">اسم المنتج</span>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+              placeholder="مثلاً: إسمنت بورتلاندي 50كغ"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">الفئة</span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            >
+              {CATEGORY_OPTIONS.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold text-ink">المخزون</span>
+              <input
+                type="number"
+                min={0}
+                value={stock}
+                onChange={(e) => setStock(Number(e.target.value))}
+                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold text-ink">السعر ($)</span>
+              <input
+                type="number"
+                min={0}
+                step={0.1}
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+              />
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold hover:border-primary"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="rounded-full bg-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-cta hover:bg-primary/95"
+            >
+              {initial ? "حفظ التعديلات" : "إضافة المنتج"}
             </button>
           </div>
-        </SectionCard>
+        </form>
+      </div>
+    </div>
+  );
+}
 
-        <SectionCard title="آخر الطلبات">
+// =============================================================
+// Categories (separate section + detail)
+// =============================================================
+
+interface Category {
+  id: string;
+  name: string;
+  products: number;
+  revenue: number; // SAR thousands
+  trend: number[];
+}
+
+const CATEGORIES_DATA: Category[] = [
+  { id: "CAT-01", name: "مواد البناء", products: 312, revenue: 142, trend: [40, 55, 48, 62, 70, 85, 92] },
+  { id: "CAT-02", name: "الكهرباء", products: 184, revenue: 86, trend: [30, 38, 42, 50, 48, 56, 62] },
+  { id: "CAT-03", name: "السباكة", products: 96, revenue: 48, trend: [18, 22, 20, 26, 30, 28, 34] },
+  { id: "CAT-04", name: "الطاقة الشمسية", products: 142, revenue: 118, trend: [45, 52, 60, 58, 72, 80, 88] },
+  { id: "CAT-05", name: "الأدوات اليدوية", products: 113, revenue: 32, trend: [12, 14, 16, 18, 22, 20, 24] },
+];
+
+function AdminCategories() {
+  return (
+    <>
+      <PageHeader
+        title="الفئات"
+        subtitle="فئات منتجات المتجر — اضغط على فئة لعرض منتجاتها"
+        action={
+          <button className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta">
+            <Plus className="h-3.5 w-3.5" /> فئة جديدة
+          </button>
+        }
+      />
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {CATEGORIES_DATA.map((c) => (
+          <Link
+            key={c.id}
+            to="/dashboard"
+            search={{ role: "admin", section: "category-detail", categoryId: c.id }}
+            className="group rounded-2xl border border-border bg-card p-5 shadow-card transition hover:border-primary hover:shadow-cta"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-primary">#{c.id}</div>
+                <h3 className="mt-1 text-base font-extrabold text-ink group-hover:text-primary">
+                  {c.name}
+                </h3>
+              </div>
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                <Folder className="h-5 w-5" />
+              </span>
+            </div>
+            <div className="mt-4 flex items-end justify-between">
+              <div>
+                <div className="text-2xl font-extrabold text-ink">{c.products}</div>
+                <div className="text-[10px] text-muted-foreground">منتج</div>
+              </div>
+              <div className="text-left">
+                <div className="text-sm font-extrabold text-ink">{fmtMoney(c.revenue)}</div>
+                <div className="text-[10px] text-muted-foreground">إيرادات الشهر</div>
+              </div>
+            </div>
+            <div className="mt-3"><Sparkline values={c.trend} tone="primary" /></div>
+          </Link>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function AdminCategoryDetail({ categoryId }: { categoryId?: string }) {
+  const cat = CATEGORIES_DATA.find((c) => c.id === categoryId) ?? CATEGORIES_DATA[0];
+  const products = SEED_PRODUCTS.filter(
+    (p) => p.category === cat.name || cat.name.includes(p.category) || p.category.includes(cat.name.split(" ")[0]),
+  );
+
+  return (
+    <div className="space-y-6">
+      <Link
+        to="/dashboard"
+        search={{ role: "admin", section: "categories" }}
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary"
+      >
+        <ArrowRight className="h-3.5 w-3.5" /> العودة إلى الفئات
+      </Link>
+
+      <div className="rounded-3xl border border-border bg-gradient-to-l from-primary/10 via-card to-card p-6 shadow-card md:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="text-xs font-bold text-primary">#{cat.id}</div>
+            <h1 className="mt-1 text-2xl font-extrabold text-ink md:text-3xl">{cat.name}</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {cat.products} منتج • إيرادات الشهر {fmtMoney(cat.revenue)}
+            </p>
+          </div>
+          <button className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta">
+            <Pencil className="h-3.5 w-3.5" /> تعديل الفئة
+          </button>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard label="عدد المنتجات" value={cat.products} icon={<PackageSearch className="h-5 w-5" />} tone="primary" />
+        <StatCard label="إيرادات الشهر" value={fmtMoney(cat.revenue)} icon={<Coins className="h-5 w-5" />} tone="accent" />
+        <StatCard label="متوسط نمو أسبوعي" value="+18%" icon={<TrendingUp className="h-5 w-5" />} />
+      </div>
+
+      <SectionCard title="حركة المبيعات (آخر 7 أيام)">
+        <BarChart
+          tone="primary"
+          data={cat.trend.map((v, i) => ({ label: ["س", "ح", "ن", "ث", "ر", "خ", "ج"][i] ?? "", value: v }))}
+        />
+      </SectionCard>
+
+      <SectionCard title="منتجات الفئة">
+        {products.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+            لا توجد منتجات بعد في هذه الفئة.
+          </div>
+        ) : (
           <div className="overflow-hidden rounded-xl border border-border">
             <table className="w-full text-right text-sm">
               <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-3 font-bold">الطلب</th>
-                  <th className="px-4 py-3 font-bold">العميل</th>
-                  <th className="px-4 py-3 font-bold">الإجمالي</th>
-                  <th className="px-4 py-3 font-bold">الحالة</th>
-                  <th className="px-4 py-3 font-bold">التاريخ</th>
+                  <th className="px-4 py-3 font-bold">SKU</th>
+                  <th className="px-4 py-3 font-bold">المنتج</th>
+                  <th className="px-4 py-3 font-bold">المخزون</th>
+                  <th className="px-4 py-3 font-bold">السعر</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-card">
-                {ORDERS.map((o) => (
-                  <tr key={o.id}>
-                    <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.id}</td>
-                    <td className="px-4 py-3 font-bold text-ink">{o.customer}</td>
-                    <td className="px-4 py-3 font-extrabold text-ink">${o.total}</td>
-                    <td className="px-4 py-3">
-                      <Pill
-                        tone={
-                          o.status === "delivered"
-                            ? "primary"
-                            : o.status === "shipped"
-                              ? "info"
-                              : o.status === "cancelled"
-                                ? "danger"
-                                : "accent"
-                        }
-                      >
-                        {o.status === "delivered"
-                          ? "مُسلَّم"
-                          : o.status === "shipped"
-                            ? "تم الشحن"
-                            : o.status === "cancelled"
-                              ? "ملغي"
-                              : "قيد التجهيز"}
-                      </Pill>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{o.date}</td>
+                {products.map((p) => (
+                  <tr key={p.id}>
+                    <td className="px-4 py-3 font-mono text-xs text-primary">{p.id}</td>
+                    <td className="px-4 py-3 font-bold text-ink">{p.name}</td>
+                    <td className="px-4 py-3"><Pill tone={p.stock < 50 ? "danger" : "primary"}>{p.stock}</Pill></td>
+                    <td className="px-4 py-3 font-extrabold text-ink">${p.price}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        )}
+      </SectionCard>
+    </div>
+  );
+}
+
+// =============================================================
+// Orders (separate section + detail)
+// =============================================================
+
+interface OrderRow {
+  id: string;
+  customer: string;
+  items: { name: string; qty: number; price: number }[];
+  status: "processing" | "shipped" | "delivered" | "cancelled";
+  date: string;
+  payment: string;
+  shipping: string;
+}
+
+const ORDERS_DATA: OrderRow[] = [
+  {
+    id: "ORD-9012",
+    customer: "شركة البناء المتقن",
+    items: [
+      { name: "إسمنت بورتلاندي 50كغ", qty: 100, price: 28 },
+      { name: "حديد تسليح 12مم", qty: 250, price: 4.2 },
+    ],
+    status: "shipped",
+    date: "2026-04-23",
+    payment: "بطاقة بنكية",
+    shipping: "صنعاء — حي السبعين",
+  },
+  {
+    id: "ORD-9011",
+    customer: "م. أحمد الشامي",
+    items: [{ name: "بلوك إسمنتي 20×40", qty: 200, price: 3.5 }, { name: "إسمنت بورتلاندي 50كغ", qty: 30, price: 28 }],
+    status: "processing",
+    date: "2026-04-22",
+    payment: "محفظة إلكترونية",
+    shipping: "صنعاء — حدة",
+  },
+  {
+    id: "ORD-9010",
+    customer: "مؤسسة بناة الجنوب",
+    items: [
+      { name: "لوح شمسي 550W", qty: 12, price: 380 },
+      { name: "بطارية ليثيوم 48V 100Ah", qty: 1, price: 2400 },
+    ],
+    status: "delivered",
+    date: "2026-04-21",
+    payment: "تحويل بنكي",
+    shipping: "عدن — كريتر",
+  },
+  {
+    id: "ORD-9009",
+    customer: "فهد المنصور",
+    items: [{ name: "حديد تسليح 12مم", qty: 200, price: 4.2 }],
+    status: "cancelled",
+    date: "2026-04-20",
+    payment: "الدفع عند الاستلام",
+    shipping: "تعز — الحوبان",
+  },
+];
+
+const ORDER_STATUS_LABEL: Record<OrderRow["status"], string> = {
+  processing: "قيد التجهيز",
+  shipped: "تم الشحن",
+  delivered: "مُسلَّم",
+  cancelled: "ملغي",
+};
+
+function totalOf(o: OrderRow) {
+  return o.items.reduce((s, i) => s + i.qty * i.price, 0);
+}
+
+function AdminOrders() {
+  const [statusFilter, setStatusFilter] = useState<"all" | OrderRow["status"]>("all");
+  const filtered = statusFilter === "all" ? ORDERS_DATA : ORDERS_DATA.filter((o) => o.status === statusFilter);
+
+  const grandTotal = ORDERS_DATA.reduce((s, o) => s + totalOf(o), 0);
+  const counts = {
+    processing: ORDERS_DATA.filter((o) => o.status === "processing").length,
+    shipped: ORDERS_DATA.filter((o) => o.status === "shipped").length,
+    delivered: ORDERS_DATA.filter((o) => o.status === "delivered").length,
+    cancelled: ORDERS_DATA.filter((o) => o.status === "cancelled").length,
+  };
+
+  return (
+    <>
+      <PageHeader title="الطلبات" subtitle="جميع طلبات متجر تم — اضغط على طلب لعرض التفاصيل" />
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="إجمالي الطلبات" value={ORDERS_DATA.length} icon={<ShoppingBag className="h-5 w-5" />} tone="primary" />
+        <StatCard label="قيد التجهيز" value={counts.processing} icon={<Activity className="h-5 w-5" />} tone="accent" />
+        <StatCard label="تم التسليم" value={counts.delivered} icon={<CheckCircle2 className="h-5 w-5" />} />
+        <StatCard label="إجمالي المبيعات" value={`$${grandTotal.toLocaleString()}`} icon={<Coins className="h-5 w-5" />} tone="accent" />
+      </div>
+
+      <SectionCard
+        title="قائمة الطلبات"
+        action={
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+            className="rounded-full border border-input bg-background px-3 py-1.5 text-xs font-bold focus:border-primary focus:outline-none"
+          >
+            <option value="all">كل الحالات</option>
+            <option value="processing">قيد التجهيز</option>
+            <option value="shipped">تم الشحن</option>
+            <option value="delivered">مُسلَّم</option>
+            <option value="cancelled">ملغي</option>
+          </select>
+        }
+      >
+        <div className="overflow-hidden rounded-xl border border-border">
+          <table className="w-full text-right text-sm">
+            <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 font-bold">الطلب</th>
+                <th className="px-4 py-3 font-bold">العميل</th>
+                <th className="px-4 py-3 font-bold">العناصر</th>
+                <th className="px-4 py-3 font-bold">الإجمالي</th>
+                <th className="px-4 py-3 font-bold">الحالة</th>
+                <th className="px-4 py-3 font-bold">التاريخ</th>
+                <th className="px-4 py-3 font-bold">إجراء</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border bg-card">
+              {filtered.map((o) => (
+                <tr key={o.id} className="hover:bg-muted/30">
+                  <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.id}</td>
+                  <td className="px-4 py-3 font-bold text-ink">{o.customer}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{o.items.length} عنصر</td>
+                  <td className="px-4 py-3 font-extrabold text-ink">${totalOf(o).toLocaleString()}</td>
+                  <td className="px-4 py-3">
+                    <Pill
+                      tone={
+                        o.status === "delivered"
+                          ? "primary"
+                          : o.status === "shipped"
+                            ? "info"
+                            : o.status === "cancelled"
+                              ? "danger"
+                              : "accent"
+                      }
+                    >
+                      {ORDER_STATUS_LABEL[o.status]}
+                    </Pill>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{o.date}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      to="/dashboard"
+                      search={{ role: "admin", section: "order-detail", orderId: o.id }}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary hover:bg-primary hover:text-primary-foreground"
+                    >
+                      <Eye className="h-3 w-3" /> عرض
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </SectionCard>
+    </>
+  );
+}
+
+function AdminOrderDetail({ orderId }: { orderId?: string }) {
+  const order = ORDERS_DATA.find((o) => o.id === orderId) ?? ORDERS_DATA[0];
+  const total = totalOf(order);
+
+  const timeline = [
+    { label: "تم استلام الطلب", date: order.date, done: true },
+    { label: "تأكيد الدفع", date: order.date, done: true },
+    { label: "قيد التجهيز", date: order.date, done: order.status !== "cancelled" },
+    { label: "تم الشحن", date: "—", done: order.status === "shipped" || order.status === "delivered" },
+    { label: "تم التسليم", date: "—", done: order.status === "delivered" },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <Link
+        to="/dashboard"
+        search={{ role: "admin", section: "orders" }}
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary"
+      >
+        <ArrowRight className="h-3.5 w-3.5" /> العودة إلى الطلبات
+      </Link>
+
+      <div className="rounded-3xl border border-border bg-gradient-to-l from-primary/10 via-card to-card p-6 shadow-card md:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="text-xs font-bold text-primary">طلب #{order.id}</div>
+            <h1 className="mt-1 text-2xl font-extrabold text-ink md:text-3xl">{order.customer}</h1>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {order.date} • {order.payment} • شحن إلى: {order.shipping}
+            </p>
+          </div>
+          <Pill
+            tone={
+              order.status === "delivered"
+                ? "primary"
+                : order.status === "shipped"
+                  ? "info"
+                  : order.status === "cancelled"
+                    ? "danger"
+                    : "accent"
+            }
+          >
+            {ORDER_STATUS_LABEL[order.status]}
+          </Pill>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <SectionCard title="عناصر الطلب">
+          <div className="space-y-3">
+            {order.items.map((it) => (
+              <div
+                key={it.name}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-4"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                    <Package className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <div className="text-sm font-bold text-ink">{it.name}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {it.qty} × ${it.price}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-base font-extrabold text-ink">
+                  ${(it.qty * it.price).toLocaleString()}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 rounded-xl border border-border bg-muted/40 p-4">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>المجموع الفرعي</span>
+              <span>${total.toLocaleString()}</span>
+            </div>
+            <div className="mt-1 flex justify-between text-xs text-muted-foreground">
+              <span>الشحن</span>
+              <span>مجاني</span>
+            </div>
+            <div className="mt-3 flex justify-between border-t border-border pt-3 text-base font-extrabold text-ink">
+              <span>الإجمالي</span>
+              <span>${total.toLocaleString()}</span>
+            </div>
+          </div>
+        </SectionCard>
+
+        <SectionCard title="مسار الطلب">
+          <ol className="relative space-y-4 border-r-2 border-dashed border-border pe-0 ps-6">
+            {timeline.map((t, i) => (
+              <li key={i} className="relative">
+                <span
+                  className={`absolute -right-[28px] top-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-extrabold ring-4 ring-card ${
+                    t.done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {t.done ? "✓" : i + 1}
+                </span>
+                <div className="text-sm font-bold text-ink">{t.label}</div>
+                <div className="text-[11px] text-muted-foreground">{t.date}</div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-5 space-y-2">
+            <button className="w-full rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta">
+              تحديث حالة الطلب
+            </button>
+            <button className="w-full rounded-full border border-border bg-card px-4 py-2 text-xs font-bold hover:border-primary">
+              تواصل مع العميل
+            </button>
+          </div>
         </SectionCard>
       </div>
-    </>
+    </div>
   );
 }
