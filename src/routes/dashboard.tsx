@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Bell, Home, LogOut, Search } from "lucide-react";
 import { TammMark } from "@/components/tamm-logo";
 import { ROLE_META, ROLES, type Role } from "@/lib/dashboard-data";
@@ -8,6 +9,7 @@ import { ContractorSection } from "@/components/dashboard/contractor-sections";
 import { SupervisorSection } from "@/components/dashboard/supervisor-sections";
 import { FieldSection } from "@/components/dashboard/field-sections";
 import { AdminSection } from "@/components/dashboard/admin-sections";
+import { applyToDOM, useSettings } from "@/lib/settings-store";
 
 interface DashboardSearch {
   role: Role;
@@ -42,12 +44,26 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardLayout,
 });
 
+const CONTENT_MAX: Record<string, string> = {
+  boxed: "max-w-[1400px]",
+  wide: "max-w-[1800px]",
+  full: "max-w-none",
+};
+
 function DashboardLayout() {
   const { role, section, projectId, categoryId, orderId } = Route.useSearch();
   const navigate = useNavigate();
+  const settings = useSettings();
   const meta = ROLE_META[role];
   const nav = NAV_BY_ROLE[role];
   const currentSection = section ?? nav[0].key;
+
+  // Re-apply settings to DOM on mount + whenever they change
+  useEffect(() => {
+    applyToDOM();
+  }, [settings]);
+
+  const contentMax = CONTENT_MAX[settings.layout] ?? CONTENT_MAX.boxed;
 
   // Group items
   const grouped = nav.reduce<Record<string, typeof nav>>((acc, item) => {
@@ -59,8 +75,8 @@ function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-muted/40">
-      <div className="mx-auto flex min-h-screen max-w-[1500px]">
-        {/* Sidebar */}
+      <div className="flex min-h-screen w-full">
+        {/* Sidebar — full height, fixed width */}
         <aside className="sticky top-0 hidden h-screen max-h-screen w-64 shrink-0 self-start overflow-hidden border-l border-border bg-card/70 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-card/60 md:flex md:flex-col">
           <div className="flex h-20 items-center border-b border-border px-5">
             <Link to="/" className="flex items-center">
@@ -137,10 +153,10 @@ function DashboardLayout() {
           </div>
         </aside>
 
-        {/* Main */}
+        {/* Main column — full width */}
         <div className="flex min-w-0 flex-1 flex-col">
-          {/* Top bar */}
-          <header className="sticky top-0 z-20 flex h-20 items-center justify-between gap-4 border-b border-border bg-card/60 px-4 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-card/50 md:px-8">
+          {/* Top bar — full width */}
+          <header className="sticky top-0 z-20 flex h-20 w-full items-center justify-between gap-4 border-b border-border bg-card/60 px-4 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-card/50 md:px-8">
             <div className="flex items-center gap-3">
               <span className="text-2xl">{meta.icon}</span>
               <div className="min-w-0">
@@ -196,28 +212,33 @@ function DashboardLayout() {
             </select>
           </div>
 
+          {/* Content — boxed inside full-width main */}
           <main className="flex-1 px-4 pb-16 pt-6 md:px-8 md:pb-20 md:pt-8">
-            <DashboardContent
-              role={role}
-              section={currentSection}
-              projectId={projectId}
-              categoryId={categoryId}
-              orderId={orderId}
-            />
-            <Outlet />
+            <div className={`mx-auto w-full ${contentMax}`}>
+              <DashboardContent
+                role={role}
+                section={currentSection}
+                projectId={projectId}
+                categoryId={categoryId}
+                orderId={orderId}
+              />
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>
 
       {/* Demo mode notice — floating bottom center with blur */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4 md:bottom-6">
-        <div className="pointer-events-auto flex max-w-[640px] items-center gap-2.5 rounded-full border border-amber-300/50 bg-amber-50/60 px-4 py-2 text-center text-[11px] font-semibold text-amber-900 shadow-elevated backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-amber-50/40 md:gap-3 md:px-5 md:py-2.5 md:text-xs">
-          <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-amber-500/30 px-2 text-[10px] font-bold uppercase tracking-wider text-amber-800">
-            وضع تجريبي
-          </span>
-          <span className="leading-snug">جميع البيانات المعروضة وهمية وتُستخدم لأغراض العرض فقط — لا تعكس بيانات حقيقية.</span>
+      {settings.showDemoBanner && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4 md:bottom-6">
+          <div className="pointer-events-auto flex max-w-[640px] items-center gap-2.5 rounded-full border border-amber-300/50 bg-amber-50/60 px-4 py-2 text-center text-[11px] font-semibold text-amber-900 shadow-elevated backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-amber-50/40 md:gap-3 md:px-5 md:py-2.5 md:text-xs">
+            <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-amber-500/30 px-2 text-[10px] font-bold uppercase tracking-wider text-amber-800">
+              وضع تجريبي
+            </span>
+            <span className="leading-snug">جميع البيانات المعروضة وهمية وتُستخدم لأغراض العرض فقط — لا تعكس بيانات حقيقية.</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
