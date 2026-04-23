@@ -51,7 +51,7 @@ export type PhaseStatus =
 export interface Phase {
   id: string;
   name: string;
-  amount: number; // YER (thousands)
+  amount: number; // SAR (thousands)
   progress: number; // 0..100
   status: PhaseStatus;
   dueDate: string;
