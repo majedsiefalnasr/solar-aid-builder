@@ -42,7 +42,8 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { key: "finance", label: "المالية", icon: TrendingUp },
     { key: "store", label: "المتجر", icon: Store, group: "المتجر" },
     { key: "products", label: "إدارة المنتجات", icon: PackageSearch, group: "المتجر" },
-    { key: "orders", label: "الفئات والطلبات", icon: ShoppingBag, group: "المتجر" },
+    { key: "categories", label: "الفئات", icon: Folder, group: "المتجر" },
+    { key: "orders", label: "الطلبات", icon: ShoppingBag, group: "المتجر" },
   ],
   owner: [
     { key: "overview", label: "لوحة التحكم", icon: LayoutDashboard },
