@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   Plus,
   Trash2,
@@ -12,6 +11,8 @@ import {
   Droplets,
   Box,
   Zap,
+  Receipt,
+  ListChecks,
 } from "lucide-react";
 import { CalculatorShell } from "@/components/calculator-shell";
 import {
@@ -22,8 +23,10 @@ import {
   PUMP_PRESETS,
   loadState,
   saveState,
+  type CalcMode,
   type Device,
   type DeviceCategory,
+  type BillInput,
 } from "@/lib/calculator";
 
 export const Route = createFileRoute("/calculator/devices")({
