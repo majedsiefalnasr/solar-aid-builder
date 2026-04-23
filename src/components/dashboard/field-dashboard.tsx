@@ -1,111 +1,199 @@
-import { Camera, MapPin, Mic, Upload } from "lucide-react";
-import { FIELD_REPORTS, MOCK_PROJECT } from "@/lib/dashboard-data";
+import { useMemo, useState } from "react";
+import { AlertCircle, Calendar, Clock, MapPin, Plus } from "lucide-react";
+import {
+  reportSchedule,
+  reportsForFieldEngineer,
+  ROLE_USER,
+  useWorkflow,
+  type FieldReportDoc,
+} from "@/lib/workflow-store";
 import { Pill, SectionCard, StatCard } from "./dashboard-ui";
+import { AddReportDialog, ReportRow, ReportViewerDialog } from "./reports-shared";
 
 export function FieldDashboard() {
+  const store = useWorkflow();
+  const engineerName = ROLE_USER.field;
+  const [addOpen, setAddOpen] = useState(false);
+  const [openReport, setOpenReport] = useState<FieldReportDoc | null>(null);
+
   const today = new Date().toLocaleDateString("ar-EG", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
 
+  // Active projects for this engineer
+  const myProjects = useMemo(
+    () =>
+      store.projects.filter(
+        (p) => p.fieldEngineerName === engineerName && p.status === "in_progress",
+      ),
+    [store.projects, engineerName],
+  );
+
+  const myReports = useMemo(
+    () => reportsForFieldEngineer(store, engineerName),
+    [store, engineerName],
+  );
+
+  const todayCount = useMemo(() => {
+    const d = new Date().toISOString().slice(0, 10);
+    return myReports.filter((r) => r.date.slice(0, 10) === d).length;
+  }, [myReports]);
+
+  const weekCount = useMemo(() => {
+    const weekAgo = Date.now() - 7 * 86_400_000;
+    return myReports.filter((r) => new Date(r.date).getTime() >= weekAgo).length;
+  }, [myReports]);
+
+  const lateReports = useMemo(
+    () =>
+      myReports.filter((r) => {
+        const s = reportSchedule(r);
+        return r.status === "pending" && s.state === "late";
+      }),
+    [myReports],
+  );
+
+  const upcoming = useMemo(
+    () =>
+      myReports.filter((r) => {
+        const s = reportSchedule(r);
+        return r.status === "pending" && s.state === "soon";
+      }),
+    [myReports],
+  );
+
+  const projectName = (id: string) => store.projects.find((p) => p.id === id)?.name;
+  const primary = myProjects[0];
+
   return (
     <div className="space-y-6">
+      {/* Hero */}
       <div className="rounded-3xl border border-border bg-gradient-to-l from-purple-500/10 via-card to-card p-6 shadow-card md:p-8">
-        <div className="text-xs font-bold text-purple-600">جولة اليوم</div>
-        <h1 className="mt-1 text-2xl font-extrabold text-ink md:text-3xl">{today}</h1>
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <MapPin className="h-3.5 w-3.5" />
-          <span>{MOCK_PROJECT.name} — {MOCK_PROJECT.city}</span>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="text-xs font-bold text-purple-600">جولة اليوم</div>
+            <h1 className="mt-1 text-2xl font-extrabold text-ink md:text-3xl">{today}</h1>
+            {primary && (
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" />
+                <span>
+                  {primary.name} — {primary.city}
+                </span>
+              </div>
+            )}
+          </div>
+          {myProjects.length > 0 && (
+            <button
+              onClick={() => setAddOpen(true)}
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95"
+            >
+              <Plus className="h-4 w-4" /> رفع تقرير جديد
+            </button>
+          )}
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="تقاريري اليوم" value="3" />
-        <StatCard label="هذا الأسبوع" value="12" tone="primary" />
-        <StatCard label="صور مرفوعة" value="48" tone="accent" />
+        <StatCard label="تقاريري اليوم" value={todayCount} icon={<Calendar className="h-5 w-5" />} />
+        <StatCard
+          label="هذا الأسبوع"
+          value={weekCount}
+          tone="primary"
+          icon={<Calendar className="h-5 w-5" />}
+        />
+        <StatCard
+          label="متأخرة"
+          value={lateReports.length}
+          tone="danger"
+          icon={<AlertCircle className="h-5 w-5" />}
+        />
       </div>
 
-      <SectionCard
-        title="رفع تقرير سريع من الموقع"
-        subtitle="مصمم للاستخدام من الجوال مباشرة"
-      >
-        <div className="space-y-4">
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-ink">المرحلة</span>
-            <select className="w-full rounded-xl border border-input bg-background px-3 py-3 text-sm focus:border-primary focus:outline-none">
-              {MOCK_PROJECT.phases.map((p) => (
-                <option key={p.id}>{p.name}</option>
-              ))}
-            </select>
-          </label>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <button className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-background py-6 transition hover:border-primary hover:bg-primary-soft/40">
-              <Camera className="h-7 w-7 text-primary" />
-              <span className="text-xs font-bold text-ink">التقاط صورة</span>
-            </button>
-            <button className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-background py-6 transition hover:border-primary hover:bg-primary-soft/40">
-              <Upload className="h-7 w-7 text-primary" />
-              <span className="text-xs font-bold text-ink">رفع من المعرض</span>
-            </button>
-            <button className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-background py-6 transition hover:border-primary hover:bg-primary-soft/40">
-              <Mic className="h-7 w-7 text-primary" />
-              <span className="text-xs font-bold text-ink">ملاحظة صوتية</span>
-            </button>
+      {/* Alerts: late + upcoming */}
+      {(lateReports.length > 0 || upcoming.length > 0) && (
+        <SectionCard
+          title="تنبيهات الجدولة"
+          subtitle="تقارير دورية اقترب موعدها أو متأخرة عن الرفع"
+        >
+          <div className="space-y-3">
+            {lateReports.map((r) => {
+              const s = reportSchedule(r);
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => setOpenReport(r)}
+                  className="flex w-full items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-right transition hover:border-rose-400"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-500/15 text-rose-600">
+                    <AlertCircle className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-rose-700">{r.title}</span>
+                      <Pill tone="danger">متأخر {Math.abs(s.daysOff)} يوم</Pill>
+                    </div>
+                    <div className="text-[11px] text-rose-600/70">{projectName(r.projectId)}</div>
+                  </div>
+                </button>
+              );
+            })}
+            {upcoming.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setOpenReport(r)}
+                className="flex w-full items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-right transition hover:border-amber-400"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-amber-600">
+                  <Clock className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-amber-800">{r.title}</span>
+                    <Pill tone="accent">قريب الموعد</Pill>
+                  </div>
+                  <div className="text-[11px] text-amber-700/70">{projectName(r.projectId)}</div>
+                </div>
+              </button>
+            ))}
           </div>
-
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-ink">وصف موجز</span>
-            <textarea
-              rows={3}
-              placeholder="ما الذي تم اليوم؟"
-              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
-            />
-          </label>
-
-          <button className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95">
-            إرسال للمشرف
-          </button>
-        </div>
-      </SectionCard>
+        </SectionCard>
+      )}
 
       <SectionCard title="آخر تقاريري">
-        <div className="space-y-3">
-          {FIELD_REPORTS.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-start justify-between gap-3 rounded-xl border border-border bg-background p-4"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <Pill tone="info">{r.id}</Pill>
-                  <span className="text-sm font-bold text-ink">{r.phase}</span>
-                </div>
-                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{r.note}</p>
-                <div className="mt-1 text-[11px] text-muted-foreground">
-                  {r.date} • 📷 {r.photos}
-                </div>
-              </div>
-              <Pill
-                tone={
-                  r.status === "approved"
-                    ? "primary"
-                    : r.status === "rejected"
-                      ? "danger"
-                      : "accent"
-                }
-              >
-                {r.status === "approved"
-                  ? "معتمد"
-                  : r.status === "rejected"
-                    ? "بحاجة تعديل"
-                    : "قيد المراجعة"}
-              </Pill>
-            </div>
-          ))}
-        </div>
+        {myReports.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+            لم ترفع أي تقرير بعد. اضغط "رفع تقرير جديد" لتبدأ.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {myReports.slice(0, 6).map((r) => (
+              <ReportRow
+                key={r.id}
+                report={r}
+                projectName={projectName(r.projectId)}
+                onOpen={() => setOpenReport(r)}
+              />
+            ))}
+          </div>
+        )}
       </SectionCard>
+
+      {addOpen && (
+        <AddReportDialog
+          projects={myProjects}
+          engineerName={engineerName}
+          onClose={() => setAddOpen(false)}
+        />
+      )}
+      {openReport && (
+        <ReportViewerDialog
+          report={openReport}
+          project={store.projects.find((p) => p.id === openReport.projectId)}
+          onClose={() => setOpenReport(null)}
+        />
+      )}
     </div>
   );
 }
