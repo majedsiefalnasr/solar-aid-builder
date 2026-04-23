@@ -35,13 +35,16 @@ import {
   reportsForFieldEngineer,
   reportsForContractor,
   reportsForAdmin,
+  threadsForRole,
+  unreadCountForRole,
   useWorkflow,
+  type ChatRole,
   type FieldReportDoc,
   type PhaseDef,
   type ProjectDoc,
 } from "@/lib/workflow-store";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
-import { ChatPanel, getThreadsForProject } from "./chat-panel";
+import { ChatPanel } from "./chat-panel";
 import { PayPhaseDialog, ProjectStatusPill, ProjectTimeline } from "./project-flow-shared";
 
 // Map store phase status to legacy display status
@@ -161,10 +164,13 @@ export function ProjectDetail({
 
   const [chatOpen, setChatOpen] = useState(false);
   const [payPhase, setPayPhase] = useState<PhaseDef | null>(null);
-  const projectId = liveDoc?.id ?? project.id;
+  const activeProjectId = liveDoc?.id ?? project.id;
   const projectThreads = useMemo(
-    () => threadsForRole(store, role as ChatRole, ROLE_USER[role]).filter((t) => t.projectId === projectId),
-    [store, role, projectId],
+    () =>
+      threadsForRole(store, role as ChatRole, ROLE_USER[role] ?? "").filter(
+        (t) => t.projectId === activeProjectId,
+      ),
+    [store, role, activeProjectId],
   );
   const projectUnread = projectThreads.reduce(
     (s, t) => s + unreadCountForRole(t, role as ChatRole),
