@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   Building2,
   CheckCircle2,
@@ -15,10 +17,29 @@ import {
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { AreaChart, DonutChart, ProgressRing } from "./charts";
 
+type PayStatus = "pending" | "approved" | "rejected";
+
 export function OwnerDashboard() {
   const p = MOCK_PROJECT;
   const remaining = p.totalBudget - p.releasedAmount;
-  const pendingPayments = PAYMENT_REQUESTS.filter((x) => x.status === "pending");
+  const [payStatus, setPayStatus] = useState<Record<string, PayStatus>>(() =>
+    Object.fromEntries(PAYMENT_REQUESTS.map((r) => [r.id, r.status as PayStatus])),
+  );
+  const pendingPayments = PAYMENT_REQUESTS.filter((x) => payStatus[x.id] === "pending");
+
+  const handleApprove = (id: string, phase: string, amount: number) => {
+    setPayStatus((s) => ({ ...s, [id]: "approved" }));
+    toast.success("تم تحرير الدفعة", {
+      description: `${phase} — ${fmtMoney(amount)}`,
+    });
+  };
+
+  const handleReject = (id: string, phase: string) => {
+    setPayStatus((s) => ({ ...s, [id]: "rejected" }));
+    toast.error("تم رفض طلب الدفع", {
+      description: phase,
+    });
+  };
 
   return (
     <div className="space-y-6">
