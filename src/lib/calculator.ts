@@ -24,9 +24,11 @@ export type DeviceCategory =
   | "other";
 
 export interface BillInput {
-  // Total kWh consumed over a 15-day commercial bill cycle
+  // Total kWh consumed over the bill cycle (BILL_DAYS)
   kWh15Days: number;
+  // Total operating hours per day (a + b in the spec)
   dayHours: number;
+  // Of which night hours (c)
   nightHours: number;
 }
 
@@ -46,8 +48,8 @@ export const defaultState: CalcState = {
   mode: "loads",
   bill: {
     kWh15Days: 450,
-    dayHours: 10,
-    nightHours: 6,
+    dayHours: 14, // إجمالي عدد الساعات في اليوم
+    nightHours: 6, // منها ساعات ليلية
   },
   devices: [
     {
@@ -133,40 +135,103 @@ export interface CalcResult {
   maxLoadKW: number;
   surgeKVA: number;
   totalSAR: number;
+  // Bill-mode breakdown (للعرض التفصيلي في صفحة النتائج)
+  billBreakdown?: {
+    hourlyLoadKW: number;     // d
+    nightLoadKW: number;      // e (battery size, kWh)
+    panelsForBattery: number; // f1
+    panelsForDay: number;     // f2
+  };
 }
 
-const PANEL_W = 550; // single panel rated power
-const SUN_HOURS = 5.5; // average peak sun hours (Yemen)
-const SYSTEM_LOSS = 0.7; // 30% losses
+// Bill-mode constants per spec
+const BILL_DAYS = 15;
+const BILL_PANEL_W = 650;        // solar board (watt) for bill mode
+const BILL_SUN_HOURS = 5;        // hours of sun
+const BILL_NIGHT_BUFFER = 1.2;   // +20% safety on night load
+
+// Loads-mode constants
+const PANEL_W = 550;
+const SUN_HOURS = 5.5;
+const SYSTEM_LOSS = 0.7;
 const BATTERY_VOLT = 48;
 const DOD_LITHIUM = 0.9;
 const DOD_GEL = 0.5;
 
 export function calculate(s: CalcState): CalcResult {
-  let totalDailyKWh: number;
-  let nightKWh: number;
-  let maxLoadW: number;
-
   if (s.mode === "bill") {
-    // Daily consumption averaged over 15 days
-    totalDailyKWh = s.bill.kWh15Days / 15;
-    const totalHours = Math.max(1, s.bill.dayHours + s.bill.nightHours);
-    nightKWh = totalDailyKWh * (s.bill.nightHours / totalHours);
-    // Approx max simultaneous load: distribute daily energy over operating hours
-    maxLoadW = (totalDailyKWh * 1000) / totalHours;
-  } else {
-    const totalDailyWh = s.devices.reduce(
-      (acc, d) => acc + d.watts * d.qty * d.hours,
-      0,
-    );
-    const nightWh = s.devices.reduce(
-      (acc, d) => acc + d.watts * d.qty * d.nightHours,
-      0,
-    );
-    maxLoadW = s.devices.reduce((acc, d) => acc + d.watts * d.qty, 0);
-    totalDailyKWh = totalDailyWh / 1000;
-    nightKWh = nightWh / 1000;
+    return calculateBill(s);
   }
+  return calculateLoads(s);
+}
+
+function calculateBill(s: CalcState): CalcResult {
+  const kWh = Math.max(0, s.bill.kWh15Days);          // a
+  const totalHours = Math.max(1, s.bill.dayHours);     // b — إجمالي ساعات اليوم
+  const nightHours = Math.max(0, Math.min(totalHours, s.bill.nightHours)); // c
+
+  // d. الحمل في الساعة (kW/h) = a / 15 / b
+  const hourlyLoadKW = kWh / BILL_DAYS / totalHours;
+
+  // e. الحمل الليلي (سعة البطارية) = round(c * d * 1.2)
+  const batteryKWh = Math.round(nightHours * hourlyLoadKW * BILL_NIGHT_BUFFER);
+
+  // f1. الألواح لتعبئة البطارية = ceil(e * 1000 / 5 / 650)
+  const panelsForBattery = Math.ceil((batteryKWh * 1000) / BILL_SUN_HOURS / BILL_PANEL_W);
+  // f2. الألواح للاستخدام النهاري = ceil(d * 1000 / 650)
+  const panelsForDay = Math.ceil((hourlyLoadKW * 1000) / BILL_PANEL_W);
+  const panelCount = Math.max(1, panelsForBattery + panelsForDay);
+
+  // g. الإنفرتر = max(e/5, d) — kW
+  const inverterKW = Math.max(batteryKWh / BILL_SUN_HOURS, hourlyLoadKW);
+  const inverterKVA = round(Math.max(1, inverterKW), 2);
+
+  // Daily energy (لعرضه فقط)
+  const totalDailyKWh = kWh / BILL_DAYS;
+  const nightKWh = nightHours * hourlyLoadKW;
+
+  const panelKWp = round((panelCount * BILL_PANEL_W) / 1000, 2);
+  const dod = s.battery === "lithium" ? DOD_LITHIUM : DOD_GEL;
+  // For bill mode, the spec already returns the usable battery size (kWh).
+  // Compute Ah from that usable size, applying DoD only for the nominal capacity disclosure.
+  const batteryAh = Math.round((batteryKWh / dod * 1000) / BATTERY_VOLT);
+  const surgeKVA = round(inverterKVA * 0.33, 2);
+
+  const totalSAR =
+    panelCount * 600 + batteryKWh * 1500 + inverterKVA * 800 + 1500;
+
+  return {
+    totalDailyKWh: round(totalDailyKWh, 2),
+    nightKWh: round(nightKWh, 2),
+    panelCount,
+    panelKWp,
+    batteryKWh,
+    batteryAh,
+    inverterKVA,
+    maxLoadKW: round(inverterKW, 2),
+    surgeKVA,
+    totalSAR: Math.round(totalSAR),
+    billBreakdown: {
+      hourlyLoadKW: round(hourlyLoadKW, 2),
+      nightLoadKW: batteryKWh,
+      panelsForBattery,
+      panelsForDay,
+    },
+  };
+}
+
+function calculateLoads(s: CalcState): CalcResult {
+  const totalDailyWh = s.devices.reduce(
+    (acc, d) => acc + d.watts * d.qty * d.hours,
+    0,
+  );
+  const nightWh = s.devices.reduce(
+    (acc, d) => acc + d.watts * d.qty * d.nightHours,
+    0,
+  );
+  const maxLoadW = s.devices.reduce((acc, d) => acc + d.watts * d.qty, 0);
+  const totalDailyKWh = totalDailyWh / 1000;
+  const nightKWh = nightWh / 1000;
 
   const panelKWp = (totalDailyKWh / SUN_HOURS) / SYSTEM_LOSS;
   const panelCount = Math.max(1, Math.ceil((panelKWp * 1000) / PANEL_W));
@@ -180,7 +245,6 @@ export function calculate(s: CalcState): CalcResult {
   const inverterKVA = Math.max(1, Math.ceil(maxLoadKW * 1.25 * 10) / 10);
   const surgeKVA = Math.round(inverterKVA * 0.33 * 100) / 100;
 
-  // Rough pricing (SAR): panels 600/each, battery 1500/kWh, inverter 800/kVA, install 1500
   const totalSAR =
     panelCount * 600 + batteryKWh * 1500 + inverterKVA * 800 + 1500;
 
