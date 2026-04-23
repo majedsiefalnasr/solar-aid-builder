@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, Building2, Coins, ExternalLink, Eye, TrendingUp, Users, X } from "lucide-react";
+import { AlertTriangle, Building2, ChevronLeft, Coins, CreditCard, ExternalLink, Eye, FileText, TrendingUp, Users, X } from "lucide-react";
 import { DISPUTES, MOCK_PROJECT, PLATFORM_STATS } from "@/lib/dashboard-data";
+import { useWorkflow } from "@/lib/workflow-store";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { AreaChart, DonutChart, HBarChart, Sparkline } from "./charts";
 
