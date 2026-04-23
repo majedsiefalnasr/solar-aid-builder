@@ -12,6 +12,7 @@ import { AdminSection } from "@/components/dashboard/admin-sections";
 interface DashboardSearch {
   role: Role;
   section?: string;
+  projectId?: string;
 }
 
 export const Route = createFileRoute("/dashboard")({
@@ -19,9 +20,11 @@ export const Route = createFileRoute("/dashboard")({
     const role = search.role as Role;
     const validRole = ROLES.includes(role) ? role : "owner";
     const section = typeof search.section === "string" ? search.section : undefined;
+    const projectId = typeof search.projectId === "string" ? search.projectId : undefined;
     return {
       role: validRole,
       section: validSection(validRole, section),
+      projectId,
     };
   },
   head: () => ({
