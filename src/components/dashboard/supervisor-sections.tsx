@@ -2,9 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   ROLE_USER,
+  approveTask,
+  rejectTask,
   reportsForSupervisor,
   useWorkflow,
   type FieldReportDoc,
+  type PhaseDef,
+  type PhaseTask,
   type ProjectDoc,
 } from "@/lib/workflow-store";
 import { ReportRow, ReportViewerDialog } from "./reports-shared";
@@ -413,6 +417,8 @@ function SupervisorApprovals() {
         <StatCard label="مرفوضة" value={rejected.length} icon={<XCircle className="h-5 w-5" />} tone="danger" />
       </div>
 
+      <PendingTasksCard supervisorName={supervisorName} />
+
       <SectionCard
         title={pending.length > 0 ? `بانتظار قرارك (${pending.length})` : "كل التقارير محدّثة"}
         subtitle={pending.length > 0 ? "افتح التقرير لاعتماده أو رفضه مع السبب" : undefined}
@@ -452,5 +458,195 @@ function SupervisorApprovals() {
         <Pill tone="info">x</Pill>
       </span>
     </>
+  );
+}
+
+// ============================================================
+// Pending tasks awaiting supervisor approval
+// ============================================================
+
+interface PendingTaskRow {
+  project: ProjectDoc;
+  phase: PhaseDef;
+  task: PhaseTask;
+}
+
+function PendingTasksCard({ supervisorName }: { supervisorName: string }) {
+  const store = useWorkflow();
+  const [rejectTarget, setRejectTarget] = useState<PendingTaskRow | null>(null);
+
+  const rows: PendingTaskRow[] = useMemo(() => {
+    const out: PendingTaskRow[] = [];
+    store.projects
+      .filter((p) => p.supervisorName === supervisorName)
+      .forEach((project) => {
+        project.phases.forEach((phase) => {
+          phase.tasks.forEach((task) => {
+            if (task.approval === "pending") {
+              out.push({ project, phase, task });
+            }
+          });
+        });
+      });
+    return out;
+  }, [store, supervisorName]);
+
+  return (
+    <SectionCard
+      title={
+        rows.length > 0
+          ? `مهام بانتظار اعتمادك (${rows.length})`
+          : "مهام بانتظار اعتمادك"
+      }
+      subtitle="يقوم المقاول بالتأشير على إنجاز المهام، ثم تعتمدها هنا لتُحتسب في نسبة الإنجاز"
+      className="mb-6"
+    >
+      {rows.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+          لا توجد مهام بانتظار الاعتماد حالياً.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {rows.map(({ project, phase, task }) => {
+            const perTask = phase.tasks.length ? Math.round(99 / phase.tasks.length) : 0;
+            return (
+              <div
+                key={`${project.id}-${phase.id}-${task.id}`}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background p-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-bold text-ink">{task.title}</div>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="font-bold text-primary">#{project.id}</span>
+                    <span>•</span>
+                    <span>{project.name}</span>
+                    <span>•</span>
+                    <span>{phase.name}</span>
+                    {task.markedDoneAt && (
+                      <>
+                        <span>•</span>
+                        <span>
+                          أُشّرت في{" "}
+                          {new Date(task.markedDoneAt).toLocaleDateString("ar-EG", {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="hidden rounded-full bg-muted px-2 py-1 text-[10px] font-bold text-muted-foreground sm:inline">
+                    +{perTask}% للمرحلة
+                  </span>
+                  <button
+                    onClick={() => {
+                      approveTask(project.id, phase.id, task.id, supervisorName);
+                      toast.success("تم اعتماد إنجاز المهمة", {
+                        description: `${task.title} • +${perTask}% لـ ${phase.name}`,
+                      });
+                    }}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground shadow-cta"
+                  >
+                    <CheckCircle2 className="h-3 w-3" /> اعتماد
+                  </button>
+                  <button
+                    onClick={() => setRejectTarget({ project, phase, task })}
+                    className="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
+                  >
+                    <XCircle className="h-3 w-3" /> رفض
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {rejectTarget && (
+        <RejectTaskDialog
+          row={rejectTarget}
+          supervisorName={supervisorName}
+          onClose={() => setRejectTarget(null)}
+        />
+      )}
+    </SectionCard>
+  );
+}
+
+function RejectTaskDialog({
+  row,
+  supervisorName,
+  onClose,
+}: {
+  row: PendingTaskRow;
+  supervisorName: string;
+  onClose: () => void;
+}) {
+  const [reason, setReason] = useState("");
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <h2 className="text-lg font-extrabold text-ink">رفض إنجاز المهمة</h2>
+          <button onClick={onClose} className="rounded-full p-2 text-muted-foreground hover:bg-muted" aria-label="إغلاق">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!reason.trim()) {
+              toast.error("يرجى ذكر سبب الرفض");
+              return;
+            }
+            rejectTask(row.project.id, row.phase.id, row.task.id, supervisorName, reason.trim());
+            toast("تم رفض المهمة", { description: row.task.title });
+            onClose();
+          }}
+          className="space-y-4 p-5"
+        >
+          <div className="rounded-xl bg-muted/40 p-3 text-xs">
+            <div className="font-bold text-ink">{row.task.title}</div>
+            <div className="mt-0.5 text-muted-foreground">
+              {row.project.name} • {row.phase.name}
+            </div>
+          </div>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">سبب الرفض</span>
+            <textarea
+              autoFocus
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              placeholder="مثال: التنفيذ غير مطابق للمواصفات، يرجى إعادة العمل"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <div className="flex gap-2 border-t border-border pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold hover:border-primary"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="flex-1 rounded-full bg-rose-500 px-5 py-2 text-xs font-bold text-white shadow-cta hover:bg-rose-600"
+            >
+              تأكيد الرفض
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

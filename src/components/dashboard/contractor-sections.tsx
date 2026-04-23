@@ -30,6 +30,7 @@ import { FIELD_REPORTS, MOCK_PROJECT, PAYMENT_REQUESTS } from "@/lib/dashboard-d
 import {
   ROLE_USER,
   markTaskDone,
+  requestWithdrawal,
   useWorkflow,
 } from "@/lib/workflow-store";
 import { products as STORE_PRODUCTS, filterCategories } from "@/lib/products";
@@ -338,9 +339,18 @@ function ContractorWithdrawals() {
   );
 }
 
-function NewWithdrawalDialog({ max, onClose }: { max: number; onClose: () => void }) {
+function NewWithdrawalDialog({
+  max,
+  contractorName,
+  onClose,
+}: {
+  max: number;
+  contractorName: string;
+  onClose: () => void;
+}) {
   const [amount, setAmount] = useState<number>(0);
   const [iban, setIban] = useState("");
+  const [notes, setNotes] = useState("");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
@@ -366,8 +376,14 @@ function NewWithdrawalDialog({ max, onClose }: { max: number; onClose: () => voi
               toast.error("يرجى إدخال رقم الحساب البنكي");
               return;
             }
+            requestWithdrawal({
+              contractorName,
+              amount,
+              iban: iban.trim(),
+              notes: notes.trim() || undefined,
+            });
             toast.success("تم إنشاء طلب السحب", {
-              description: `${fmtMoney(amount)} • سيتم التحويل خلال 3 أيام عمل`,
+              description: `${fmtMoney(amount)} • بانتظار اعتماد الإدارة`,
             });
             onClose();
           }}
@@ -392,6 +408,16 @@ function NewWithdrawalDialog({ max, onClose }: { max: number; onClose: () => voi
               value={iban}
               onChange={(e) => setIban(e.target.value)}
               placeholder="YE12 0000 0000 0000 0000 0000"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">ملاحظات (اختياري)</span>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              placeholder="مثال: مستحقات مرحلة الأساسات"
               className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
           </label>
