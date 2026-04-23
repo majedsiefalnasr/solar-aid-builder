@@ -1082,149 +1082,143 @@ const REVENUE_MONTHS = [
   { label: "أبريل", value: 268 },
 ];
 
-interface Withdrawal {
-  id: string;
-  contractor: string;
-  contractorOrg: string;
-  project: string;
-  amount: number; // SAR
-  bank: string;
-  iban: string;
-  status: "pending" | "completed";
-}
-
-const WITHDRAWALS_SEED: Withdrawal[] = [
-  {
-    id: "WTH-1001",
-    contractor: "مؤسسة الأهدل للمقاولات",
-    contractorOrg: "مؤسسة الأهدل للمقاولات",
-    project: "فيلا سكنية - تعز",
-    amount: 300_000,
-    bank: "بنك الكريمي الإسلامي",
-    iban: "YE12 0000 0000 0000 0000 0000",
-    status: "pending",
-  },
-  {
-    id: "WTH-1002",
-    contractor: "شركة القميري الإنشائية",
-    contractorOrg: "شركة القميري الإنشائية",
-    project: "شقة سكنية - عدن",
-    amount: 150_000,
-    bank: "بنك عدن الأول",
-    iban: "YE34 1111 2222 3333 4444 5555",
-    status: "completed",
-  },
-  {
-    id: "WTH-1003",
-    contractor: "شركة البناء المتقن",
-    contractorOrg: "شركة البناء المتقن",
-    project: "مجمع النور التجاري",
-    amount: 425_000,
-    bank: "بنك التضامن الإسلامي",
-    iban: "YE99 8888 7777 6666 5555 4444",
-    status: "pending",
-  },
-];
-
 function AdminFinance() {
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(WITHDRAWALS_SEED);
-  const [transferTarget, setTransferTarget] = useState<Withdrawal | null>(null);
-  const [detailsTarget, setDetailsTarget] = useState<Withdrawal | null>(null);
+  const store = useWorkflow();
+  const [transferTarget, setTransferTarget] = useState<WithdrawalDoc | null>(null);
+  const [detailsTarget, setDetailsTarget] = useState<WithdrawalDoc | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<WithdrawalDoc | null>(null);
 
-  const pendingCount = withdrawals.filter((w) => w.status === "pending").length;
-  const pendingTotal = withdrawals.filter((w) => w.status === "pending").reduce((s, w) => s + w.amount, 0);
+  const withdrawals = store.withdrawals;
+  const pending = withdrawals.filter((w) => w.status === "pending");
+  const approved = withdrawals.filter((w) => w.status === "approved");
+  const withdrawable = withdrawals.filter((w) => w.status === "withdrawable");
+  const pendingTotal = pending.reduce((s, w) => s + w.amount, 0);
 
-  const confirmTransfer = (id: string, ref: string) => {
-    setWithdrawals((prev) => prev.map((w) => (w.id === id ? { ...w, status: "completed" } : w)));
-    setTransferTarget(null);
-    toast.success("تم تنفيذ التحويل البنكي", {
-      description: `رقم المرجع: ${ref}`,
-    });
-  };
+  // مجموع رصيد جميع المقاولين (للعرض)
+  const contractorNames = Array.from(new Set(store.projects.map((p) => p.contractorName).filter(Boolean) as string[]));
+  const totalAvailable = contractorNames.reduce(
+    (s, name) => s + contractorAvailableBalance(store, name),
+    0,
+  );
 
   return (
     <>
       <PageHeader title="الإدارة المالية" subtitle="الرصيد، المستحقات، وطلبات التحويل البنكية" />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Available balance — accent green card per mockup */}
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-5 text-white shadow-card">
-          <div className="text-xs font-semibold opacity-90">الرصيد المتاح</div>
-          <div className="mt-2 text-3xl font-extrabold">2,450,000 ر.س</div>
+          <div className="text-xs font-semibold opacity-90">الرصيد المتاح للمقاولين</div>
+          <div className="mt-2 text-3xl font-extrabold">{fmtMoney(totalAvailable)}</div>
           <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold opacity-95">
-            <ArrowUpRight className="h-3 w-3" /> +12% عن الشهر الماضي
+            <Wallet className="h-3 w-3" /> مكتسب من مراحل مكتملة
           </div>
         </div>
-
         <StatCard
-          label="مستحقات المقاولين"
-          value="850,000 ر.س"
-          hint={`${pendingCount} طلبات بانتظار الاعتماد`}
+          label="طلبات سحب جديدة"
+          value={pending.length}
+          hint={`${fmtMoney(pendingTotal)} بانتظار اعتمادك`}
           icon={<Wallet className="h-5 w-5" />}
           tone="accent"
         />
         <StatCard
-          label="مصروفات الشهر"
-          value="1,200,000 ر.س"
-          hint="شهر أبريل 2026"
-          icon={<TrendingUp className="h-5 w-5" />}
+          label="معتمدة (في فترة الانتظار)"
+          value={approved.length}
+          hint="3 أيام انتظار قبل الإفراج"
+          icon={<Activity className="h-5 w-5" />}
+          tone="info"
+        />
+        <StatCard
+          label="قابلة للسحب"
+          value={withdrawable.length}
+          hint="مرت 3 أيام منذ الاعتماد"
+          icon={<CheckCircle2 className="h-5 w-5" />}
+          tone="primary"
         />
       </div>
 
       <SectionCard
         title="طلبات السحب والتحويلات البنكية"
-        subtitle={`${pendingTotal.toLocaleString()} ر.س بانتظار التحويل`}
+        subtitle={
+          pending.length > 0
+            ? `${pending.length} طلبات جديدة تحتاج إجراءك`
+            : "لا توجد طلبات بانتظار اعتمادك"
+        }
         className="mb-6"
       >
-        <div className="overflow-hidden rounded-xl border border-border">
-          <table className="w-full text-right text-sm">
-            <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-bold">المقاول</th>
-                <th className="px-4 py-3 font-bold">المشروع</th>
-                <th className="px-4 py-3 font-bold">المبلغ</th>
-                <th className="px-4 py-3 font-bold">البنك</th>
-                <th className="px-4 py-3 font-bold">الحالة</th>
-                <th className="px-4 py-3 font-bold">إجراء</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border bg-card">
-              {withdrawals.map((w) => (
-                <tr key={w.id} className="hover:bg-muted/30">
-                  <td className="px-4 py-3">
-                    <div className="text-sm font-extrabold text-ink">{w.contractor}</div>
-                    <div className="text-[11px] text-muted-foreground">{w.contractorOrg}</div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{w.project}</td>
-                  <td className="px-4 py-3 font-extrabold text-ink">{w.amount.toLocaleString()} ر.س</td>
-                  <td className="px-4 py-3 text-muted-foreground">{w.bank}</td>
-                  <td className="px-4 py-3">
-                    <Pill tone={w.status === "completed" ? "primary" : "accent"}>
-                      {w.status === "completed" ? "تم التحويل" : "بانتظار التحويل"}
-                    </Pill>
-                  </td>
-                  <td className="px-4 py-3">
-                    {w.status === "pending" ? (
-                      <button
-                        onClick={() => setTransferTarget(w)}
-                        className="rounded-full bg-emerald-500 px-4 py-1.5 text-[11px] font-bold text-white shadow-cta hover:bg-emerald-600"
-                      >
-                        تنفيذ التحويل
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setDetailsTarget(w)}
-                        className="rounded-full border border-border px-4 py-1.5 text-[11px] font-bold text-primary hover:border-primary hover:bg-primary-soft"
-                      >
-                        عرض التفاصيل
-                      </button>
-                    )}
-                  </td>
+        {withdrawals.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+            لا توجد طلبات سحب حتى الآن.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-right text-sm">
+              <thead className="bg-muted/60 text-[11px] uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-bold">الطلب</th>
+                  <th className="px-4 py-3 font-bold">المقاول</th>
+                  <th className="px-4 py-3 font-bold">المبلغ</th>
+                  <th className="px-4 py-3 font-bold">تاريخ الطلب</th>
+                  <th className="px-4 py-3 font-bold">الحالة</th>
+                  <th className="px-4 py-3 font-bold">إجراء</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-border bg-card">
+                {withdrawals.map((w) => (
+                  <tr key={w.id} className="hover:bg-muted/30">
+                    <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{w.id}</td>
+                    <td className="px-4 py-3">
+                      <div className="text-sm font-extrabold text-ink">{w.contractorName}</div>
+                      {w.iban && (
+                        <div className="text-[10px] font-mono text-muted-foreground">{w.iban}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 font-extrabold text-ink">{fmtMoney(w.amount)}</td>
+                    <td className="px-4 py-3 text-[11px] text-muted-foreground">
+                      {new Date(w.requestedAt).toLocaleDateString("ar-EG", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Pill tone={withdrawalTone(w.status)}>{withdrawalStatusLabel(w.status)}</Pill>
+                      {w.status === "approved" && w.releasableAt && (
+                        <div className="mt-1 text-[10px] text-info">
+                          إفراج: {new Date(w.releasableAt).toLocaleDateString("ar-EG", { day: "numeric", month: "short" })}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {w.status === "pending" ? (
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => setTransferTarget(w)}
+                            className="rounded-full bg-emerald-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-cta hover:bg-emerald-600"
+                          >
+                            اعتماد وتحويل
+                          </button>
+                          <button
+                            onClick={() => setRejectTarget(w)}
+                            className="rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
+                          >
+                            رفض
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setDetailsTarget(w)}
+                          className="rounded-full border border-border px-4 py-1.5 text-[11px] font-bold text-primary hover:border-primary hover:bg-primary-soft"
+                        >
+                          عرض التفاصيل
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </SectionCard>
 
       <div className="mb-6 grid gap-6 lg:grid-cols-3">
@@ -1275,10 +1269,16 @@ function AdminFinance() {
       </div>
 
       {transferTarget && (
-        <BankTransferDialog
+        <ApproveWithdrawalDialog
           withdrawal={transferTarget}
           onClose={() => setTransferTarget(null)}
-          onConfirm={confirmTransfer}
+        />
+      )}
+
+      {rejectTarget && (
+        <RejectWithdrawalDialog
+          withdrawal={rejectTarget}
+          onClose={() => setRejectTarget(null)}
         />
       )}
 
@@ -1292,14 +1292,26 @@ function AdminFinance() {
   );
 }
 
+function withdrawalTone(s: WithdrawalStatus): "muted" | "primary" | "accent" | "danger" | "info" {
+  switch (s) {
+    case "withdrawable":
+      return "primary";
+    case "approved":
+      return "info";
+    case "rejected":
+      return "danger";
+    default:
+      return "accent";
+  }
+}
+
 function WithdrawalDetailsDialog({
   withdrawal,
   onClose,
 }: {
-  withdrawal: Withdrawal;
+  withdrawal: WithdrawalDoc;
   onClose: () => void;
 }) {
-  const isCompleted = withdrawal.status === "completed";
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
@@ -1311,7 +1323,7 @@ function WithdrawalDetailsDialog({
       >
         <div className="flex items-center justify-between border-b border-border p-5">
           <div>
-            <h2 className="text-lg font-extrabold text-ink">تفاصيل التحويل البنكي</h2>
+            <h2 className="text-lg font-extrabold text-ink">تفاصيل طلب السحب</h2>
             <p className="text-xs text-muted-foreground">رقم الطلب: {withdrawal.id}</p>
           </div>
           <button
@@ -1327,32 +1339,49 @@ function WithdrawalDetailsDialog({
           <div className="flex items-center justify-between rounded-2xl bg-emerald-50 p-4">
             <div>
               <div className="text-[11px] font-semibold text-emerald-700">الحالة</div>
-              <Pill tone={isCompleted ? "primary" : "accent"}>
-                {isCompleted ? "تم التحويل بنجاح" : "بانتظار التحويل"}
+              <Pill tone={withdrawalTone(withdrawal.status)}>
+                {withdrawalStatusLabel(withdrawal.status)}
               </Pill>
             </div>
             <div className="text-left">
               <div className="text-[11px] font-semibold text-emerald-700">المبلغ</div>
               <div className="text-2xl font-extrabold text-emerald-700">
-                {withdrawal.amount.toLocaleString()} ر.س
+                {fmtMoney(withdrawal.amount)}
               </div>
             </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <DetailRow label="المقاول" value={withdrawal.contractor} />
-            <DetailRow label="المؤسسة" value={withdrawal.contractorOrg} />
-            <DetailRow label="المشروع" value={withdrawal.project} />
-            <DetailRow label="البنك" value={withdrawal.bank} />
-            <div className="sm:col-span-2">
-              <DetailRow label="رقم الآيبان (IBAN)" value={withdrawal.iban} mono />
-            </div>
+            <DetailRow label="المقاول" value={withdrawal.contractorName} />
+            <DetailRow label="تاريخ الطلب" value={new Date(withdrawal.requestedAt).toLocaleString("ar-EG")} />
+            {withdrawal.bankName && <DetailRow label="البنك" value={withdrawal.bankName} />}
+            {withdrawal.txRef && <DetailRow label="رقم العملية" value={withdrawal.txRef} mono />}
+            {withdrawal.iban && (
+              <div className="sm:col-span-2">
+                <DetailRow label="رقم الآيبان (IBAN)" value={withdrawal.iban} mono />
+              </div>
+            )}
+            {withdrawal.releasableAt && (
+              <DetailRow
+                label="قابل للسحب في"
+                value={new Date(withdrawal.releasableAt).toLocaleDateString("ar-EG")}
+              />
+            )}
+            {withdrawal.rejectionReason && (
+              <div className="sm:col-span-2">
+                <DetailRow label="سبب الرفض" value={withdrawal.rejectionReason} />
+              </div>
+            )}
           </div>
 
-          {isCompleted && (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-sm text-emerald-800">
-              <div className="font-extrabold">تم تنفيذ التحويل البنكي بنجاح</div>
-              <div className="mt-1 text-xs">سيظهر الإيصال في سجل العمليات المالية.</div>
+          {withdrawal.imageDataUrl && (
+            <div>
+              <div className="mb-2 text-xs font-bold text-ink">صورة التحويل</div>
+              <img
+                src={withdrawal.imageDataUrl}
+                alt="إثبات التحويل"
+                className="max-h-72 w-full rounded-xl border border-border object-contain"
+              />
             </div>
           )}
 
@@ -1381,24 +1410,51 @@ function DetailRow({ label, value, mono }: { label: string; value: string; mono?
   );
 }
 
-function BankTransferDialog({
+async function fileToDataUrl(file: File): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function ApproveWithdrawalDialog({
   withdrawal,
   onClose,
-  onConfirm,
 }: {
-  withdrawal: Withdrawal;
+  withdrawal: WithdrawalDoc;
   onClose: () => void;
-  onConfirm: (id: string, ref: string) => void;
 }) {
-  const [ref, setRef] = useState("");
+  const [txRef, setTxRef] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [notes, setNotes] = useState("");
+  const [imageDataUrl, setImageDataUrl] = useState<string | undefined>();
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ref.trim()) {
+    if (!txRef.trim()) {
       toast.error("يرجى إدخال رقم مرجع العملية");
       return;
     }
-    onConfirm(withdrawal.id, ref.trim());
+    if (!bankName.trim()) {
+      toast.error("يرجى إدخال اسم البنك المُحوِّل");
+      return;
+    }
+    setSubmitting(true);
+    approveWithdrawal({
+      id: withdrawal.id,
+      by: "إدارة تم",
+      txRef: txRef.trim(),
+      bankName: bankName.trim(),
+      imageDataUrl,
+      notes: notes.trim() || undefined,
+    });
+    toast.success("تم اعتماد التحويل البنكي", {
+      description: `سيصبح المبلغ قابلاً للسحب بعد 3 أيام`,
+    });
+    onClose();
   };
 
   return (
@@ -1408,7 +1464,7 @@ function BankTransferDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border p-5">
-          <h2 className="text-lg font-extrabold text-ink">تنفيذ التحويل البنكي</h2>
+          <h2 className="text-lg font-extrabold text-ink">اعتماد طلب السحب</h2>
           <button onClick={onClose} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
             <X className="h-4 w-4" />
           </button>
@@ -1422,19 +1478,17 @@ function BankTransferDialog({
             <div className="grid gap-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">المقاول:</span>
-                <span className="font-bold text-ink">{withdrawal.contractor}</span>
+                <span className="font-bold text-ink">{withdrawal.contractorName}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">البنك:</span>
-                <span className="font-bold text-ink">{withdrawal.bank}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">الحساب:</span>
-                <span className="font-mono text-xs font-bold text-ink">{withdrawal.iban}</span>
-              </div>
+              {withdrawal.iban && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">الآيبان:</span>
+                  <span className="font-mono text-xs font-bold text-ink">{withdrawal.iban}</span>
+                </div>
+              )}
               <div className="mt-2 flex items-end justify-between border-t border-sky-200 pt-3">
                 <span className="text-xs text-muted-foreground">المبلغ:</span>
-                <span className="text-2xl font-extrabold text-ink">{withdrawal.amount.toLocaleString()} ر.س</span>
+                <span className="text-2xl font-extrabold text-ink">{fmtMoney(withdrawal.amount)}</span>
               </div>
             </div>
           </div>
@@ -1443,14 +1497,57 @@ function BankTransferDialog({
             <span className="mb-1.5 block text-xs font-bold text-ink">رقم مرجع العملية</span>
             <input
               autoFocus
-              value={ref}
-              onChange={(e) => setRef(e.target.value)}
+              value={txRef}
+              onChange={(e) => setTxRef(e.target.value)}
               placeholder="TRX-2026-XXX"
               className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
           </label>
 
-          <div className="flex gap-2">
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">البنك المُحوِّل</span>
+            <input
+              value={bankName}
+              onChange={(e) => setBankName(e.target.value)}
+              placeholder="بنك التضامن الإسلامي"
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">صورة إثبات التحويل (اختياري)</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (f) {
+                  try {
+                    const url = await fileToDataUrl(f);
+                    setImageDataUrl(url);
+                  } catch {
+                    toast.error("تعذر قراءة الصورة");
+                  }
+                }
+              }}
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs"
+            />
+            {imageDataUrl && (
+              <img src={imageDataUrl} alt="معاينة" className="mt-2 max-h-40 rounded-xl border border-border object-contain" />
+            )}
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">ملاحظات (اختياري)</span>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+
+          <div className="flex gap-2 border-t border-border pt-4">
             <button
               type="button"
               onClick={onClose}
@@ -1460,9 +1557,76 @@ function BankTransferDialog({
             </button>
             <button
               type="submit"
-              className="flex-1 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-extrabold text-white shadow-cta hover:bg-emerald-600"
+              disabled={submitting}
+              className="flex-1 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-extrabold text-white shadow-cta hover:bg-emerald-600 disabled:opacity-50"
             >
-              تأكيد التحويل
+              اعتماد وتأكيد التحويل
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function RejectWithdrawalDialog({
+  withdrawal,
+  onClose,
+}: {
+  withdrawal: WithdrawalDoc;
+  onClose: () => void;
+}) {
+  const [reason, setReason] = useState("");
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reason.trim()) {
+      toast.error("يرجى ذكر سبب الرفض");
+      return;
+    }
+    rejectWithdrawal(withdrawal.id, "إدارة تم", reason.trim());
+    toast("تم رفض طلب السحب");
+    onClose();
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <h2 className="text-lg font-extrabold text-ink">رفض طلب السحب</h2>
+          <button onClick={onClose} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <form onSubmit={submit} className="space-y-4 p-5">
+          <div className="rounded-xl bg-rose-50 p-3 text-xs text-rose-700">
+            سيتم إعلام المقاول {withdrawal.contractorName} بالسبب وعدم خصم المبلغ من رصيده.
+          </div>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">سبب الرفض</span>
+            <textarea
+              autoFocus
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              placeholder="مثال: حساب البنك غير صحيح، يرجى تحديث البيانات"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <div className="flex gap-2 border-t border-border pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold hover:border-primary"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="flex-1 rounded-full bg-rose-500 px-5 py-2 text-xs font-bold text-white shadow-cta hover:bg-rose-600"
+            >
+              تأكيد الرفض
             </button>
           </div>
         </form>
