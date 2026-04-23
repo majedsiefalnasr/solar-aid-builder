@@ -201,7 +201,7 @@ export const PAYMENT_REQUESTS: PaymentRequest[] = [
   {
     id: "PAY-301",
     phase: "الهيكل الإنشائي",
-    amount: 11_200,
+    amount: 11.2,
     contractor: "شركة البناء المتقن",
     submittedAt: "2026-03-01",
     status: "released",
