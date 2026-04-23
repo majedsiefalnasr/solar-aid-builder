@@ -423,10 +423,9 @@ export function ProjectDetail({
         </SectionCard>
       )}
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <button className="rounded-xl border-2 border-primary bg-primary-soft p-4 text-right transition hover:bg-primary hover:text-primary-foreground">
-              <Coins className="mb-2 h-5 w-5" />
-              <div className="text-sm font-extrabold">تحرير الدفعة التالية</div>
+      {isOwner && (
+        <SectionCard title="إجراءات سريعة" subtitle="تحرير الدفعة التالية أو طلب تعديل">
+
               <div className="mt-0.5 text-[11px] opacity-80">بعد اعتماد المرحلة</div>
             </button>
             <button className="rounded-xl border-2 border-border bg-background p-4 text-right transition hover:border-accent">
