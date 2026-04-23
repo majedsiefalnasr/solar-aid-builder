@@ -1096,9 +1096,7 @@ function BankTransferDialog({
   );
 }
 
-// =============================================================
-// Store overview (with charts)
-// =============================================================
+// ===== Store overview (with charts) =====
 
 function AdminStore() {
   return (
