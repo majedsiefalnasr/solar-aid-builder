@@ -115,12 +115,79 @@ function StepDevices() {
           <Box className="h-6 w-6" />
         </div>
         <div className="flex-1">
-          <h2 className="text-2xl font-extrabold text-ink">اختر الأجهزة المستهدفة</h2>
+          <h2 className="text-2xl font-extrabold text-ink">بيانات الاستهلاك</h2>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            حدد الأجهزة التي ترغب في تشغيلها للحصول على أفضل تقدير.
+            اختر طريقة الحساب الأنسب لك للحصول على أفضل تقدير.
           </p>
         </div>
       </div>
+
+      {/* Mode selector */}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => setMode("loads")}
+          className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-right transition ${
+            mode === "loads"
+              ? "border-primary bg-primary-soft"
+              : "border-border bg-card hover:border-primary/40"
+          }`}
+        >
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+              mode === "loads" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground/60"
+            }`}
+          >
+            <ListChecks className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-sm font-extrabold text-ink">بحسب الأحمال</div>
+            <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              حدد كل جهاز وقدرته وساعات تشغيله.
+            </div>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMode("bill")}
+          className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-right transition ${
+            mode === "bill"
+              ? "border-primary bg-primary-soft"
+              : "border-border bg-card hover:border-primary/40"
+          }`}
+        >
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+              mode === "bill" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground/60"
+            }`}
+          >
+            <Receipt className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-sm font-extrabold text-ink">بحسب الفاتورة</div>
+            <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              أدخل استهلاكك من فاتورة الكهرباء التجارية لـ 15 يوم.
+            </div>
+          </div>
+        </button>
+      </div>
+
+      {mode === "bill" ? (
+        <BillForm bill={bill} onChange={setBill} />
+      ) : (
+        <DevicesContent
+          devices={devices}
+          activeCat={activeCat}
+          setActiveCat={setActiveCat}
+          filtered={filtered}
+          meta={meta}
+          totalWatts={totalWatts}
+          add={add}
+          update={update}
+          remove={remove}
+        />
+      )}
 
       {/* Category tabs */}
       <div className="mt-6 grid grid-cols-3 gap-2.5 md:grid-cols-6">
