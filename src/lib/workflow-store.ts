@@ -224,7 +224,7 @@ export const FIELD_ENGINEER_POOL = [
 // Storage
 // ============================================================
 
-const STORAGE_KEY = "tamm_workflow_v1";
+const STORAGE_KEY = "tamm_workflow_v2";
 
 function nowISO() {
   return new Date().toISOString();
@@ -245,6 +245,7 @@ function loadFromStorage(): StoreState | null {
       projects: parsed.projects,
       reports: parsed.reports,
       threads: Array.isArray(parsed.threads) ? parsed.threads : [],
+      withdrawals: Array.isArray(parsed.withdrawals) ? parsed.withdrawals : [],
     };
   } catch {
     return null;
