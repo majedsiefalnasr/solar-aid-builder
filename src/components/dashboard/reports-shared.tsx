@@ -9,6 +9,7 @@ import {
   FileText,
   Image as ImageIcon,
   MapPin,
+  Printer,
   Trash2,
   X,
   XCircle,
@@ -24,6 +25,7 @@ import {
   type ReportType,
 } from "@/lib/workflow-store";
 import { Pill } from "./dashboard-ui";
+import { openPrintableReport } from "./print-report";
 
 // ============================================================
 // File -> data URL helpers
