@@ -321,7 +321,7 @@ function seedState(): StoreState {
       {
         id: "PH-2",
         name: "الهيكل الإنشائي",
-        budget: 11_200,
+        budget: 11.2,
         durationDays: 45,
         tasks: [
           { id: "T4", title: "صب الأعمدة", done: true },
