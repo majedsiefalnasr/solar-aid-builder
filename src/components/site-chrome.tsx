@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, ShoppingCart } from "lucide-react";
 import { useState } from "react";
+import { TammMark } from "@/components/tamm-logo";
 
 const navLinks = [
   { to: "/", label: "الرئيسية" },
@@ -17,15 +18,10 @@ export function SiteNav() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:h-20 md:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-emerald-700 text-primary-foreground shadow-cta">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 2 L20 7 V17 L12 22 L4 17 V7 Z" strokeLinejoin="round" />
-              <path d="M12 7 V22 M4 7 L20 17 M20 7 L4 17" strokeLinecap="round" />
-            </svg>
-          </div>
+          <TammMark className="h-10 w-10 text-ink" />
           <div className="leading-tight">
-            <div className="text-lg font-extrabold tracking-tight text-ink">بنيان</div>
-            <div className="text-[10px] tracking-widest text-muted-foreground">منصة البناء والطاقة</div>
+            <div className="text-xl font-extrabold tracking-tight text-ink">تم</div>
+            <div className="text-[10px] tracking-widest text-muted-foreground">للخدمات الهندسية</div>
           </div>
         </Link>
 
@@ -92,9 +88,12 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-card">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4 md:px-8">
         <div className="space-y-3">
-          <div className="text-lg font-extrabold text-ink">بنيان</div>
+          <div className="flex items-center gap-2">
+            <TammMark className="h-8 w-8 text-ink" />
+            <div className="text-lg font-extrabold text-ink">تم</div>
+          </div>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            منصة متكاملة لخدمات البناء، مواد البناء، والطاقة الشمسية.
+            منصة هندسية متكاملة لخدمات البناء، مواد البناء، والطاقة الشمسية.
           </p>
         </div>
         <div>
@@ -118,13 +117,13 @@ export function SiteFooter() {
         <div>
           <div className="mb-3 text-sm font-bold text-ink">تواصل</div>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>info@bunyan.tech</li>
+            <li>info@tamm.tech</li>
             <li>+967 700 000 000</li>
           </ul>
         </div>
       </div>
       <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-        © 2026 بنيان. جميع الحقوق محفوظة.
+        © 2026 تم. جميع الحقوق محفوظة.
       </div>
     </footer>
   );

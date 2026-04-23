@@ -32,7 +32,7 @@ import {
 export const Route = createFileRoute("/calculator/devices")({
   head: () => ({
     meta: [
-      { title: "اختر الأجهزة — حاسبة الطاقة | بنيان" },
+      { title: "اختر الأجهزة — حاسبة الطاقة | تم" },
       {
         name: "description",
         content: "الخطوة 3: حدد الأجهزة التي ترغب في تشغيلها للحصول على أفضل تقدير.",

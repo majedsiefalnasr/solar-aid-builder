@@ -29,13 +29,13 @@ import { addProductToCart } from "@/lib/cart-store";
 export const Route = createFileRoute("/store")({
   head: () => ({
     meta: [
-      { title: "المتجر | بنيان" },
+      { title: "المتجر | تم" },
       {
         name: "description",
         content:
           "تسوق مواد البناء والطاقة الشمسية: إسمنت، حديد، دهانات، أدوات، وأكثر من علامات تجارية موثوقة.",
       },
-      { property: "og:title", content: "المتجر | بنيان" },
+      { property: "og:title", content: "المتجر | تم" },
       {
         property: "og:description",
         content: "كل ما تحتاجه لمشروعك في مكان واحد بأسعار تنافسية.",

@@ -21,7 +21,7 @@ import { arabicNumber } from "@/components/calculator-shell";
 export const Route = createFileRoute("/results")({
   head: () => ({
     meta: [
-      { title: "نتائج حاسبة الطاقة الشمسية | بنيان" },
+      { title: "نتائج حاسبة الطاقة الشمسية | تم" },
       {
         name: "description",
         content: "احصل على تفاصيل نظامك الشمسي المقترح: الألواح، البطاريات، والإنفرتر.",

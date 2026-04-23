@@ -7,7 +7,7 @@ import { loadState, saveState, type Autonomy } from "@/lib/calculator";
 export const Route = createFileRoute("/calculator/preferences")({
   head: () => ({
     meta: [
-      { title: "تفضيلات النظام — حاسبة الطاقة | بنيان" },
+      { title: "تفضيلات النظام — حاسبة الطاقة | تم" },
       {
         name: "description",
         content: "الخطوة 2: اختر عدد ليالي التخزين المطلوبة لنظامك.",
