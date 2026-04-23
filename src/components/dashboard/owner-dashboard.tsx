@@ -13,6 +13,7 @@ import {
   STATUS_TONE,
 } from "@/lib/dashboard-data";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
+import { AreaChart, DonutChart, ProgressRing } from "./charts";
 
 export function OwnerDashboard() {
   const p = MOCK_PROJECT;
