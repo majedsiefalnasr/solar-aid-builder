@@ -58,10 +58,10 @@ function DashboardLayout() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="min-h-screen bg-muted/40 pb-10">
       <div className="mx-auto flex min-h-screen max-w-[1500px]">
         {/* Sidebar */}
-        <aside className="hidden w-64 shrink-0 border-l border-border bg-card md:flex md:flex-col">
+        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 self-start border-l border-border bg-card md:flex md:flex-col">
           <div className="flex h-20 items-center border-b border-border px-5">
             <Link to="/" className="flex items-center">
               <TammMark className="h-10 w-auto" />
@@ -196,7 +196,7 @@ function DashboardLayout() {
             </select>
           </div>
 
-          <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+          <main className="flex-1 px-4 pb-16 pt-6 md:px-8 md:pb-20 md:pt-8">
             <DashboardContent
               role={role}
               section={currentSection}
@@ -206,6 +206,16 @@ function DashboardLayout() {
             />
             <Outlet />
           </main>
+        </div>
+      </div>
+
+      {/* Demo mode notice — sticky bottom */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-amber-300/60 bg-amber-50/95 backdrop-blur supports-[backdrop-filter]:bg-amber-50/80">
+        <div className="mx-auto flex max-w-[1500px] items-center justify-center gap-2 px-4 py-2 text-center text-[11px] font-semibold text-amber-900 md:text-xs">
+          <span className="inline-flex h-5 items-center rounded-full bg-amber-500/20 px-2 text-[10px] font-bold uppercase tracking-wider text-amber-800">
+            وضع تجريبي
+          </span>
+          <span>جميع البيانات المعروضة وهمية وتُستخدم لأغراض العرض فقط — لا تعكس بيانات حقيقية.</span>
         </div>
       </div>
     </div>
