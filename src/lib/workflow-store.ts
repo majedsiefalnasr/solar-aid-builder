@@ -463,9 +463,115 @@ function seedState(): StoreState {
     },
   ];
 
+  // Seed chat threads for active project (p1)
+  const threads: ChatThreadDoc[] = [
+    {
+      id: "THR-001",
+      projectId: "PRJ-2041",
+      title: "محادثة المالك ↔ المقاول",
+      participants: ["owner", "contractor"],
+      createdAt: daysAgo(60),
+      messages: [
+        {
+          id: "M-1",
+          authorRole: "contractor",
+          authorName: SINGLE_CONTRACTOR,
+          text: "تم إنجاز جدران الدور الأول، نحتاج اعتماد المرحلة.",
+          at: daysAgo(2),
+          readBy: ["contractor", "owner"],
+        },
+        {
+          id: "M-2",
+          authorRole: "owner",
+          authorName: ROLE_USER.owner,
+          text: "ممتاز، سأطلب من المشرف المعاينة اليوم.",
+          at: daysAgo(2),
+          readBy: ["owner", "contractor"],
+        },
+      ],
+    },
+    {
+      id: "THR-002",
+      projectId: "PRJ-2041",
+      title: "محادثة المالك ↔ المشرف",
+      participants: ["owner", "supervisor"],
+      createdAt: daysAgo(60),
+      messages: [
+        {
+          id: "M-3",
+          authorRole: "supervisor",
+          authorName: "م. ليلى العمراني",
+          text: "تقرير الموقع جاهز للمراجعة.",
+          at: daysAgo(1),
+          readBy: ["supervisor"],
+        },
+      ],
+    },
+    {
+      id: "THR-003",
+      projectId: "PRJ-2041",
+      title: "محادثة المشرف ↔ المهندس الميداني",
+      participants: ["supervisor", "field"],
+      createdAt: daysAgo(60),
+      messages: [
+        {
+          id: "M-4",
+          authorRole: "supervisor",
+          authorName: "م. ليلى العمراني",
+          text: "وثّق ميول الصرف الصحي اليوم.",
+          at: daysAgo(0),
+          readBy: ["supervisor"],
+        },
+      ],
+    },
+    {
+      id: "THR-004",
+      projectId: "PRJ-2041",
+      title: "محادثة المشرف ↔ المقاول",
+      participants: ["supervisor", "contractor"],
+      createdAt: daysAgo(60),
+      messages: [
+        {
+          id: "M-5",
+          authorRole: "contractor",
+          authorName: SINGLE_CONTRACTOR,
+          text: "بانتظار توقيعك على التقرير.",
+          at: daysAgo(0),
+          readBy: ["contractor"],
+        },
+      ],
+    },
+    {
+      id: "THR-005",
+      projectId: "PRJ-2041",
+      title: "نزاع — وساطة الإدارة",
+      participants: ["admin", "owner", "contractor"],
+      createdAt: daysAgo(5),
+      messages: [
+        {
+          id: "M-6",
+          authorRole: "owner",
+          authorName: ROLE_USER.owner,
+          text: "أعترض على جودة بعض الأعمال.",
+          at: daysAgo(5),
+          readBy: ["owner", "admin"],
+        },
+        {
+          id: "M-7",
+          authorRole: "admin",
+          authorName: ADMIN_USER,
+          text: "سنُكلّف فريق فحص محايد ونعود إليكم.",
+          at: daysAgo(4),
+          readBy: ["admin"],
+        },
+      ],
+    },
+  ];
+
   return {
     projects: [p1, p2, p3],
     reports,
+    threads,
   };
 }
 
