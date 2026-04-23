@@ -74,7 +74,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
 
 // Sections that exist as detail pages (accessed via projectId) but are not in the sidebar
 export const DETAIL_SECTIONS: Record<Role, string[]> = {
-  admin: ["project-detail"],
+  admin: ["project-detail", "category-detail", "order-detail"],
   owner: ["project-detail"],
   contractor: ["project-detail"],
   supervisor: ["project-detail"],
