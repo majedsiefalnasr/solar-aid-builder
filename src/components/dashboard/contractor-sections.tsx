@@ -164,7 +164,7 @@ function ContractorTasks() {
     <>
       <PageHeader title="المهام" subtitle="مهامك على جميع المراحل النشطة" />
       <div className="mb-6 grid gap-4 sm:grid-cols-4">
-        <StatCard label="بانتظار التأشير" value={todo.length} icon={<ListChecks className="h-5 w-5" />} tone="muted" />
+        <StatCard label="بانتظار التأشير" value={todo.length} icon={<ListChecks className="h-5 w-5" />} />
         <StatCard label="بانتظار الاعتماد" value={pending.length} icon={<Clock className="h-5 w-5" />} tone="accent" />
         <StatCard label="معتمدة" value={approved.length} icon={<CheckCircle2 className="h-5 w-5" />} tone="primary" />
         <StatCard label="مرفوضة" value={rejected.length} icon={<X className="h-5 w-5" />} tone="danger" />
