@@ -79,6 +79,54 @@ export function SupervisorDashboard() {
 
   return (
     <div className="space-y-6">
+      {(newAssignments.length > 0 ||
+        needQuote.length > 0 ||
+        needFieldEng.length > 0 ||
+        liveReportsPending.length > 0) && (
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          {newAssignments.length > 0 && (
+            <BannerCard
+              tone="primary"
+              icon={<UserCheck className="h-4 w-4" />}
+              title={`${newAssignments.length} طلب إشراف جديد`}
+              subtitle="بانتظار قبولك"
+              to="/dashboard"
+              search={{ role: "supervisor", section: "assignments" }}
+            />
+          )}
+          {needQuote.length > 0 && (
+            <BannerCard
+              tone="accent"
+              icon={<FileText className="h-4 w-4" />}
+              title={`${needQuote.length} مشروع يحتاج عرض سعر`}
+              subtitle="جهّز عرض السعر التفصيلي"
+              to="/dashboard"
+              search={{ role: "supervisor", section: "assignments" }}
+            />
+          )}
+          {needFieldEng.length > 0 && (
+            <BannerCard
+              tone="info"
+              icon={<HardHat className="h-4 w-4" />}
+              title={`${needFieldEng.length} مشروع بحاجة مهندس ميداني`}
+              subtitle="بدأ التنفيذ — عيّن مهندساً"
+              to="/dashboard"
+              search={{ role: "supervisor", section: "assignments" }}
+            />
+          )}
+          {liveReportsPending.length > 0 && (
+            <BannerCard
+              tone="danger"
+              icon={<ClipboardList className="h-4 w-4" />}
+              title={`${liveReportsPending.length} تقرير بانتظار اعتمادك`}
+              subtitle="تقارير ميدانية حديثة"
+              to="/dashboard"
+              search={{ role: "supervisor", section: "approvals" }}
+            />
+          )}
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="بانتظار المراجعة" value={pendingReports.length} icon={<ClipboardList className="h-5 w-5" />} tone="accent" />
         <StatCard label="معتمدة هذا الشهر" value={approved.length} icon={<CheckCircle2 className="h-5 w-5" />} tone="primary" />
