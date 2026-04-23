@@ -33,12 +33,24 @@ import {
   type PurchaseStatus,
 } from "@/lib/dashboard-data";
 import { CITIES } from "@/lib/calculator";
+import {
+  createProject,
+  ROLE_USER,
+  useWorkflow,
+  type PhaseDef,
+  type ProjectDoc,
+} from "@/lib/workflow-store";
 import { OwnerDashboard } from "./owner-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { PageHeader, EmptyHint } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
 import { ReportsSection } from "./reports-section";
+import {
+  PayPhaseDialog,
+  ProjectStatusPill,
+  ProjectTimeline,
+} from "./project-flow-shared";
 
 export function OwnerSection({
   section,
