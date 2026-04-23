@@ -64,7 +64,7 @@ function StepDevices() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [bill, setBill] = useState<BillInput>({
     kWh15Days: 450,
-    dayHours: 10,
+    dayHours: 14,
     nightHours: 6,
   });
   const [activeCat, setActiveCat] = useState<DeviceCategory>("fridges");
@@ -444,7 +444,12 @@ function BillForm({
   bill: BillInput;
   onChange: (b: BillInput) => void;
 }) {
-  const dailyAvg = (bill.kWh15Days / 15).toFixed(1);
+  const dailyAvg = bill.kWh15Days / 15;
+  const totalHours = Math.max(1, bill.dayHours);
+  const nightHours = Math.max(0, Math.min(totalHours, bill.nightHours));
+  const hourlyLoad = dailyAvg / totalHours;
+  const batteryKWh = Math.round(nightHours * hourlyLoad * 1.2);
+
   return (
     <div className="mt-7 rounded-2xl border border-border bg-card p-5 md:p-6">
       <div className="mb-5 flex items-center gap-2">
@@ -454,20 +459,20 @@ function BillForm({
 
       <div className="space-y-5">
         <NumberField
-          label="استهلاك فاتورة الكهرباء التجارية لـ 15 يوم (kWh)"
+          label="استهلاك الكهرباء خلال 15 يوم (kWh)"
           value={bill.kWh15Days}
           onChange={(v) => onChange({ ...bill, kWh15Days: Math.max(0, v) })}
         />
         <div className="grid gap-4 md:grid-cols-2">
           <NumberField
-            label="عدد ساعات النهار"
+            label="إجمالي عدد ساعات التشغيل في اليوم"
             value={bill.dayHours}
             onChange={(v) =>
-              onChange({ ...bill, dayHours: Math.max(0, Math.min(24, v)) })
+              onChange({ ...bill, dayHours: Math.max(1, Math.min(24, v)) })
             }
           />
           <NumberField
-            label="عدد ساعات الليل"
+            label="منها ساعات ليلية (للبطارية)"
             value={bill.nightHours}
             onChange={(v) =>
               onChange({ ...bill, nightHours: Math.max(0, Math.min(24, v)) })
@@ -476,9 +481,19 @@ function BillForm({
         </div>
       </div>
 
-      <div className="mt-5 rounded-xl bg-primary-soft px-4 py-3 text-sm">
-        <strong className="text-primary">متوسط الاستهلاك اليومي:</strong>{" "}
-        <span className="font-bold text-ink">{dailyAvg} kWh</span>
+      <div className="mt-5 grid gap-2 rounded-xl bg-primary-soft p-4 text-sm">
+        <div className="flex items-center justify-between">
+          <span className="text-foreground/80">متوسط الاستهلاك اليومي</span>
+          <span className="font-bold text-ink">{dailyAvg.toFixed(1)} kWh</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-foreground/80">الحمل في الساعة</span>
+          <span className="font-bold text-ink">{hourlyLoad.toFixed(2)} kW/h</span>
+        </div>
+        <div className="flex items-center justify-between border-t border-primary/15 pt-2">
+          <span className="font-bold text-primary">سعة البطارية المقترحة</span>
+          <span className="font-extrabold text-primary">{batteryKWh} kWh</span>
+        </div>
       </div>
     </div>
   );
