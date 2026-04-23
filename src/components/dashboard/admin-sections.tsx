@@ -299,45 +299,229 @@ const PENDING_ASSIGNMENTS = [
   },
 ];
 
+// =============================================================
+// Assignments (matches mockup: pending project + engineer picker)
+// =============================================================
+
+interface PendingProject {
+  id: string;
+  name: string;
+  city: string;
+  client: string;
+  date: string;
+  area: string;
+  type: string;
+  budget: string;
+}
+
+const PENDING_PROJECTS: PendingProject[] = [
+  {
+    id: "PRJ-3001",
+    name: "فيلا سكنية - تعز",
+    city: "تعز",
+    client: "نشوان صادق",
+    date: "2026-04-01",
+    area: "غير محدد م²",
+    type: "غير محدد",
+    budget: "غير محدد",
+  },
+  {
+    id: "PRJ-3002",
+    name: "شقة سكنية - عدن",
+    city: "عدن",
+    client: "محمد ياسين",
+    date: "2026-04-12",
+    area: "180 م²",
+    type: "سكني",
+    budget: "12,000K ر.ي",
+  },
+];
+
+interface Engineer {
+  id: string;
+  name: string;
+  active: number;
+}
+
+const ENGINEERS: Engineer[] = [
+  { id: "E1", name: "م. خالد الأهدل", active: 3 },
+  { id: "E2", name: "م. محمد الرشيدي", active: 5 },
+  { id: "E3", name: "م. نبيل الصنوي", active: 3 },
+  { id: "E4", name: "م. عادل العميسي", active: 5 },
+  { id: "E5", name: "م. أنس الحديدي", active: 3 },
+  { id: "E6", name: "م. طارق السقاف", active: 5 },
+];
+
 function AdminAssignments() {
+  const [projects, setProjects] = useState<PendingProject[]>(PENDING_PROJECTS);
+  const [activeId, setActiveId] = useState<string>(PENDING_PROJECTS[0].id);
+  const [selectedEngineer, setSelectedEngineer] = useState<string>("");
+
+  const active = projects.find((p) => p.id === activeId) ?? projects[0];
+
+  const assign = () => {
+    if (!selectedEngineer) {
+      toast.error("يرجى اختيار مهندس مشرف أولاً");
+      return;
+    }
+    const eng = ENGINEERS.find((e) => e.id === selectedEngineer);
+    toast.success("تم إرسال طلب التعيين", {
+      description: `تم تعيين ${eng?.name} للمشروع ${active.name}`,
+    });
+    setProjects((prev) => prev.filter((p) => p.id !== active.id));
+    setSelectedEngineer("");
+    const next = projects.find((p) => p.id !== active.id);
+    if (next) setActiveId(next.id);
+  };
+
+  const reject = () => {
+    toast("تم رفض المشروع", { description: `${active.name} — تم إعلام صاحب المشروع.` });
+    setProjects((prev) => prev.filter((p) => p.id !== active.id));
+    setSelectedEngineer("");
+  };
+
+  if (projects.length === 0) {
+    return (
+      <>
+        <PageHeader title="طلبات تعيين المهندسين" subtitle="مطابقة المهندسين بالمشاريع المناسبة" />
+        <div className="rounded-2xl border border-dashed border-border bg-card/50 p-10 text-center">
+          <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
+          <p className="mt-3 text-sm font-bold text-ink">لا توجد طلبات تعيين بانتظارك حالياً</p>
+          <p className="mt-1 text-xs text-muted-foreground">جميع المشاريع تم تعيين مشرف لها.</p>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <PageHeader title="طلبات التعيين" subtitle="مطابقة المهندسين والمقاولين بالمشاريع المناسبة" />
-      <SectionCard
-        title="طلبات بانتظار التعيين"
-        action={
-          <button className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground">
-            تعيين تلقائي
-          </button>
-        }
-      >
-        <div className="space-y-3">
-          {PENDING_ASSIGNMENTS.map((a) => (
-            <div
-              key={a.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background p-4"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <Pill tone="info">{a.id}</Pill>
-                  <span className="text-sm font-bold text-ink">{a.project}</span>
+      <PageHeader title="طلبات تعيين المهندسين" subtitle="مطابقة المهندسين بالمشاريع المناسبة" />
+
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        {/* Available engineers */}
+        <SectionCard title="المهندسين المتاحين">
+          <div className="space-y-2">
+            {ENGINEERS.map((e) => (
+              <div
+                key={e.id}
+                className="flex items-center gap-3 rounded-xl border border-border bg-background p-3"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                  <User className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-xs font-extrabold text-ink">{e.name}</div>
+                  <div className="text-[10px] text-muted-foreground">{e.active} مشاريع نشطة</div>
                 </div>
-                <div className="mt-1 text-[11px] text-muted-foreground">
-                  {a.role} مقترح: {a.candidate} • {a.date}
+                <Pill tone="primary">متاح</Pill>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+
+        {/* Pending project + assignment */}
+        <div className="space-y-4">
+          {/* Project switcher chips */}
+          {projects.length > 1 && (
+            <div className="flex flex-wrap gap-2">
+              {projects.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setActiveId(p.id);
+                    setSelectedEngineer("");
+                  }}
+                  className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
+                    p.id === active.id
+                      ? "bg-primary text-primary-foreground shadow-cta"
+                      : "border border-border bg-card text-foreground/70 hover:border-primary"
+                  }`}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <SectionCard
+            title={`مشاريع بانتظار تعيين مهندس (${projects.length})`}
+          >
+            <div className="rounded-xl border border-border bg-background p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-extrabold text-ink">{active.name}</h3>
+                  <div className="mt-1 text-xs text-muted-foreground">العميل: {active.client}</div>
+                  <div className="text-xs text-muted-foreground">تاريخ الطلب: {active.date}</div>
+                </div>
+                <Pill tone="accent">بانتظار التعيين</Pill>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl bg-muted/40 p-3 text-right">
+                  <div className="text-[10px] text-muted-foreground">المساحة</div>
+                  <div className="mt-1 text-sm font-extrabold text-ink">{active.area}</div>
+                </div>
+                <div className="rounded-xl bg-muted/40 p-3 text-right">
+                  <div className="text-[10px] text-muted-foreground">النوع</div>
+                  <div className="mt-1 text-sm font-extrabold text-ink">{active.type}</div>
+                </div>
+                <div className="rounded-xl bg-muted/40 p-3 text-right">
+                  <div className="text-[10px] text-muted-foreground">الميزانية المتوقعة</div>
+                  <div className="mt-1 text-sm font-extrabold text-ink">{active.budget}</div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button className="rounded-full border border-border bg-card px-4 py-1.5 text-xs font-bold hover:border-primary">
-                  بحث آخر
+
+              <div className="mt-6">
+                <div className="mb-3 text-xs font-bold text-ink">اختيار مهندس مشرف:</div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {ENGINEERS.map((e) => {
+                    const checked = selectedEngineer === e.id;
+                    return (
+                      <button
+                        key={e.id}
+                        type="button"
+                        onClick={() => setSelectedEngineer(e.id)}
+                        className={`flex items-center gap-3 rounded-xl border p-3 text-right transition ${
+                          checked
+                            ? "border-primary bg-primary-soft shadow-cta"
+                            : "border-border bg-background hover:border-primary/50"
+                        }`}
+                      >
+                        <span
+                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                            checked ? "border-primary" : "border-muted-foreground/40"
+                          }`}
+                        >
+                          {checked && <span className="h-2 w-2 rounded-full bg-primary" />}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs font-extrabold text-ink">{e.name}</div>
+                          <div className="text-[10px] text-muted-foreground">{e.active} مشاريع حالية</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={assign}
+                  className="flex-1 rounded-xl bg-primary px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-cta hover:bg-primary/95"
+                >
+                  تعيين وإرسال طلب
                 </button>
-                <button className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta">
-                  تأكيد التعيين
+                <button
+                  onClick={reject}
+                  className="rounded-xl border border-rose-300 bg-rose-50 px-5 py-3 text-sm font-extrabold text-rose-700 hover:bg-rose-100"
+                >
+                  رفض المشروع
                 </button>
               </div>
             </div>
-          ))}
+          </SectionCard>
         </div>
-      </SectionCard>
+      </div>
     </>
   );
 }
