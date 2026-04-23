@@ -226,10 +226,18 @@ export function OwnerDashboard() {
                 </div>
                 <div className="text-base font-extrabold text-ink">{fmtMoney(req.amount)}</div>
                 <div className="flex gap-2">
-                  <button className="rounded-full border border-border bg-card px-4 py-1.5 text-xs font-bold text-foreground transition hover:border-rose-400 hover:text-rose-600">
+                  <button
+                    type="button"
+                    onClick={() => handleReject(req.id, req.phase)}
+                    className="rounded-full border border-border bg-card px-4 py-1.5 text-xs font-bold text-foreground transition hover:border-rose-400 hover:text-rose-600"
+                  >
                     رفض
                   </button>
-                  <button className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95">
+                  <button
+                    type="button"
+                    onClick={() => handleApprove(req.id, req.phase, req.amount)}
+                    className="rounded-full bg-primary px-5 py-1.5 text-xs font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95"
+                  >
                     تحرير الدفعة
                   </button>
                 </div>
