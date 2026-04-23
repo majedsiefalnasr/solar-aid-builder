@@ -292,6 +292,13 @@ export function ProjectDetail({
       <div className="hidden">
         <span>{STATUS_TONE.completed}</span>
       </div>
+
+      <ChatPanel
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        threads={threads}
+        role={role}
+      />
     </div>
   );
 }
