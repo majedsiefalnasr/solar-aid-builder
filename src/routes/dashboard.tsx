@@ -140,7 +140,7 @@ function DashboardLayout() {
         {/* Main */}
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Top bar */}
-          <header className="sticky top-0 z-20 flex h-20 items-center justify-between gap-4 border-b border-border bg-card/90 px-4 backdrop-blur md:px-8">
+          <header className="sticky top-0 z-20 flex h-20 items-center justify-between gap-4 border-b border-border bg-card/60 px-4 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-card/50 md:px-8">
             <div className="flex items-center gap-3">
               <span className="text-2xl">{meta.icon}</span>
               <div className="min-w-0">
