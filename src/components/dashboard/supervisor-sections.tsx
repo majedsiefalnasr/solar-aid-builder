@@ -417,6 +417,8 @@ function SupervisorApprovals() {
         <StatCard label="مرفوضة" value={rejected.length} icon={<XCircle className="h-5 w-5" />} tone="danger" />
       </div>
 
+      <PendingTasksCard supervisorName={supervisorName} />
+
       <SectionCard
         title={pending.length > 0 ? `بانتظار قرارك (${pending.length})` : "كل التقارير محدّثة"}
         subtitle={pending.length > 0 ? "افتح التقرير لاعتماده أو رفضه مع السبب" : undefined}
