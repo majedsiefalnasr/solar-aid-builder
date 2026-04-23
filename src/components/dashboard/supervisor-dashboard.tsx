@@ -14,11 +14,48 @@ type ReportStatus = "approved" | "pending" | "rejected";
 type PayStatus = "pending" | "approved" | "released" | "rejected";
 
 export function SupervisorDashboard() {
+  const store = useWorkflow();
+  const supervisorName = ROLE_USER.supervisor;
   const [reportStatus, setReportStatus] = useState<Record<string, ReportStatus>>(() =>
     Object.fromEntries(FIELD_REPORTS.map((r) => [r.id, r.status])),
   );
   const [payStatus, setPayStatus] = useState<Record<string, PayStatus>>(() =>
     Object.fromEntries(PAYMENT_REQUESTS.map((r) => [r.id, r.status])),
+  );
+
+  // Live workflow counts
+  const newAssignments = useMemo(
+    () =>
+      store.projects.filter(
+        (p) => p.supervisorName === supervisorName && p.status === "pending_supervisor",
+      ),
+    [store.projects, supervisorName],
+  );
+  const needQuote = useMemo(
+    () =>
+      store.projects.filter(
+        (p) => p.supervisorName === supervisorName && p.status === "pending_quote",
+      ),
+    [store.projects, supervisorName],
+  );
+  const needFieldEng = useMemo(
+    () =>
+      store.projects.filter(
+        (p) =>
+          p.supervisorName === supervisorName &&
+          (p.status === "in_progress" || p.status === "verifying_payment") &&
+          !p.fieldEngineerName,
+      ),
+    [store.projects, supervisorName],
+  );
+  const liveReportsPending = useMemo(
+    () => {
+      const ids = new Set(
+        store.projects.filter((p) => p.supervisorName === supervisorName).map((p) => p.id),
+      );
+      return store.reports.filter((r) => ids.has(r.projectId) && r.status === "pending");
+    },
+    [store, supervisorName],
   );
 
   const pendingReports = FIELD_REPORTS.filter((r) => reportStatus[r.id] === "pending");
