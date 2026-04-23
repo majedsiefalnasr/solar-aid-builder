@@ -693,20 +693,43 @@ const WORKFLOW_STAGES = [
 ];
 
 function AdminWorkflow() {
+  const [stages, setStages] = useState(WORKFLOW_STAGES);
+  const [commission, setCommission] = useState(2.5);
+  const [holdDays, setHoldDays] = useState(3);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const tid = toast.loading("جارٍ حفظ التغييرات…");
+    await new Promise((r) => setTimeout(r, 700));
+    setSaving(false);
+    toast.success("تم حفظ إعدادات سير العمل بنجاح", {
+      id: tid,
+      description: `${stages.filter((s) => s.auto).length} خطوة تلقائية • عمولة ${commission}% • تجميد ${holdDays} أيام`,
+    });
+  };
+
+  const toggle = (id: number) =>
+    setStages((prev) => prev.map((s) => (s.id === id ? { ...s, auto: !s.auto } : s)));
+
   return (
     <>
       <PageHeader
         title="إعدادات سير العمل"
         subtitle="تحكم في خطوات إنشاء المشروع والاعتمادات"
         action={
-          <button className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">
-            <Workflow className="h-3.5 w-3.5" /> حفظ التغييرات
+          <button
+            onClick={save}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta disabled:opacity-60"
+          >
+            <Save className="h-3.5 w-3.5" /> {saving ? "جارٍ الحفظ…" : "حفظ التغييرات"}
           </button>
         }
       />
       <SectionCard title="خطوات دورة حياة المشروع">
         <div className="space-y-3">
-          {WORKFLOW_STAGES.map((s) => (
+          {stages.map((s) => (
             <div
               key={s.id}
               className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-4"
@@ -719,7 +742,12 @@ function AdminWorkflow() {
               </div>
               <label className="flex items-center gap-2 text-xs">
                 <span className="text-muted-foreground">تلقائي</span>
-                <input type="checkbox" defaultChecked={s.auto} className="h-4 w-4 accent-primary" />
+                <input
+                  type="checkbox"
+                  checked={s.auto}
+                  onChange={() => toggle(s.id)}
+                  className="h-4 w-4 accent-primary"
+                />
               </label>
             </div>
           ))}
@@ -732,7 +760,8 @@ function AdminWorkflow() {
             <span className="mb-1.5 block text-xs font-bold text-ink">عمولة المنصة (%)</span>
             <input
               type="number"
-              defaultValue={2.5}
+              value={commission}
+              onChange={(e) => setCommission(Number(e.target.value))}
               step={0.5}
               className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
@@ -741,13 +770,15 @@ function AdminWorkflow() {
             <span className="mb-1.5 block text-xs font-bold text-ink">مدة تجميد الدفعة (أيام)</span>
             <input
               type="number"
-              defaultValue={3}
+              value={holdDays}
+              onChange={(e) => setHoldDays(Number(e.target.value))}
               className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
           </label>
         </div>
         <div className="hidden">
           <Settings2 />
+          <Workflow />
         </div>
       </SectionCard>
     </>
