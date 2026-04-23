@@ -629,13 +629,30 @@ const USERS = [
 ];
 
 function AdminUsers() {
+  const [users, setUsers] = useState(USERS);
+  const [inviteOpen, setInviteOpen] = useState(false);
+
+  const handleInvite = (data: { name: string; email: string; role: string }) => {
+    setUsers((prev) => [
+      { name: data.name, role: data.role, joined: new Date().toISOString().slice(0, 10), status: "pending" },
+      ...prev,
+    ]);
+    setInviteOpen(false);
+    toast.success("تم إرسال الدعوة بنجاح", {
+      description: `${data.email} • ${data.role}`,
+    });
+  };
+
   return (
     <>
       <PageHeader
         title="المستخدمون"
         subtitle={`${PLATFORM_STATS.contractors}+ مستخدم مسجّل`}
         action={
-          <button className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">
+          <button
+            onClick={() => setInviteOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta hover:bg-primary/95"
+          >
             <UserPlus className="h-3.5 w-3.5" /> دعوة مستخدم
           </button>
         }
@@ -683,7 +700,7 @@ function AdminUsers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border bg-card">
-              {USERS.map((u) => (
+              {users.map((u) => (
                 <tr key={u.name}>
                   <td className="px-4 py-3 font-bold text-ink">{u.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{u.role}</td>
@@ -694,7 +711,12 @@ function AdminUsers() {
                     </Pill>
                   </td>
                   <td className="px-4 py-3">
-                    <button className="text-xs font-bold text-primary hover:underline">عرض</button>
+                    <button
+                      onClick={() => toast(`عرض ملف ${u.name}`, { description: u.role })}
+                      className="text-xs font-bold text-primary hover:underline"
+                    >
+                      عرض
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -706,7 +728,105 @@ function AdminUsers() {
       <div className="hidden">
         <Users />
       </div>
+
+      {inviteOpen && <InviteUserDialog onClose={() => setInviteOpen(false)} onInvite={handleInvite} />}
     </>
+  );
+}
+
+function InviteUserDialog({
+  onClose,
+  onInvite,
+}: {
+  onClose: () => void;
+  onInvite: (data: { name: string; email: string; role: string }) => void;
+}) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("صاحب مشروع");
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !email.trim()) {
+      toast.error("يرجى إدخال الاسم والبريد الإلكتروني");
+      return;
+    }
+    onInvite({ name: name.trim(), email: email.trim(), role });
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-5">
+          <h2 className="text-lg font-extrabold text-ink">دعوة مستخدم جديد</h2>
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+            aria-label="إغلاق"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <form onSubmit={submit} className="space-y-4 p-5">
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">الاسم الكامل</span>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="مثلاً: م. خالد العمري"
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">البريد الإلكتروني</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-ink">الدور</span>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            >
+              <option>صاحب مشروع</option>
+              <option>مقاول</option>
+              <option>مهندس مشرف</option>
+              <option>مهندس ميداني</option>
+              <option>مدير منصة</option>
+            </select>
+          </label>
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-bold hover:border-primary"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="flex-1 rounded-xl bg-primary px-5 py-2.5 text-sm font-extrabold text-primary-foreground shadow-cta hover:bg-primary/95"
+            >
+              إرسال الدعوة
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
