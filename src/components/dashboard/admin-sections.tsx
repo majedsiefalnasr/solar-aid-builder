@@ -307,6 +307,36 @@ const PENDING_PROJECTS: PendingProject[] = [
     type: "سكني",
     budget: "12,000K ر.ي",
   },
+  {
+    id: "PRJ-3003",
+    name: "مجمع تجاري - صنعاء",
+    city: "صنعاء",
+    client: "شركة المنال",
+    date: "2026-04-15",
+    area: "1,200 م²",
+    type: "تجاري",
+    budget: "85,000K ر.ي",
+  },
+  {
+    id: "PRJ-3004",
+    name: "مستودع صناعي - الحديدة",
+    city: "الحديدة",
+    client: "أحمد المخلافي",
+    date: "2026-04-18",
+    area: "2,400 م²",
+    type: "صناعي",
+    budget: "62,000K ر.ي",
+  },
+  {
+    id: "PRJ-3005",
+    name: "فيلا فاخرة - عدن",
+    city: "عدن",
+    client: "سالم باعلوي",
+    date: "2026-04-20",
+    area: "520 م²",
+    type: "سكني",
+    budget: "38,000K ر.ي",
+  },
 ];
 
 interface Engineer {
