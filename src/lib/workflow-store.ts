@@ -376,7 +376,7 @@ function seedState(): StoreState {
       {
         id: "PAY-002",
         phaseId: "PH-2",
-        amount: 11_200,
+        amount: 11.2,
         bankName: "بنك اليمن والكويت",
         txRef: "TX-99834567",
         uploadedAt: daysAgo(46),
