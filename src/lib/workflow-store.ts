@@ -418,7 +418,7 @@ function seedState(): StoreState {
     city: "تعز",
     type: "commercial",
     area: 120,
-    budget: 9_500,
+    budget: 9.5,
     ownerName: "خالد العبسي",
     status: "pending_admin",
     createdAt: daysAgo(2),
