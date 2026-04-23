@@ -37,7 +37,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function DashboardLayout() {
-  const { role, section } = Route.useSearch();
+  const { role, section, projectId } = Route.useSearch();
   const navigate = useNavigate();
   const meta = ROLE_META[role];
   const nav = NAV_BY_ROLE[role];
