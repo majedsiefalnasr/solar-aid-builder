@@ -39,10 +39,17 @@ export interface TimelineEvent {
   kind: "created" | "approved" | "rejected" | "assigned" | "accepted" | "quote" | "payment" | "verified" | "phase_started" | "phase_completed" | "report" | "info";
 }
 
+export type TaskApprovalStatus = "todo" | "pending" | "approved" | "rejected";
+
 export interface PhaseTask {
   id: string;
   title: string;
-  done: boolean;
+  done: boolean;                     // كان منجز يدوياً (لتوافق قديم)
+  approval?: TaskApprovalStatus;     // الحالة الجديدة: todo → pending → approved/rejected
+  markedDoneAt?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  rejectionReason?: string;
 }
 
 export interface PhaseDef {
@@ -144,10 +151,42 @@ export interface ChatThreadDoc {
   messages: ChatMessageDoc[];
 }
 
+// ============================================================
+// Withdrawals
+// ============================================================
+
+export type WithdrawalStatus =
+  | "pending"        // طلب جديد بانتظار اعتماد الإدارة
+  | "approved"       // الإدارة اعتمدت وأرفقت الإثبات — لكن غير قابل للسحب لمدة 3 أيام
+  | "withdrawable"   // مرت 3 أيام منذ الاعتماد — أصبح قابلاً للسحب وتم خصمه من الرصيد
+  | "rejected";      // مرفوض
+
+export interface WithdrawalDoc {
+  id: string;
+  projectId?: string;          // اختياري — لربطه بمشروع/مرحلة
+  phaseId?: string;
+  contractorName: string;
+  amount: number;
+  iban?: string;
+  notes?: string;
+  requestedAt: string;
+  // قرار الأدمن
+  reviewedBy?: string;
+  reviewedAt?: string;
+  txRef?: string;              // رقم العملية البنكية
+  bankName?: string;
+  imageDataUrl?: string;       // صورة التحويل
+  rejectionReason?: string;
+  status: WithdrawalStatus;
+  // متى تصبح قابلة للسحب (approvedAt + 3 أيام)
+  releasableAt?: string;
+}
+
 interface StoreState {
   projects: ProjectDoc[];
   reports: FieldReportDoc[];
   threads: ChatThreadDoc[];
+  withdrawals: WithdrawalDoc[];
 }
 
 // ============================================================
