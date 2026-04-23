@@ -459,3 +459,47 @@ function DisputesLogDialog({
     </div>
   );
 }
+
+type BannerTone = "primary" | "accent" | "info" | "danger";
+
+const BANNER_STYLES: Record<BannerTone, { bg: string; text: string; ring: string; iconBg: string }> = {
+  primary: { bg: "bg-primary-soft/60", text: "text-primary", ring: "ring-primary/30", iconBg: "bg-primary text-primary-foreground" },
+  accent: { bg: "bg-amber-50", text: "text-amber-700", ring: "ring-amber-200", iconBg: "bg-amber-500 text-white" },
+  info: { bg: "bg-sky-50", text: "text-sky-700", ring: "ring-sky-200", iconBg: "bg-sky-500 text-white" },
+  danger: { bg: "bg-rose-50", text: "text-rose-700", ring: "ring-rose-200", iconBg: "bg-rose-500 text-white" },
+};
+
+export function BannerCard({
+  tone,
+  icon,
+  title,
+  subtitle,
+  to,
+  search,
+}: {
+  tone: BannerTone;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  to: string;
+  search: Record<string, string>;
+}) {
+  const s = BANNER_STYLES[tone];
+  return (
+    <Link
+      to={to}
+      search={search}
+      className={`group flex items-center gap-3 rounded-2xl ${s.bg} p-4 ring-1 ${s.ring} transition hover:ring-2`}
+    >
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${s.iconBg} shadow-sm`}>
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className={`text-sm font-extrabold ${s.text}`}>{title}</div>
+        <div className="mt-0.5 text-[11px] text-foreground/70">{subtitle}</div>
+      </div>
+      <ChevronLeft className={`h-4 w-4 ${s.text} transition group-hover:-translate-x-0.5`} />
+    </Link>
+  );
+}
+
