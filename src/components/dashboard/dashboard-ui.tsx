@@ -97,5 +97,5 @@ export function Pill({
 }
 
 export function fmtMoney(thousands: number) {
-  return `${thousands.toLocaleString("en-US")}K ر.ي`;
+  return `${thousands.toLocaleString("en-US")}K ر.س`;
 }
