@@ -120,9 +120,34 @@ export interface ProjectDoc {
   rejectionReason?: string;
 }
 
+// ============================================================
+// Chat threads
+// ============================================================
+
+export type ChatRole = "owner" | "contractor" | "supervisor" | "field" | "admin";
+
+export interface ChatMessageDoc {
+  id: string;
+  authorRole: ChatRole;
+  authorName: string;
+  text: string;
+  at: string;            // ISO
+  readBy: ChatRole[];    // who has read
+}
+
+export interface ChatThreadDoc {
+  id: string;
+  projectId?: string;     // tied to a project (optional for admin disputes)
+  title: string;          // ar
+  participants: ChatRole[]; // who can see/post
+  createdAt: string;
+  messages: ChatMessageDoc[];
+}
+
 interface StoreState {
   projects: ProjectDoc[];
   reports: FieldReportDoc[];
+  threads: ChatThreadDoc[];
 }
 
 // ============================================================
