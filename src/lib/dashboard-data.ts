@@ -255,7 +255,7 @@ export const DISPUTES: Dispute[] = [
 export const PLATFORM_STATS = {
   activeProjects: 124,
   contractors: 312,
-  totalTracked: 8_400_000, // SAR (thousands)
+  totalTracked: 8_400, // SAR (thousands)
   openDisputes: 7,
 };
 
