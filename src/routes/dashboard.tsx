@@ -176,13 +176,7 @@ function DashboardLayout() {
                   className="w-40 bg-transparent text-xs text-ink placeholder:text-muted-foreground/60 focus:outline-none lg:w-56"
                 />
               </div>
-              <button
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground hover:border-primary hover:text-primary"
-                aria-label="الإشعارات"
-              >
-                <Bell className="h-4 w-4" />
-                <span className="absolute -top-0.5 -left-0.5 h-2 w-2 rounded-full bg-accent" />
-              </button>
+              <NotificationsBell role={role} />
               <Link
                 to="/"
                 className="hidden h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground hover:border-primary hover:text-primary md:inline-flex"
