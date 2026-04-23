@@ -309,7 +309,7 @@ const PENDING_PROJECTS: PendingProject[] = [
     date: "2026-04-12",
     area: "180 م²",
     type: "سكني",
-    budget: "12,000K ر.ي",
+    budget: "12,000K ر.س",
   },
   {
     id: "PRJ-3003",
