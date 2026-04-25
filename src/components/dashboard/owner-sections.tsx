@@ -42,6 +42,7 @@ import {
 } from "@/lib/workflow-store";
 import { OwnerDashboard } from "./owner-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
+import { MoneyInput } from "@/components/ui/money-input";
 import { PageHeader, EmptyHint } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
