@@ -762,6 +762,41 @@ export function PayPhaseDialog({
       onClose={onClose}
     >
       <div className="space-y-4 p-5">
+        {/* Quote review — show all phases so the owner sees what they're paying for */}
+        {project.phases.length > 0 && (
+          <div className="rounded-2xl border border-border bg-muted/30 p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <div className="text-xs font-bold text-ink">عرض السعر — مراحل المشروع</div>
+              <div className="text-[11px] text-muted-foreground">
+                إجمالي:{" "}
+                <span className="font-extrabold text-ink">
+                  {project.phases.reduce((s, ph) => s + ph.budget, 0).toLocaleString("en-US")}K ر.س
+                </span>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              {project.phases.map((ph, i) => {
+                const active = ph.id === phase.id;
+                return (
+                  <div
+                    key={ph.id}
+                    className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs ${
+                      active ? "bg-primary text-primary-foreground" : "bg-card text-foreground"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold opacity-80">{i + 1}.</span>
+                      <span className="font-bold">{ph.name}</span>
+                      {active && <span className="text-[10px] opacity-90">(الدفعة الحالية)</span>}
+                    </div>
+                    <div className="font-extrabold">{ph.budget.toLocaleString("en-US")}K ر.س</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="rounded-2xl border border-primary/30 bg-primary-soft/40 p-4">
           <div className="text-xs font-bold text-primary">حساب المنصة لاستلام التحويل</div>
           <div className="mt-2 grid gap-1 text-xs text-foreground/80">

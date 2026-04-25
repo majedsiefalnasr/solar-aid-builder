@@ -107,6 +107,8 @@ export interface ProjectDoc {
   budget: number;          // SAR thousands
   description?: string;
   ownerName: string;
+  ownerEmail?: string;
+  ownerPhone?: string;
   contractorName?: string; // مقاول واحد للجميع حالياً
   supervisorName?: string;
   fieldEngineerName?: string;
@@ -288,6 +290,8 @@ function seedState(): StoreState {
     budget: 48,
     description: "فيلا سكنية دورين مع ملحق",
     ownerName: ROLE_USER.owner,
+    ownerEmail: "ahmad.shami@example.com",
+    ownerPhone: "+967 777 123 456",
     contractorName: SINGLE_CONTRACTOR,
     supervisorName: "م. ليلى العمراني",
     fieldEngineerName: "م. سامي الحاج",
@@ -420,6 +424,8 @@ function seedState(): StoreState {
     area: 120,
     budget: 9.5,
     ownerName: "خالد العبسي",
+    ownerEmail: "khaled.absi@example.com",
+    ownerPhone: "+967 711 222 333",
     status: "pending_admin",
     createdAt: daysAgo(2),
     phases: [],
@@ -438,6 +444,8 @@ function seedState(): StoreState {
     area: 180,
     budget: 22,
     ownerName: "فهد المنصور",
+    ownerEmail: "fahad.mansour@example.com",
+    ownerPhone: "+967 733 444 555",
     contractorName: SINGLE_CONTRACTOR,
     supervisorName: "م. خالد الأهدل",
     status: "pending_quote",

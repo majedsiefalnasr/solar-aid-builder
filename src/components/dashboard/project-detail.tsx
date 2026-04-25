@@ -30,6 +30,7 @@ import {
 import type { Role } from "@/lib/dashboard-data";
 import {
   ROLE_USER,
+  getOrCreateThread,
   reportsForOwner,
   reportsForSupervisor,
   reportsForFieldEngineer,
@@ -46,6 +47,7 @@ import {
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { ChatPanel } from "./chat-panel";
 import { PayPhaseDialog, ProjectStatusPill, ProjectTimeline } from "./project-flow-shared";
+import { Mail, Phone, MessageSquarePlus } from "lucide-react";
 
 // Map store phase status to legacy display status
 function mapPhaseStatus(s: PhaseDef["status"]): PhaseStatus {
@@ -181,6 +183,37 @@ export function ProjectDetail({
   const isContractor = role === "contractor";
   const payablePhase = liveDoc?.phases.find((ph) => ph.status === "awaiting_payment");
 
+  // Start-chat: role -> allowed counterparts
+  const CHAT_TARGETS: Record<Role, ChatRole[]> = {
+    owner: ["admin", "supervisor", "field"],
+    contractor: ["supervisor", "field"],
+    supervisor: ["field", "contractor", "admin"],
+    field: ["supervisor", "contractor"],
+    admin: ["owner", "contractor", "supervisor", "field"],
+  };
+  const TARGET_LABEL: Record<ChatRole, string> = {
+    owner: "العميل",
+    contractor: "المقاول",
+    supervisor: "المهندس المشرف",
+    field: "المهندس الميداني",
+    admin: "إدارة تم",
+  };
+  const [showStartChat, setShowStartChat] = useState(false);
+  const startChatWith = (target: ChatRole) => {
+    if (!liveDoc) return;
+    const me = role as ChatRole;
+    const thread = getOrCreateThread({
+      projectId: liveDoc.id,
+      participants: [me, target],
+      title: `${TARGET_LABEL[me] ?? me} ↔ ${TARGET_LABEL[target]}`,
+    });
+    setShowStartChat(false);
+    setChatOpen(true);
+    void thread;
+  };
+
+  const showOwnerContact = (role === "supervisor" || role === "admin") && liveDoc;
+
 
   return (
     <div className="space-y-6">
@@ -234,13 +267,35 @@ export function ProjectDetail({
               <span>المشرف: {project.supervisor}</span>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <div className="relative">
+              <button
+                onClick={() => setShowStartChat((v) => !v)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground hover:border-primary hover:text-primary"
+              >
+                <MessageSquarePlus className="h-3.5 w-3.5" />
+                بدء محادثة
+              </button>
+              {showStartChat && (
+                <div className="absolute end-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-card shadow-elevated">
+                  {CHAT_TARGETS[role].map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => startChatWith(t)}
+                      className="block w-full px-4 py-2.5 text-right text-xs font-bold text-ink hover:bg-primary-soft hover:text-primary"
+                    >
+                      {TARGET_LABEL[t]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               onClick={() => setChatOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground hover:border-primary hover:text-primary"
             >
               <MessageCircle className="h-3.5 w-3.5" />
-              المحادثة
+              المحادثات
               {projectUnread > 0 && (
                 <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
                   {projectUnread}
@@ -270,6 +325,34 @@ export function ProjectDetail({
           </div>
         </div>
       </div>
+
+      {/* Owner contact — supervisor & admin only */}
+      {showOwnerContact && (liveDoc.ownerEmail || liveDoc.ownerPhone) && (
+        <SectionCard title="بيانات التواصل مع العميل" subtitle="مرئية للمشرف والإدارة فقط">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-background p-3">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">العميل</div>
+              <div className="mt-1 text-sm font-extrabold text-ink">{liveDoc.ownerName}</div>
+            </div>
+            {liveDoc.ownerEmail && (
+              <a href={`mailto:${liveDoc.ownerEmail}`} className="rounded-xl border border-border bg-background p-3 hover:border-primary">
+                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <Mail className="h-3 w-3" /> البريد
+                </div>
+                <div className="mt-1 break-all text-sm font-bold text-primary">{liveDoc.ownerEmail}</div>
+              </a>
+            )}
+            {liveDoc.ownerPhone && (
+              <a href={`tel:${liveDoc.ownerPhone}`} className="rounded-xl border border-border bg-background p-3 hover:border-primary">
+                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <Phone className="h-3 w-3" /> الجوال
+                </div>
+                <div className="mt-1 text-sm font-bold text-primary" dir="ltr">{liveDoc.ownerPhone}</div>
+              </a>
+            )}
+          </div>
+        </SectionCard>
+      )}
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

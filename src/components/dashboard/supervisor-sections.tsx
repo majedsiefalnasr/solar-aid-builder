@@ -71,48 +71,69 @@ export function SupervisorSection({
   }
 }
 
-const SUPERVISED = [
-  { id: "PRJ-2041", name: "فيلا الياسمين", city: "صنعاء", phase: "البناء بالطوب", progress: 42 },
-  { id: "PRJ-2055", name: "شقة المعلا", city: "عدن", phase: "الأساسات", progress: 28 },
-  { id: "PRJ-2099", name: "مجمع النور التجاري", city: "صنعاء", phase: "الحفر", progress: 18 },
-];
-
 function SupervisorProjects() {
+  const store = useWorkflow();
+  const supervisorName = ROLE_USER.supervisor;
+  const myProjects = useMemo(
+    () => store.projects.filter((p) => p.supervisorName === supervisorName),
+    [store.projects, supervisorName],
+  );
+
   return (
     <>
       <PageHeader title="المشاريع" subtitle="مشاريع تحت إشرافك الفني" />
-      <div className="grid gap-4 lg:grid-cols-2">
-        {SUPERVISED.map((p) => (
-          <Link
-            key={p.id}
-            to="/dashboard"
-            search={{ role: "supervisor", section: "project-detail", projectId: p.id }}
-            className="group block rounded-2xl border border-border bg-card p-5 shadow-card transition hover:border-primary hover:shadow-cta"
-          >
-            <article>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-[11px] font-bold text-sky-600">#{p.id}</div>
-                  <h3 className="mt-1 text-lg font-extrabold text-ink group-hover:text-primary">{p.name}</h3>
-                  <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" /> {p.city}
+      {myProjects.length === 0 ? (
+        <SectionCard title="لا توجد مشاريع">
+          <div className="rounded-xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
+            لا توجد مشاريع تحت إشرافك حالياً.
+          </div>
+        </SectionCard>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {myProjects.map((p) => {
+            const overall = p.phases.length
+              ? Math.round(p.phases.reduce((s, ph) => s + ph.progress, 0) / p.phases.length)
+              : 0;
+            const activePhase =
+              p.phases.find((ph) => ph.status === "in_progress")?.name
+              ?? p.phases.find((ph) => ph.status === "awaiting_payment")?.name
+              ?? "—";
+            return (
+              <Link
+                key={p.id}
+                to="/dashboard"
+                search={{ role: "supervisor", section: "project-detail", projectId: p.id }}
+                className="group block rounded-2xl border border-border bg-card p-5 shadow-card transition hover:border-primary hover:shadow-cta"
+              >
+                <article>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-[11px] font-bold text-sky-600">#{p.id}</div>
+                      <h3 className="mt-1 text-lg font-extrabold text-ink group-hover:text-primary">{p.name}</h3>
+                      <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3" /> {p.city}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <ProjectStatusPill status={p.status} />
+                      {activePhase !== "—" && <Pill tone="info">{activePhase}</Pill>}
+                    </div>
                   </div>
-                </div>
-                <Pill tone="info">{p.phase}</Pill>
-              </div>
-              <div className="mt-4">
-                <div className="mb-1 flex justify-between text-[11px] font-semibold text-muted-foreground">
-                  <span>الإنجاز</span>
-                  <span className="text-ink">{p.progress}%</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-gradient-to-l from-sky-500 to-sky-300" style={{ width: `${p.progress}%` }} />
-                </div>
-              </div>
-            </article>
-          </Link>
-        ))}
-      </div>
+                  <div className="mt-4">
+                    <div className="mb-1 flex justify-between text-[11px] font-semibold text-muted-foreground">
+                      <span>الإنجاز</span>
+                      <span className="text-ink">{overall}%</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      <div className="h-full rounded-full bg-gradient-to-l from-sky-500 to-sky-300" style={{ width: `${overall}%` }} />
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }
@@ -267,6 +288,15 @@ const FIELD_TEAM_SEED = [
 ];
 
 function SupervisorFieldTeam() {
+  const store = useWorkflow();
+  const supervisorName = ROLE_USER.supervisor;
+  const supervisedProjects = useMemo(
+    () => store.projects.filter((p) => p.supervisorName === supervisorName),
+    [store.projects, supervisorName],
+  );
+  const projectNames = supervisedProjects.length
+    ? supervisedProjects.map((p) => p.name)
+    : ["—"];
   const [team, setTeam] = useState(FIELD_TEAM_SEED);
   const [open, setOpen] = useState(false);
   return (
@@ -313,6 +343,7 @@ function SupervisorFieldTeam() {
 
       {open && (
         <AddTeamMemberDialog
+          projectNames={projectNames}
           onClose={() => setOpen(false)}
           onAdd={(name, project) => {
             setTeam((prev) => [...prev, { name, project, reportsThisWeek: 0, status: "active" }]);
@@ -326,14 +357,16 @@ function SupervisorFieldTeam() {
 }
 
 function AddTeamMemberDialog({
+  projectNames,
   onClose,
   onAdd,
 }: {
+  projectNames: string[];
   onClose: () => void;
   onAdd: (name: string, project: string) => void;
 }) {
   const [name, setName] = useState("");
-  const [project, setProject] = useState(SUPERVISED[0].name);
+  const [project, setProject] = useState(projectNames[0]);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -371,8 +404,8 @@ function AddTeamMemberDialog({
               onChange={(e) => setProject(e.target.value)}
               className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
             >
-              {SUPERVISED.map((p) => (
-                <option key={p.id}>{p.name}</option>
+              {projectNames.map((n) => (
+                <option key={n}>{n}</option>
               ))}
             </select>
           </label>
