@@ -46,7 +46,11 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const featured = products.slice(0, 4);
+  const ceramic = products.find((p) => p.category === "السيراميك والبلاط");
+  const featured = [
+    ...products.slice(0, 3),
+    ...(ceramic ? [ceramic] : [products[3]]),
+  ];
   const [quickView, setQuickView] = useState<Product | null>(null);
 
   return (
