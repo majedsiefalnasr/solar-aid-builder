@@ -34,9 +34,20 @@ const formatWithSeparators = (raw: string) => {
 
 export const MoneyInput = React.forwardRef<HTMLInputElement, MoneyInputProps>(
   (
-    { value, onChange, mode = "full", currency = "ر.س", className, onBlur, onFocus, ...rest },
+    {
+      value,
+      onChange,
+      mode = "full",
+      currency = "ر.س",
+      className,
+      onBlur,
+      onFocus,
+      ...rest
+    },
     ref,
   ) => {
+    const { className: inputClassName, ...inputRest } =
+      rest as React.InputHTMLAttributes<HTMLInputElement>;
     // Convert stored value -> full SAR for display
     const fullFromValue = (v: typeof value): string => {
       if (v === "" || v === null || v === undefined || Number.isNaN(v as number)) return "";
