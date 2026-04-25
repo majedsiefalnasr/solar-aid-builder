@@ -328,6 +328,34 @@ export function ProjectDetail({
         </div>
       </div>
 
+      {/* Owner contact — supervisor & admin only */}
+      {showOwnerContact && (liveDoc.ownerEmail || liveDoc.ownerPhone) && (
+        <SectionCard title="بيانات التواصل مع العميل" subtitle="مرئية للمشرف والإدارة فقط">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-background p-3">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">العميل</div>
+              <div className="mt-1 text-sm font-extrabold text-ink">{liveDoc.ownerName}</div>
+            </div>
+            {liveDoc.ownerEmail && (
+              <a href={`mailto:${liveDoc.ownerEmail}`} className="rounded-xl border border-border bg-background p-3 hover:border-primary">
+                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <Mail className="h-3 w-3" /> البريد
+                </div>
+                <div className="mt-1 break-all text-sm font-bold text-primary">{liveDoc.ownerEmail}</div>
+              </a>
+            )}
+            {liveDoc.ownerPhone && (
+              <a href={`tel:${liveDoc.ownerPhone}`} className="rounded-xl border border-border bg-background p-3 hover:border-primary">
+                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <Phone className="h-3 w-3" /> الجوال
+                </div>
+                <div className="mt-1 text-sm font-bold text-primary" dir="ltr">{liveDoc.ownerPhone}</div>
+              </a>
+            )}
+          </div>
+        </SectionCard>
+      )}
+
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
