@@ -383,9 +383,17 @@ function ProductCard({
           {product.brand} · {product.category}
         </div>
         <h3 className="text-sm font-bold text-ink line-clamp-2">{product.name}</h3>
-        <div className="mt-2 flex items-center gap-1 text-xs text-amber-500">
-          <Star className="h-3.5 w-3.5 fill-current" />
-          <span className="font-bold">{product.rating}</span>
+        <div className="mt-2 flex items-center gap-2 text-xs">
+          <span className="flex items-center gap-1 text-amber-500">
+            <Star className="h-3.5 w-3.5 fill-current" />
+            <span className="font-bold">{product.rating}</span>
+          </span>
+          {product.verified && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold text-primary">
+              <BadgeCheck className="h-3 w-3" />
+              تم التحقق
+            </span>
+          )}
         </div>
         <div className="mt-auto flex items-center justify-between pt-4">
           <div className="text-lg font-extrabold text-primary">
