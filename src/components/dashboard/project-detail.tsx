@@ -185,6 +185,37 @@ export function ProjectDetail({
   const isContractor = role === "contractor";
   const payablePhase = liveDoc?.phases.find((ph) => ph.status === "awaiting_payment");
 
+  // Start-chat: role -> allowed counterparts
+  const CHAT_TARGETS: Record<Role, ChatRole[]> = {
+    owner: ["admin", "supervisor", "field"],
+    contractor: ["supervisor", "field"],
+    supervisor: ["field", "contractor", "admin"],
+    field: ["supervisor", "contractor"],
+    admin: ["owner", "contractor", "supervisor", "field"],
+  };
+  const TARGET_LABEL: Record<ChatRole, string> = {
+    owner: "العميل",
+    contractor: "المقاول",
+    supervisor: "المهندس المشرف",
+    field: "المهندس الميداني",
+    admin: "إدارة تم",
+  };
+  const [showStartChat, setShowStartChat] = useState(false);
+  const startChatWith = (target: ChatRole) => {
+    if (!liveDoc) return;
+    const me = role as ChatRole;
+    const thread = getOrCreateThread({
+      projectId: liveDoc.id,
+      participants: [me, target],
+      title: `${TARGET_LABEL[me] ?? me} ↔ ${TARGET_LABEL[target]}`,
+    });
+    setShowStartChat(false);
+    setChatOpen(true);
+    void thread;
+  };
+
+  const showOwnerContact = (role === "supervisor" || role === "admin") && liveDoc;
+
 
   return (
     <div className="space-y-6">
