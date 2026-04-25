@@ -107,6 +107,8 @@ export interface ProjectDoc {
   budget: number;          // SAR thousands
   description?: string;
   ownerName: string;
+  ownerEmail?: string;
+  ownerPhone?: string;
   contractorName?: string; // مقاول واحد للجميع حالياً
   supervisorName?: string;
   fieldEngineerName?: string;
