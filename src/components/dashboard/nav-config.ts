@@ -95,7 +95,7 @@ export const DETAIL_SECTIONS: Record<Role, string[]> = {
   owner: ["project-detail"],
   contractor: ["project-detail"],
   supervisor: ["project-detail"],
-  field: [],
+  field: ["project-detail"],
 };
 
 export function validSection(role: Role, section: string | undefined): string {
