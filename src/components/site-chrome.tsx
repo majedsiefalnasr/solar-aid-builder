@@ -79,6 +79,19 @@ export function SiteNav() {
                 {l.label}
               </Link>
             ))}
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-cta"
+            >
+              <LogIn className="h-4 w-4" />
+              دخول
+            </Link>
+            <div className="mt-3 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground">
+              <span className="text-primary">عربي</span>
+              <span className="text-border">|</span>
+              <span>ENG</span>
+            </div>
           </nav>
         </div>
       )}

@@ -6,6 +6,7 @@ export type Product = {
   brand: string;
   rating: number;
   badge?: string;
+  verified?: boolean;
   description: string;
   specs: { label: string; value: string }[];
   unit: string;
@@ -14,6 +15,7 @@ export type Product = {
 export const filterCategories = [
   "الخرسانات والإسمنت",
   "معدات التسليح",
+  "السيراميك والبلاط",
   "الدهانات والعوازل",
   "أدوات البناء",
   "السلامة المهنية",
@@ -33,6 +35,9 @@ export const brands = [
   "بوش",
   "ديوالت",
   "سيكا",
+  "RAK سيراميك",
+  "بورسلانوزا",
+  "السعودية للسيراميك",
 ];
 
 export const products: Product[] = [
@@ -44,6 +49,7 @@ export const products: Product[] = [
     brand: "اليمامة",
     rating: 4.8,
     badge: "الأكثر مبيعاً",
+    verified: true,
     unit: "كيس",
     description:
       "إسمنت بورتلاندي عادي مطابق للمواصفات السعودية، مناسب لجميع أعمال الخرسانة المسلحة والبناء العام.",
@@ -78,6 +84,7 @@ export const products: Product[] = [
     brand: "جوتن",
     rating: 4.9,
     badge: "جودة عالية",
+    verified: true,
     unit: "جالون",
     description: "دهان أكريليك مائي للأسطح الداخلية، خالٍ من الروائح ويوفر تغطية ممتازة وثبات للون.",
     specs: [
@@ -110,6 +117,7 @@ export const products: Product[] = [
     category: "أدوات البناء",
     brand: "هوندا",
     rating: 4.5,
+    verified: true,
     unit: "قطعة",
     description: "خلاطة خرسانة احترافية بمحرك بنزين قوي، مناسبة لمواقع البناء المتوسطة والكبيرة.",
     specs: [
@@ -192,6 +200,7 @@ export const products: Product[] = [
     brand: "بوش",
     rating: 4.9,
     badge: "جديد",
+    verified: true,
     unit: "قطعة",
     description: "مثقاب لاسلكي احترافي ببطارية ليثيوم، يدعم الثقب والربط في الخشب والمعدن والخرسانة.",
     specs: [
@@ -257,6 +266,7 @@ export const products: Product[] = [
     brand: "جوتن",
     rating: 4.8,
     badge: "موصى به",
+    verified: true,
     unit: "جالون",
     description: "دهان خارجي مقاوم للأشعة فوق البنفسجية والأمطار، يحافظ على لمعانه لسنوات.",
     specs: [
@@ -328,6 +338,79 @@ export const products: Product[] = [
       { label: "المادة", value: "حديد مجلفن" },
       { label: "اللفة", value: "كجم" },
       { label: "الاستخدام", value: "ربط حديد التسليح" },
+    ],
+  },
+  {
+    id: "p19",
+    name: "بلاط بورسلين رخامي 60×60",
+    price: 95,
+    category: "السيراميك والبلاط",
+    brand: "RAK سيراميك",
+    rating: 4.9,
+    badge: "الأكثر مبيعاً",
+    verified: true,
+    unit: "م²",
+    description:
+      "بلاط بورسلين فاخر بنقشة رخامية، مقاوم للخدش والانزلاق، مثالي للأرضيات الداخلية والصالات.",
+    specs: [
+      { label: "المقاس", value: "60×60 سم" },
+      { label: "السماكة", value: "10 مم" },
+      { label: "اللمعان", value: "بولش لامع" },
+      { label: "الامتصاص", value: "<0.5%" },
+    ],
+  },
+  {
+    id: "p20",
+    name: "سيراميك جدران مطبخ 30×60",
+    price: 42,
+    category: "السيراميك والبلاط",
+    brand: "السعودية للسيراميك",
+    rating: 4.6,
+    unit: "م²",
+    description:
+      "سيراميك جدران بألوان عصرية، مقاوم للحرارة والبخار، مناسب للمطابخ والحمامات.",
+    specs: [
+      { label: "المقاس", value: "30×60 سم" },
+      { label: "السماكة", value: "8 مم" },
+      { label: "اللمعان", value: "لامع" },
+      { label: "الاستخدام", value: "جدران داخلية" },
+    ],
+  },
+  {
+    id: "p21",
+    name: "بورسلين خارجي مضاد للانزلاق 45×45",
+    price: 78,
+    category: "السيراميك والبلاط",
+    brand: "بورسلانوزا",
+    rating: 4.7,
+    badge: "خارجي",
+    verified: true,
+    unit: "م²",
+    description:
+      "بلاط بورسلين مخصص للمناطق الخارجية والممرات، بسطح خشن مضاد للانزلاق ومقاوم للأملاح.",
+    specs: [
+      { label: "المقاس", value: "45×45 سم" },
+      { label: "السماكة", value: "12 مم" },
+      { label: "السطح", value: "مطفي خشن" },
+      { label: "مقاومة الانزلاق", value: "R11" },
+    ],
+  },
+  {
+    id: "p22",
+    name: "بلاط فسيفساء زجاجي للحمامات",
+    price: 135,
+    category: "السيراميك والبلاط",
+    brand: "RAK سيراميك",
+    rating: 4.8,
+    badge: "تشطيب فاخر",
+    unit: "م²",
+    description:
+      "ألواح فسيفساء زجاجية بألوان متدرجة، تضيف لمسة فاخرة لجدران الحمامات والمطابخ المفتوحة.",
+    specs: [
+      { label: "حجم القطعة", value: "2.5×2.5 سم" },
+      { label: "حجم اللوح", value: "30×30 سم" },
+      { label: "المادة", value: "زجاج عالي الجودة" },
+      { label: "الاستخدام", value: "ديكور جدران" },
     ],
   },
 ];

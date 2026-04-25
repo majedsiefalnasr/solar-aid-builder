@@ -12,6 +12,8 @@ import {
   Star,
   ShoppingCart,
   Quote,
+  HardHat,
+  ArrowRight,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { ProductQuickView } from "@/components/product-quick-view";
@@ -44,7 +46,11 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const featured = products.slice(0, 4);
+  const ceramic = products.find((p) => p.category === "السيراميك والبلاط");
+  const featured = [
+    ...products.slice(0, 3),
+    ...(ceramic ? [ceramic] : [products[3]]),
+  ];
   const [quickView, setQuickView] = useState<Product | null>(null);
 
   return (
@@ -149,6 +155,69 @@ function HomePage() {
         </div>
       </section>
 
+      {/* Calculators teasers — under hero */}
+      <section className="border-y border-border bg-card/30">
+        <div className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
+          <div className="mb-8 text-center">
+            <span className="mb-2 inline-block rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
+              أدوات هندسية مجانية
+            </span>
+            <h2 className="text-2xl font-extrabold text-ink md:text-3xl">
+              احسب مشروعك بدقة قبل أن تبدأ
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              حاسبتان مجانيتان لتقدير تكاليف البناء والطاقة الشمسية بضغطة زر.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <Link
+              to="/calculator-construction"
+              className="group relative flex items-start gap-4 overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary-soft to-card p-6 shadow-card transition hover:-translate-y-0.5 hover:shadow-elevated md:p-7"
+            >
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-cta">
+                <HardHat className="h-7 w-7" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-extrabold text-ink md:text-xl">حاسبة البناء</h3>
+                  <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                    الأكثر استخداماً
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-foreground/80">ابني بيتك من مكان واحد</p>
+                <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold text-primary group-hover:gap-2">
+                  ابدأ الحساب
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                </span>
+              </div>
+            </Link>
+
+            <Link
+              to="/calculator"
+              className="group relative flex items-start gap-4 overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-50 to-card p-6 shadow-card transition hover:-translate-y-0.5 hover:shadow-elevated md:p-7"
+            >
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-cta">
+                <Sun className="h-7 w-7" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-extrabold text-ink md:text-xl">حاسبة الطاقة الشمسية</h3>
+                  <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                    جديد
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-foreground/80">احسب نظامك الشمسي بدقة بضغطة زر</p>
+                <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-600 group-hover:gap-2">
+                  ابدأ الحساب
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                </span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Categories — full-bleed image tiles with gradient overlay */}
       <section id="categories" className="border-y border-border bg-card/40">
         <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
@@ -218,7 +287,7 @@ function HomePage() {
 
           {/* Secondary chips */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            {["الدهانات والعوازل", "السلامة المهنية", "السباكة والصرف"].map((c) => (
+            {["السيراميك والبلاط", "الدهانات والعوازل", "السلامة المهنية", "السباكة والصرف"].map((c) => (
               <Link
                 key={c}
                 to="/store"
@@ -281,9 +350,17 @@ function HomePage() {
                     {p.brand}
                   </div>
                   <h3 className="text-sm font-bold text-ink line-clamp-2">{p.name}</h3>
-                  <div className="mt-2 flex items-center gap-1 text-xs text-amber-500">
-                    <Star className="h-3.5 w-3.5 fill-current" />
-                    <span className="font-bold">{p.rating}</span>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                    <span className="flex items-center gap-1 text-amber-500">
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      <span className="font-bold">{p.rating}</span>
+                    </span>
+                    {p.verified && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold text-primary">
+                        <BadgeCheck className="h-3 w-3" />
+                        تم التحقق
+                      </span>
+                    )}
                   </div>
                   <div className="mt-auto flex items-center justify-between pt-4">
                     <div className="text-lg font-extrabold text-primary">

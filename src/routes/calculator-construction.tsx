@@ -185,11 +185,11 @@ function ConstructionCalculator() {
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 pb-6 text-center">
           <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary">
             <HardHat className="h-3 w-3" />
-            حاسبة الإنشاءات
+            حاسبة البناء
           </span>
-          <h1 className="text-2xl font-extrabold text-ink md:text-3xl">احسب كميات مواد البناء</h1>
+          <h1 className="text-2xl font-extrabold text-ink md:text-3xl">حاسبة البناء</h1>
           <p className="mt-1.5 max-w-xl text-xs text-foreground/80 md:text-sm">
-            تقدير سريع لكميات الخرسانة والحديد والبلوك حسب نوع المشروع والتشطيب.
+            ابني بيتك من مكان واحد
           </p>
         </div>
       </div>
@@ -337,18 +337,20 @@ function ConstructionCalculator() {
             </div>
 
             <div className="rounded-3xl border border-border bg-card p-5 shadow-card">
-              <h3 className="mb-4 text-sm font-extrabold text-ink">الكميات المقدّرة</h3>
+              <h3 className="mb-4 text-sm font-extrabold text-ink">توزيع التكلفة التقديرية</h3>
               <div className="space-y-2.5">
-                <ResultRow label="الخرسانة" value={`${arabicNumber(result.concreteM3)} م³`} />
                 <ResultRow
-                  label="حديد التسليح"
-                  value={`${arabicNumber(result.rebarKg.toLocaleString("en-US"))} كجم`}
+                  label="المواد (60%)"
+                  value={`${arabicNumber(Math.round(result.totalCost * 0.6).toLocaleString("en-US"))} ر.س`}
                 />
                 <ResultRow
-                  label="البلوك"
-                  value={`${arabicNumber(result.blocksCount.toLocaleString("en-US"))} قطعة`}
+                  label="العمالة (30%)"
+                  value={`${arabicNumber(Math.round(result.totalCost * 0.3).toLocaleString("en-US"))} ر.س`}
                 />
-                <ResultRow label="أكياس الإسمنت" value={`${arabicNumber(result.cementBags)} كيس`} />
+                <ResultRow
+                  label="التصاميم والإشراف (10%)"
+                  value={`${arabicNumber(Math.round(result.totalCost * 0.1).toLocaleString("en-US"))} ر.س`}
+                />
               </div>
 
               <div className="mt-5 flex flex-col gap-2">
