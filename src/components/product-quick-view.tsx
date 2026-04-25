@@ -1,4 +1,4 @@
-import { Layers, Star, X, Plus, Minus, ShoppingCart, CheckCircle2 } from "lucide-react";
+import { Layers, Star, X, Plus, Minus, ShoppingCart, CheckCircle2, BadgeCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Product } from "@/lib/products";
 import { addProductToCart } from "@/lib/cart-store";
@@ -72,12 +72,18 @@ export function ProductQuickView({ product, onClose }: Props) {
             </div>
             <h2 className="mt-1 text-xl font-extrabold text-ink md:text-2xl">{product.name}</h2>
 
-            <div className="mt-2 flex items-center gap-3">
+            <div className="mt-2 flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1 text-xs text-amber-500">
                 <Star className="h-3.5 w-3.5 fill-current" />
                 <span className="font-bold">{product.rating}</span>
               </div>
               <span className="text-xs text-muted-foreground">· متوفر</span>
+              {product.verified && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-bold text-primary">
+                  <BadgeCheck className="h-3.5 w-3.5" />
+                  تم التحقق
+                </span>
+              )}
             </div>
 
             <p className="mt-4 text-sm leading-relaxed text-foreground/85">
