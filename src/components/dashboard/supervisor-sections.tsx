@@ -404,8 +404,8 @@ function AddTeamMemberDialog({
               onChange={(e) => setProject(e.target.value)}
               className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
             >
-              {SUPERVISED.map((p) => (
-                <option key={p.id}>{p.name}</option>
+              {projectNames.map((n) => (
+                <option key={n}>{n}</option>
               ))}
             </select>
           </label>
