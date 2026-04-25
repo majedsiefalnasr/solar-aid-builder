@@ -407,12 +407,12 @@ function NewWithdrawalDialog({
             <span className="font-extrabold text-ink">{fmtMoney(max)}</span>
           </div>
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-ink">المبلغ (بآلاف الريالات)</span>
-            <input
-              type="number"
-              value={amount || ""}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            <span className="mb-1.5 block text-xs font-bold text-ink">المبلغ (ر.س)</span>
+            <MoneyInput
+              value={amount}
+              onChange={setAmount}
+              mode="thousands"
+              placeholder="0"
             />
           </label>
           <label className="block">
