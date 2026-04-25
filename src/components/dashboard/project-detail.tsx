@@ -30,6 +30,9 @@ import {
 import type { Role } from "@/lib/dashboard-data";
 import {
   ROLE_USER,
+  ADMIN_USER,
+  SINGLE_CONTRACTOR,
+  getOrCreateThread,
   reportsForOwner,
   reportsForSupervisor,
   reportsForFieldEngineer,
@@ -46,6 +49,7 @@ import {
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
 import { ChatPanel } from "./chat-panel";
 import { PayPhaseDialog, ProjectStatusPill, ProjectTimeline } from "./project-flow-shared";
+import { Mail, Phone, MessageSquarePlus } from "lucide-react";
 
 // Map store phase status to legacy display status
 function mapPhaseStatus(s: PhaseDef["status"]): PhaseStatus {
