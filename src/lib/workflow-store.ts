@@ -290,6 +290,8 @@ function seedState(): StoreState {
     budget: 48,
     description: "فيلا سكنية دورين مع ملحق",
     ownerName: ROLE_USER.owner,
+    ownerEmail: "ahmad.shami@example.com",
+    ownerPhone: "+967 777 123 456",
     contractorName: SINGLE_CONTRACTOR,
     supervisorName: "م. ليلى العمراني",
     fieldEngineerName: "م. سامي الحاج",
