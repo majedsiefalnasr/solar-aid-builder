@@ -49,6 +49,7 @@ import {
   verifyPayment,
 } from "@/lib/workflow-store";
 import { Pill } from "./dashboard-ui";
+import { MoneyInput } from "@/components/ui/money-input";
 
 // ============================================================
 // File compression (mirrors reports-shared)
@@ -584,19 +585,18 @@ export function SubmitQuoteDialog({
                 )}
               </div>
 
-              <div className="grid gap-3 md:grid-cols-[1fr_140px_120px]">
+              <div className="grid gap-3 md:grid-cols-[1fr_180px_120px]">
                 <input
                   value={p.name}
                   onChange={(e) => updatePhase(p.id, { name: e.target.value })}
                   placeholder="اسم المرحلة"
                   className="rounded-xl border border-input bg-card px-3 py-2 text-sm focus:border-primary focus:outline-none"
                 />
-                <input
-                  type="number"
-                  value={p.budget || ""}
-                  onChange={(e) => updatePhase(p.id, { budget: Number(e.target.value) })}
-                  placeholder="الميزانية (K)"
-                  className="rounded-xl border border-input bg-card px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                <MoneyInput
+                  value={p.budget}
+                  onChange={(v) => updatePhase(p.id, { budget: v })}
+                  mode="thousands"
+                  placeholder="الميزانية"
                 />
                 <input
                   type="number"
@@ -818,12 +818,12 @@ export function PayPhaseDialog({
         <form onSubmit={submit} className="space-y-3">
           <div className="grid gap-3 md:grid-cols-2">
             <label className="block">
-              <span className="mb-1.5 block text-xs font-bold text-ink">المبلغ (بآلاف الريالات)</span>
-              <input
-                type="number"
-                value={amount || ""}
-                onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+              <span className="mb-1.5 block text-xs font-bold text-ink">المبلغ (ر.س)</span>
+              <MoneyInput
+                value={amount}
+                onChange={setAmount}
+                mode="thousands"
+                placeholder="0"
               />
             </label>
             <label className="block">

@@ -42,6 +42,7 @@ import {
 } from "@/lib/workflow-store";
 import { OwnerDashboard } from "./owner-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
+import { MoneyInput } from "@/components/ui/money-input";
 import { PageHeader, EmptyHint } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
@@ -493,15 +494,14 @@ function OwnerNewProject() {
         <div className="grid gap-5 md:grid-cols-2">
           <label className="block">
             <span className="mb-1.5 block text-xs font-bold text-ink">
-              الميزانية التقديرية (بآلاف الريالات)
+              الميزانية التقديرية (ر.س)
             </span>
-            <input
-              type="number"
+            <MoneyInput
               required
-              value={budget || ""}
-              onChange={(e) => setBudget(Number(e.target.value))}
-              placeholder="48000"
-              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+              value={budget}
+              onChange={setBudget}
+              mode="thousands"
+              placeholder="48,000,000"
             />
           </label>
           <label className="block">
@@ -567,12 +567,10 @@ function OwnerNewProject() {
                   <span className="mb-1.5 block text-[11px] font-bold text-ink">
                     التكلفة التقديرية (ر.س)
                   </span>
-                  <input
-                    type="number"
-                    value={solarCost || ""}
-                    onChange={(e) => setSolarCost(Number(e.target.value))}
-                    placeholder="مثال: 25000"
-                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  <MoneyInput
+                    value={solarCost}
+                    onChange={setSolarCost}
+                    placeholder="25,000"
                   />
                 </label>
               </div>

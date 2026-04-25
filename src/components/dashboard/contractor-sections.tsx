@@ -38,6 +38,7 @@ import {
 import { products as STORE_PRODUCTS, filterCategories } from "@/lib/products";
 import { ContractorDashboard } from "./contractor-dashboard";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
+import { MoneyInput } from "@/components/ui/money-input";
 import { PageHeader } from "./section-shell";
 import { ProjectDetail } from "./project-detail";
 import { MessagesScreen } from "./messages-screen";
@@ -406,12 +407,12 @@ function NewWithdrawalDialog({
             <span className="font-extrabold text-ink">{fmtMoney(max)}</span>
           </div>
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-ink">المبلغ (بآلاف الريالات)</span>
-            <input
-              type="number"
-              value={amount || ""}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            <span className="mb-1.5 block text-xs font-bold text-ink">المبلغ (ر.س)</span>
+            <MoneyInput
+              value={amount}
+              onChange={setAmount}
+              mode="thousands"
+              placeholder="0"
             />
           </label>
           <label className="block">
