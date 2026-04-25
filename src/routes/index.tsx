@@ -12,6 +12,8 @@ import {
   Star,
   ShoppingCart,
   Quote,
+  HardHat,
+  ArrowRight,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { ProductQuickView } from "@/components/product-quick-view";
