@@ -22,7 +22,7 @@ import materialsImg from "@/assets/materials-card.jpg";
 import solarImg from "@/assets/solar-card.jpg";
 import catMaterials from "@/assets/cat-materials.jpg";
 import catTools from "@/assets/cat-tools.jpg";
-import catRebar from "@/assets/cat-rebar.jpg";
+import catCeramic from "@/assets/cat-ceramic.jpg";
 import { products, type Product } from "@/lib/products";
 import { addProductToCart } from "@/lib/cart-store";
 
@@ -261,14 +261,14 @@ function HomePage() {
               cta="استكشف"
             />
 
-            {/* Tall right — Reinforcement */}
+            {/* Tall right — Ceramics */}
             <CategoryTile
               to="/store"
-              image={catRebar}
-              alt="حديد التسليح"
-              eyebrow="حديد الراجحي"
-              title="معدات التسليح"
-              subtitle="حديد مبروم · أسلاك ربط"
+              image={catCeramic}
+              alt="السيراميك والبلاط"
+              eyebrow="RAK سيراميك · بورسلانوزا"
+              title="السيراميك والبلاط"
+              subtitle="بورسلين رخامي · فسيفساء"
               cta="تصفح المنتجات"
               tall
               className="md:row-span-2 md:min-h-[520px]"
