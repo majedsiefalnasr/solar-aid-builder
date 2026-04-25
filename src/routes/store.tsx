@@ -53,6 +53,7 @@ const miniCategories = [
   { icon: Sun, label: "الطاقة الشمسية", value: "__solar" },
   { icon: Layers, label: "الخرسانات", value: "الخرسانات والإسمنت" },
   { icon: Construction, label: "التسليح", value: "معدات التسليح" },
+  { icon: Grid3x3, label: "السيراميك", value: "السيراميك والبلاط" },
   { icon: PaintBucket, label: "الدهانات", value: "الدهانات والعوازل" },
   { icon: Hammer, label: "الأدوات", value: "أدوات البناء" },
   { icon: HardHat, label: "السلامة", value: "السلامة المهنية" },
