@@ -185,11 +185,11 @@ function ConstructionCalculator() {
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 pb-6 text-center">
           <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary">
             <HardHat className="h-3 w-3" />
-            حاسبة الإنشاءات
+            حاسبة البناء
           </span>
-          <h1 className="text-2xl font-extrabold text-ink md:text-3xl">احسب كميات مواد البناء</h1>
+          <h1 className="text-2xl font-extrabold text-ink md:text-3xl">حاسبة البناء</h1>
           <p className="mt-1.5 max-w-xl text-xs text-foreground/80 md:text-sm">
-            تقدير سريع لكميات الخرسانة والحديد والبلوك حسب نوع المشروع والتشطيب.
+            ابني بيتك من مكان واحد
           </p>
         </div>
       </div>
