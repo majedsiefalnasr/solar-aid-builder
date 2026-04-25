@@ -30,8 +30,6 @@ import {
 import type { Role } from "@/lib/dashboard-data";
 import {
   ROLE_USER,
-  ADMIN_USER,
-  SINGLE_CONTRACTOR,
   getOrCreateThread,
   reportsForOwner,
   reportsForSupervisor,
