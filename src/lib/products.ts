@@ -49,6 +49,7 @@ export const products: Product[] = [
     brand: "اليمامة",
     rating: 4.8,
     badge: "الأكثر مبيعاً",
+    verified: true,
     unit: "كيس",
     description:
       "إسمنت بورتلاندي عادي مطابق للمواصفات السعودية، مناسب لجميع أعمال الخرسانة المسلحة والبناء العام.",
