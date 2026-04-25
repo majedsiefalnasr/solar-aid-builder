@@ -337,18 +337,20 @@ function ConstructionCalculator() {
             </div>
 
             <div className="rounded-3xl border border-border bg-card p-5 shadow-card">
-              <h3 className="mb-4 text-sm font-extrabold text-ink">الكميات المقدّرة</h3>
+              <h3 className="mb-4 text-sm font-extrabold text-ink">توزيع التكلفة التقديرية</h3>
               <div className="space-y-2.5">
-                <ResultRow label="الخرسانة" value={`${arabicNumber(result.concreteM3)} م³`} />
                 <ResultRow
-                  label="حديد التسليح"
-                  value={`${arabicNumber(result.rebarKg.toLocaleString("en-US"))} كجم`}
+                  label="المواد (60%)"
+                  value={`${arabicNumber(Math.round(result.totalCost * 0.6).toLocaleString("en-US"))} ر.س`}
                 />
                 <ResultRow
-                  label="البلوك"
-                  value={`${arabicNumber(result.blocksCount.toLocaleString("en-US"))} قطعة`}
+                  label="العمالة (30%)"
+                  value={`${arabicNumber(Math.round(result.totalCost * 0.3).toLocaleString("en-US"))} ر.س`}
                 />
-                <ResultRow label="أكياس الإسمنت" value={`${arabicNumber(result.cementBags)} كيس`} />
+                <ResultRow
+                  label="التصاميم والإشراف (10%)"
+                  value={`${arabicNumber(Math.round(result.totalCost * 0.1).toLocaleString("en-US"))} ر.س`}
+                />
               </div>
 
               <div className="mt-5 flex flex-col gap-2">
