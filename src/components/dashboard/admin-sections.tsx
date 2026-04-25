@@ -205,12 +205,47 @@ function AdminProjects() {
     ? store.projects.find((p) => p.id === verifyPaymentInfo.projectId)
     : null;
 
+  // Map live store projects into the table row shape, then merge with seed list
+  const liveRows = useMemo(() => {
+    const now = Date.now();
+    const dayMs = 86_400_000;
+    return store.projects.map((p) => {
+      const tableStatus: "active" | "pending" | "completed" =
+        p.status === "completed"
+          ? "completed"
+          : p.status === "in_progress" || p.status === "verifying_payment"
+            ? "active"
+            : "pending";
+      const overall = p.phases.length
+        ? Math.round(p.phases.reduce((s, ph) => s + ph.progress, 0) / p.phases.length)
+        : 0;
+      const startedAtIso = p.startedAt ?? p.createdAt;
+      return {
+        id: p.id,
+        name: p.name,
+        city: p.city,
+        owner: p.ownerName,
+        status: tableStatus,
+        progress: overall,
+        startedAt: startedAtIso.slice(0, 10),
+        daysAgo: Math.max(0, Math.floor((now - new Date(startedAtIso).getTime()) / dayMs)),
+      };
+    });
+  }, [store.projects]);
+
+  const allRows = useMemo(() => {
+    // Merge: live first, then seed entries that aren't duplicates
+    const liveIds = new Set(liveRows.map((r) => r.id));
+    const seedExtras = PROJECTS_LIST.filter((r) => !liveIds.has(r.id));
+    return [...liveRows, ...seedExtras];
+  }, [liveRows]);
+
   const filtered = useMemo(() => {
     const days = PERIOD_FILTERS.find((p) => p.k === period)?.days ?? Infinity;
-    return PROJECTS_LIST.filter(
+    return allRows.filter(
       (p) => p.daysAgo <= days && (statusFilter === "all" || p.status === statusFilter),
     );
-  }, [period, statusFilter]);
+  }, [allRows, period, statusFilter]);
 
   return (
     <>
