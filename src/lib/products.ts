@@ -6,6 +6,7 @@ export type Product = {
   brand: string;
   rating: number;
   badge?: string;
+  verified?: boolean;
   description: string;
   specs: { label: string; value: string }[];
   unit: string;
@@ -14,6 +15,7 @@ export type Product = {
 export const filterCategories = [
   "الخرسانات والإسمنت",
   "معدات التسليح",
+  "السيراميك والبلاط",
   "الدهانات والعوازل",
   "أدوات البناء",
   "السلامة المهنية",
@@ -33,6 +35,9 @@ export const brands = [
   "بوش",
   "ديوالت",
   "سيكا",
+  "RAK سيراميك",
+  "بورسلانوزا",
+  "السعودية للسيراميك",
 ];
 
 export const products: Product[] = [
