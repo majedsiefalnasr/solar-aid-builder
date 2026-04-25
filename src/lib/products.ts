@@ -84,6 +84,7 @@ export const products: Product[] = [
     brand: "جوتن",
     rating: 4.9,
     badge: "جودة عالية",
+    verified: true,
     unit: "جالون",
     description: "دهان أكريليك مائي للأسطح الداخلية، خالٍ من الروائح ويوفر تغطية ممتازة وثبات للون.",
     specs: [
@@ -116,6 +117,7 @@ export const products: Product[] = [
     category: "أدوات البناء",
     brand: "هوندا",
     rating: 4.5,
+    verified: true,
     unit: "قطعة",
     description: "خلاطة خرسانة احترافية بمحرك بنزين قوي، مناسبة لمواقع البناء المتوسطة والكبيرة.",
     specs: [
@@ -198,6 +200,7 @@ export const products: Product[] = [
     brand: "بوش",
     rating: 4.9,
     badge: "جديد",
+    verified: true,
     unit: "قطعة",
     description: "مثقاب لاسلكي احترافي ببطارية ليثيوم، يدعم الثقب والربط في الخشب والمعدن والخرسانة.",
     specs: [
@@ -263,6 +266,7 @@ export const products: Product[] = [
     brand: "جوتن",
     rating: 4.8,
     badge: "موصى به",
+    verified: true,
     unit: "جالون",
     description: "دهان خارجي مقاوم للأشعة فوق البنفسجية والأمطار، يحافظ على لمعانه لسنوات.",
     specs: [
