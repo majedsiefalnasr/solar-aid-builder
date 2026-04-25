@@ -288,6 +288,15 @@ const FIELD_TEAM_SEED = [
 ];
 
 function SupervisorFieldTeam() {
+  const store = useWorkflow();
+  const supervisorName = ROLE_USER.supervisor;
+  const supervisedProjects = useMemo(
+    () => store.projects.filter((p) => p.supervisorName === supervisorName),
+    [store.projects, supervisorName],
+  );
+  const projectNames = supervisedProjects.length
+    ? supervisedProjects.map((p) => p.name)
+    : ["—"];
   const [team, setTeam] = useState(FIELD_TEAM_SEED);
   const [open, setOpen] = useState(false);
   return (
