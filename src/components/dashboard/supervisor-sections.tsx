@@ -343,6 +343,7 @@ function SupervisorFieldTeam() {
 
       {open && (
         <AddTeamMemberDialog
+          projectNames={projectNames}
           onClose={() => setOpen(false)}
           onAdd={(name, project) => {
             setTeam((prev) => [...prev, { name, project, reportsThisWeek: 0, status: "active" }]);
@@ -356,14 +357,16 @@ function SupervisorFieldTeam() {
 }
 
 function AddTeamMemberDialog({
+  projectNames,
   onClose,
   onAdd,
 }: {
+  projectNames: string[];
   onClose: () => void;
   onAdd: (name: string, project: string) => void;
 }) {
   const [name, setName] = useState("");
-  const [project, setProject] = useState(SUPERVISED[0].name);
+  const [project, setProject] = useState(projectNames[0]);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-2xl" onClick={(e) => e.stopPropagation()}>
