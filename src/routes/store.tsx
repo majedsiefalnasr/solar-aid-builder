@@ -15,6 +15,8 @@ import {
   HardHat,
   Pipette,
   Construction,
+  Grid3x3,
+  BadgeCheck,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { ProductQuickView } from "@/components/product-quick-view";
