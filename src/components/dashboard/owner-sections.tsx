@@ -567,12 +567,10 @@ function OwnerNewProject() {
                   <span className="mb-1.5 block text-[11px] font-bold text-ink">
                     التكلفة التقديرية (ر.س)
                   </span>
-                  <input
-                    type="number"
-                    value={solarCost || ""}
-                    onChange={(e) => setSolarCost(Number(e.target.value))}
-                    placeholder="مثال: 25000"
-                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  <MoneyInput
+                    value={solarCost}
+                    onChange={setSolarCost}
+                    placeholder="25,000"
                   />
                 </label>
               </div>
