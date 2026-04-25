@@ -424,6 +424,8 @@ function seedState(): StoreState {
     area: 120,
     budget: 9.5,
     ownerName: "خالد العبسي",
+    ownerEmail: "khaled.absi@example.com",
+    ownerPhone: "+967 711 222 333",
     status: "pending_admin",
     createdAt: daysAgo(2),
     phases: [],
