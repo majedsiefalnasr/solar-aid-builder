@@ -26,7 +26,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { FIELD_REPORTS, MOCK_PROJECT, PAYMENT_REQUESTS } from "@/lib/dashboard-data";
+import { FIELD_REPORTS, PAYMENT_REQUESTS } from "@/lib/dashboard-data";
 import {
   ROLE_USER,
   SINGLE_CONTRACTOR,
