@@ -49,6 +49,7 @@ import {
   verifyPayment,
 } from "@/lib/workflow-store";
 import { Pill } from "./dashboard-ui";
+import { MoneyInput } from "@/components/ui/money-input";
 
 // ============================================================
 // File compression (mirrors reports-shared)
