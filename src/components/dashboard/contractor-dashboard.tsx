@@ -21,6 +21,7 @@ import {
   PAYMENT_REQUESTS,
 } from "@/lib/dashboard-data";
 import { Pill, SectionCard, StatCard, fmtMoney } from "./dashboard-ui";
+import { MoneyInput } from "@/components/ui/money-input";
 
 export function ContractorDashboard() {
   const activePhase = MOCK_PROJECT.phases.find((p) => p.status === "in_progress");
