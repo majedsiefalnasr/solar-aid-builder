@@ -82,6 +82,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   ],
   field: [
     { key: "overview", label: "لوحة التحكم", icon: LayoutDashboard },
+    { key: "projects", label: "مشاريعي", icon: Folder },
     { key: "reports", label: "تقاريري", icon: ClipboardList },
     { key: "messages", label: "المحادثات", icon: MessageSquare },
     { key: "settings", label: "الإعدادات", icon: Settings, group: "أخرى" },
