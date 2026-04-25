@@ -494,15 +494,14 @@ function OwnerNewProject() {
         <div className="grid gap-5 md:grid-cols-2">
           <label className="block">
             <span className="mb-1.5 block text-xs font-bold text-ink">
-              الميزانية التقديرية (بآلاف الريالات)
+              الميزانية التقديرية (ر.س)
             </span>
-            <input
-              type="number"
+            <MoneyInput
               required
-              value={budget || ""}
-              onChange={(e) => setBudget(Number(e.target.value))}
-              placeholder="48000"
-              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+              value={budget}
+              onChange={setBudget}
+              mode="thousands"
+              placeholder="48,000,000"
             />
           </label>
           <label className="block">
