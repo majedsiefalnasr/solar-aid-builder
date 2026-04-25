@@ -92,10 +92,10 @@ export const MoneyInput = React.forwardRef<HTMLInputElement, MoneyInputProps>(
             setText(fullFromValue(value));
             onBlur?.(e);
           }}
-          {...rest}
+          {...inputRest}
           className={cn(
             "w-full rounded-xl border border-input bg-background px-3 py-2.5 pe-14 text-left text-sm font-bold tracking-wide text-ink focus:border-primary focus:outline-none",
-            rest.className,
+            inputClassName,
           )}
         />
         <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-[11px] font-bold text-muted-foreground">
