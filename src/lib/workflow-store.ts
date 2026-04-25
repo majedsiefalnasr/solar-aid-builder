@@ -444,6 +444,8 @@ function seedState(): StoreState {
     area: 180,
     budget: 22,
     ownerName: "فهد المنصور",
+    ownerEmail: "fahad.mansour@example.com",
+    ownerPhone: "+967 733 444 555",
     contractorName: SINGLE_CONTRACTOR,
     supervisorName: "م. خالد الأهدل",
     status: "pending_quote",
