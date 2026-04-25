@@ -259,7 +259,7 @@ function DashboardContent({
     case "supervisor":
       return <SupervisorSection section={section} projectId={projectId} />;
     case "field":
-      return <FieldSection section={section} />;
+      return <FieldSection section={section} projectId={projectId} />;
     case "admin":
       return (
         <AdminSection
