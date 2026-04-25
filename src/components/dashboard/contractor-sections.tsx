@@ -75,70 +75,80 @@ export function ContractorSection({
   }
 }
 
-const CONTRACTOR_PROJECTS = [
-  {
-    id: MOCK_PROJECT.id,
-    name: MOCK_PROJECT.name,
-    city: MOCK_PROJECT.city,
-    progress: MOCK_PROJECT.overallProgress,
-    activePhase: "البناء بالطوب والقواطع",
-    nextPayout: 3.7,
-  },
-  {
-    id: "PRJ-2099",
-    name: "مجمع النور التجاري",
-    city: "صنعاء",
-    progress: 18,
-    activePhase: "الحفر والأساسات",
-    nextPayout: 5.2,
-  },
-];
-
 function ContractorProjects() {
+  const store = useWorkflow();
+  const contractorName = ROLE_USER.contractor;
+  const myProjects = useMemo(
+    () => store.projects.filter((p) => p.contractorName === contractorName || p.contractorName === SINGLE_CONTRACTOR),
+    [store.projects, contractorName],
+  );
+
   return (
     <>
       <PageHeader title="مشاريعي" subtitle="المشاريع التي تنفذها حالياً" />
-      <div className="grid gap-4 lg:grid-cols-2">
-        {CONTRACTOR_PROJECTS.map((p) => (
-          <article
-            key={p.id}
-            className="rounded-2xl border border-border bg-card p-5 shadow-card transition hover:shadow-elevated"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-[11px] font-bold text-accent">#{p.id}</div>
-                <h3 className="mt-1 text-lg font-extrabold text-ink">{p.name}</h3>
-                <div className="mt-0.5 text-xs text-muted-foreground">📍 {p.city}</div>
-              </div>
-              <Pill tone="accent">{p.activePhase}</Pill>
-            </div>
-            <div className="mt-4">
-              <div className="mb-1 flex justify-between text-[11px] font-semibold text-muted-foreground">
-                <span>الإنجاز</span>
-                <span className="text-ink">{p.progress}%</span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-gradient-to-l from-accent to-orange-300"
-                  style={{ width: `${p.progress}%` }}
-                />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-              <div className="text-xs text-muted-foreground">الدفعة القادمة</div>
-              <div className="text-sm font-extrabold text-ink">{fmtMoney(p.nextPayout)}</div>
-            </div>
-            <Link
-              to="/dashboard"
-              search={{ role: "contractor", section: "project-detail", projectId: p.id }}
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground transition hover:border-accent hover:bg-accent/10 hover:text-accent"
-            >
-              <Eye className="h-3.5 w-3.5" />
-              فتح تفاصيل المشروع
-            </Link>
-          </article>
-        ))}
-      </div>
+      {myProjects.length === 0 ? (
+        <SectionCard title="لا توجد مشاريع">
+          <div className="rounded-xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
+            لا توجد مشاريع مسندة لك بعد.
+          </div>
+        </SectionCard>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {myProjects.map((p) => {
+            const totalBudget = p.phases.length
+              ? p.phases.reduce((s, ph) => s + ph.budget, 0)
+              : p.budget;
+            const overall = p.phases.length
+              ? Math.round(p.phases.reduce((s, ph) => s + ph.progress, 0) / p.phases.length)
+              : 0;
+            const activePhase = p.phases.find((ph) => ph.status === "in_progress")?.name
+              ?? p.phases.find((ph) => ph.status === "awaiting_payment")?.name
+              ?? projectStatusLabel(p.status);
+            const nextPayout = p.phases.find((ph) => ph.status === "in_progress" || ph.status === "awaiting_payment")?.budget ?? 0;
+            return (
+              <article
+                key={p.id}
+                className="rounded-2xl border border-border bg-card p-5 shadow-card transition hover:shadow-elevated"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[11px] font-bold text-accent">#{p.id}</div>
+                    <h3 className="mt-1 text-lg font-extrabold text-ink">{p.name}</h3>
+                    <div className="mt-0.5 text-xs text-muted-foreground">📍 {p.city}</div>
+                  </div>
+                  <Pill tone="accent">{activePhase}</Pill>
+                </div>
+                <div className="mt-4">
+                  <div className="mb-1 flex justify-between text-[11px] font-semibold text-muted-foreground">
+                    <span>الإنجاز</span>
+                    <span className="text-ink">{overall}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-l from-accent to-orange-300"
+                      style={{ width: `${overall}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                  <div className="text-xs text-muted-foreground">إجمالي / الدفعة القادمة</div>
+                  <div className="text-sm font-extrabold text-ink">
+                    {fmtMoney(totalBudget)}{nextPayout ? ` • ${fmtMoney(nextPayout)}` : ""}
+                  </div>
+                </div>
+                <Link
+                  to="/dashboard"
+                  search={{ role: "contractor", section: "project-detail", projectId: p.id }}
+                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground transition hover:border-accent hover:bg-accent/10 hover:text-accent"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  فتح تفاصيل المشروع
+                </Link>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }
