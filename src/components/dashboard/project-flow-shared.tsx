@@ -585,19 +585,18 @@ export function SubmitQuoteDialog({
                 )}
               </div>
 
-              <div className="grid gap-3 md:grid-cols-[1fr_140px_120px]">
+              <div className="grid gap-3 md:grid-cols-[1fr_180px_120px]">
                 <input
                   value={p.name}
                   onChange={(e) => updatePhase(p.id, { name: e.target.value })}
                   placeholder="اسم المرحلة"
                   className="rounded-xl border border-input bg-card px-3 py-2 text-sm focus:border-primary focus:outline-none"
                 />
-                <input
-                  type="number"
-                  value={p.budget || ""}
-                  onChange={(e) => updatePhase(p.id, { budget: Number(e.target.value) })}
-                  placeholder="الميزانية (K)"
-                  className="rounded-xl border border-input bg-card px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                <MoneyInput
+                  value={p.budget}
+                  onChange={(v) => updatePhase(p.id, { budget: v })}
+                  mode="thousands"
+                  placeholder="الميزانية"
                 />
                 <input
                   type="number"
