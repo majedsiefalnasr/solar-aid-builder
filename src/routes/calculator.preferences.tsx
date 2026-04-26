@@ -24,7 +24,7 @@ const autonomyOpts: { id: Autonomy; title: string; desc: string; rec?: boolean }
 
 function StepPreferences() {
   const navigate = useNavigate();
-  const [autonomy, setAutonomy] = useState<Autonomy>(2);
+  const [autonomy, setAutonomy] = useState<Autonomy>(1);
 
   useEffect(() => {
     const s = loadState();
