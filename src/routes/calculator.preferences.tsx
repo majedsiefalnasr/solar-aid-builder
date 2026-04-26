@@ -54,7 +54,7 @@ function StepPreferences() {
           </div>
 
           <div className="mt-8">
-            <div className="mb-3 text-sm font-bold text-ink">الاعتمادية (ليالي التخزين)</div>
+            <div className="mb-3 text-sm font-bold text-ink">طريقة الاستخدام</div>
             <div className="grid gap-3">
               {autonomyOpts.map((o) => (
                 <OptionCard
