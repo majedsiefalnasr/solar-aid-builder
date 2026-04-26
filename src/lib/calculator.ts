@@ -44,7 +44,7 @@ export interface CalcState {
 export const defaultState: CalcState = {
   city: "عدن",
   battery: "lithium",
-  autonomy: 2,
+  autonomy: 1,
   mode: "loads",
   bill: {
     kWh15Days: 450,
