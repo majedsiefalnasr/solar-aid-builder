@@ -169,32 +169,40 @@ function calculateBill(s: CalcState): CalcResult {
   const kWh = Math.max(0, s.bill.kWh15Days);          // a
   const totalHours = Math.max(1, s.bill.dayHours);     // b — إجمالي ساعات اليوم
   const nightHours = Math.max(0, Math.min(totalHours, s.bill.nightHours)); // c
+  const hasBatteries = (s.autonomy ?? 0) > 0;
 
   // d. الحمل في الساعة (kW/h) = a / 15 / b
   const hourlyLoadKW = kWh / BILL_DAYS / totalHours;
 
-  // e. الحمل الليلي (سعة البطارية) = round(c * d * 1.2)
-  const batteryKWh = Math.round(nightHours * hourlyLoadKW * BILL_NIGHT_BUFFER);
+  // e. الحمل الليلي (سعة البطارية) = round(c * d * 1.2) — فقط إذا تم اختيار التخزين
+  const batteryKWh = hasBatteries
+    ? Math.round(nightHours * hourlyLoadKW * BILL_NIGHT_BUFFER)
+    : 0;
 
-  // f1. الألواح لتعبئة البطارية = ceil(e * 1000 / 5 / 650)
-  const panelsForBattery = Math.ceil((batteryKWh * 1000) / BILL_SUN_HOURS / BILL_PANEL_W);
+  // f1. الألواح لتعبئة البطارية = ceil(e * 1000 / 5 / 650) — صفر بدون بطاريات
+  const panelsForBattery = hasBatteries
+    ? Math.ceil((batteryKWh * 1000) / BILL_SUN_HOURS / BILL_PANEL_W)
+    : 0;
   // f2. الألواح للاستخدام النهاري = ceil(d * 1000 / 650)
   const panelsForDay = Math.ceil((hourlyLoadKW * 1000) / BILL_PANEL_W);
-  const panelCount = Math.max(1, panelsForBattery + panelsForDay);
+  const rawPanels = Math.max(1, panelsForBattery + panelsForDay);
+  // قرّب عدد الألواح إلى أعلى عدد زوجي
+  const panelCount = roundUpToEven(rawPanels);
 
-  // g. الإنفرتر = max(e/5, d) — kW
-  const inverterKW = Math.max(batteryKWh / BILL_SUN_HOURS, hourlyLoadKW);
-  const inverterKVA = round(Math.max(1, inverterKW), 2);
+  // قدرة الإنفرتر يجب أن تكون أكبر من القدرة الإجمالية للألواح، ومُقرّبة لأعلى عدد صحيح
+  const panelKWp = (panelCount * BILL_PANEL_W) / 1000;
+  const inverterKW = Math.max(panelKWp, hourlyLoadKW, batteryKWh / BILL_SUN_HOURS);
+  const inverterKVA = Math.max(1, Math.ceil(inverterKW + 0.0001));
 
   // Daily energy (لعرضه فقط)
   const totalDailyKWh = kWh / BILL_DAYS;
   const nightKWh = nightHours * hourlyLoadKW;
 
-  const panelKWp = round((panelCount * BILL_PANEL_W) / 1000, 2);
   const dod = s.battery === "lithium" ? DOD_LITHIUM : DOD_GEL;
   // For bill mode, the spec already returns the usable battery size (kWh).
-  // Compute Ah from that usable size, applying DoD only for the nominal capacity disclosure.
-  const batteryAh = Math.round((batteryKWh / dod * 1000) / BATTERY_VOLT);
+  const batteryAh = hasBatteries
+    ? Math.round((batteryKWh / dod * 1000) / BATTERY_VOLT)
+    : 0;
   const surgeKVA = round(inverterKVA * 0.33, 2);
 
   const totalSAR =
@@ -204,10 +212,10 @@ function calculateBill(s: CalcState): CalcResult {
     totalDailyKWh: round(totalDailyKWh, 2),
     nightKWh: round(nightKWh, 2),
     panelCount,
-    panelKWp,
+    panelKWp: round(panelKWp, 2),
     batteryKWh,
     batteryAh,
-    inverterKVA,
+    inverterKVA: round(inverterKVA, 2),
     maxLoadKW: round(inverterKW, 2),
     surgeKVA,
     totalSAR: Math.round(totalSAR),
@@ -232,17 +240,25 @@ function calculateLoads(s: CalcState): CalcResult {
   const maxLoadW = s.devices.reduce((acc, d) => acc + d.watts * d.qty, 0);
   const totalDailyKWh = totalDailyWh / 1000;
   const nightKWh = nightWh / 1000;
+  const hasBatteries = (s.autonomy ?? 0) > 0;
 
-  const panelKWp = (totalDailyKWh / SUN_HOURS) / SYSTEM_LOSS;
-  const panelCount = Math.max(1, Math.ceil((panelKWp * 1000) / PANEL_W));
+  const panelKWpRaw = (totalDailyKWh / SUN_HOURS) / SYSTEM_LOSS;
+  const rawPanels = Math.max(1, Math.ceil((panelKWpRaw * 1000) / PANEL_W));
+  // قرّب عدد الألواح إلى أعلى عدد زوجي
+  const panelCount = roundUpToEven(rawPanels);
+  const panelKWp = (panelCount * PANEL_W) / 1000;
 
   const dod = s.battery === "lithium" ? DOD_LITHIUM : DOD_GEL;
-  const usableNeededKWh = nightKWh * (s.autonomy || 0.5);
-  const batteryKWh = usableNeededKWh / dod;
-  const batteryAh = (batteryKWh * 1000) / BATTERY_VOLT;
+  // ليالي الاستهلاك = 1 دائماً عند تفعيل التخزين، وصفر بدون تخزين
+  const nightsCount = hasBatteries ? 1 : 0;
+  const usableNeededKWh = nightKWh * nightsCount;
+  const batteryKWh = hasBatteries ? usableNeededKWh / dod : 0;
+  const batteryAh = hasBatteries ? (batteryKWh * 1000) / BATTERY_VOLT : 0;
 
   const maxLoadKW = maxLoadW / 1000;
-  const inverterKVA = Math.max(1, Math.ceil(maxLoadKW * 1.25 * 10) / 10);
+  // قدرة الإنفرتر > القدرة الإجمالية للألواح، ومقرّبة لأعلى عدد صحيح
+  const inverterRaw = Math.max(panelKWp, maxLoadKW * 1.25);
+  const inverterKVA = Math.max(1, Math.ceil(inverterRaw + 0.0001));
   const surgeKVA = Math.round(inverterKVA * 0.33 * 100) / 100;
 
   const totalSAR =
@@ -260,6 +276,11 @@ function calculateLoads(s: CalcState): CalcResult {
     surgeKVA,
     totalSAR: Math.round(totalSAR),
   };
+}
+
+function roundUpToEven(n: number): number {
+  const ceiled = Math.ceil(n);
+  return ceiled % 2 === 0 ? ceiled : ceiled + 1;
 }
 
 function round(n: number, d = 2) {
