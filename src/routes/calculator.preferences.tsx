@@ -48,7 +48,7 @@ function StepPreferences() {
             <div className="flex-1">
               <h2 className="text-2xl font-extrabold text-ink">تفضيلات النظام</h2>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                حدد عدد ليالي التخزين المطلوبة من البطاريات.
+                اختر طريقة استخدامك للنظام الشمسي.
               </p>
             </div>
           </div>
