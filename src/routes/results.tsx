@@ -56,12 +56,13 @@ function ResultsPage() {
     setResult(calculate(s));
   }, []);
 
-  const addToCart = () => {
+  const addToCart = (paymentOption: "cash" | "installments" = "cash") => {
     if (!state || !result) return;
     const cart = {
       state,
       result,
       pid,
+      paymentOption,
       addedAt: new Date().toISOString(),
     };
     localStorage.setItem("mutajadidah:cart:v1", JSON.stringify(cart));
