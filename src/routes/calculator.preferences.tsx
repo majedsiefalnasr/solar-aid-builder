@@ -18,10 +18,8 @@ export const Route = createFileRoute("/calculator/preferences")({
 });
 
 const autonomyOpts: { id: Autonomy; title: string; desc: string; rec?: boolean }[] = [
-  { id: 0, title: "بدون تخزين (للاستخدام النهاري)", desc: "يحتسب بطارية صغيرة لتثبيت التيار." },
-  { id: 1, title: "ليلة واحدة", desc: "مناسب كبديل احتياطي للشبكة." },
-  { id: 2, title: "ليلتان (موصى به)", desc: "توازن جيد بين التكلفة والاعتمادية.", rec: true },
-  { id: 3, title: "3 ليالٍ (اعتمادية عالية)", desc: "للأحمال الحرجة أو المناطق ذات الطقس المتقلب." },
+  { id: 0, title: "بدون تخزين (استخدام نهاري فقط)", desc: "نظام بدون بطاريات — يعمل خلال ساعات النهار فقط." },
+  { id: 1, title: "استخدام ليلي ونهاري (موصى به)", desc: "يشمل بنك بطاريات لتشغيل الأحمال ليلاً ونهاراً.", rec: true },
 ];
 
 function StepPreferences() {
