@@ -17,6 +17,15 @@ import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import heroImg from "@/assets/solar-hero.jpg";
 import { calculate, loadState, type CalcResult, type CalcState } from "@/lib/calculator";
 import { arabicNumber } from "@/components/calculator-shell";
+import {
+  RoiHero,
+  SavingsChart,
+  TrustGrid,
+  SocialProof,
+  FinancingOptions,
+  buildTrustItems,
+  computeRoi,
+} from "@/components/results-roi";
 
 export const Route = createFileRoute("/results")({
   head: () => ({
