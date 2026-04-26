@@ -29,18 +29,18 @@ import install1 from "@/assets/install-1.jpg";
 import install2 from "@/assets/install-2.jpg";
 import install3 from "@/assets/install-3.jpg";
 
-// Commercial electricity price per kWh (SAR equivalent) by city — editable.
-// In a real backend this would be a settings table.
+// Commercial electricity price per kWh (SAR) — موحّد لجميع المدن.
+// مثال: فاتورة نصف شهرية 450 kWh => فاتورة شهرية = 450 × 2 × 3.4 = 3,060 ر.س
 const COMMERCIAL_RATE_BY_CITY: Record<string, number> = {
-  عدن: 0.55,
-  صنعاء: 0.5,
-  تعز: 0.55,
-  حضرموت: 0.5,
-  المكلا: 0.5,
-  إب: 0.55,
+  عدن: 3.4,
+  صنعاء: 3.4,
+  تعز: 3.4,
+  حضرموت: 3.4,
+  المكلا: 3.4,
+  إب: 3.4,
 };
 
-const DEFAULT_RATE = 0.5;
+const DEFAULT_RATE = 3.4;
 
 export interface RoiData {
   monthlySavingSAR: number;

@@ -136,7 +136,10 @@ function ResultsPage() {
           <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
             <Stat label="إجمالي يومي" value={`${result.totalDailyKWh} kWh`} />
             <Stat label="استهلاك ليلي" value={`${result.nightKWh} kWh`} />
-            <Stat label="أيام الاستقلالية" value={arabicNumber(state.autonomy || 0.5)} />
+            <Stat
+              label="نمط الاستخدام"
+              value={state.autonomy > 0 ? "ليلي ونهاري" : "نهاري فقط"}
+            />
           </div>
         </Card>
 
@@ -145,7 +148,7 @@ function ResultsPage() {
           <SectionTitle icon={<Sun className="h-5 w-5" />} title="الألواح الشمسية" />
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <Stat label="عدد الألواح" value={`${arabicNumber(result.panelCount)} لوح`} highlight />
-            <Stat label="قدرة اللوح" value="650 wh/h" />
+            <Stat label="قدرة اللوح" value="650 وات" />
             <Stat label="القدرة الإجمالية" value={`${result.panelKWp} kWp`} />
           </div>
           <Note tone="muted">
@@ -153,23 +156,36 @@ function ResultsPage() {
           </Note>
         </Card>
 
-        {/* Batteries */}
-        <Card>
-          <SectionTitle
-            icon={<BatteryCharging className="h-5 w-5" />}
-            title="بنك البطاريات"
-          />
-          <div className="mt-4 grid gap-3 md:grid-cols-4">
-            <Stat label="السعة" value={`${result.batteryKWh} kWh`} highlight />
-            <Stat label="السعة بـ Ah" value={`${arabicNumber(result.batteryAh)} Ah`} />
-            <Stat label="الجهد" value="48V" />
-            <Stat label="أيام الاستقلالية" value={arabicNumber(state.autonomy || 0.5)} />
-          </div>
-          <Note>
-            <strong>توصية:</strong> الليثيوم (LiFePO4) هو الاستثمار الأفضل: عمر أطول،
-            شحن أسرع، وتفريغ عميق آمن.
-          </Note>
-        </Card>
+        {/* Batteries — لا تظهر في حال "بدون تخزين" */}
+        {state.autonomy > 0 && result.batteryKWh > 0 ? (
+          <Card>
+            <SectionTitle
+              icon={<BatteryCharging className="h-5 w-5" />}
+              title="بنك البطاريات"
+            />
+            <div className="mt-4 grid gap-3 md:grid-cols-4">
+              <Stat label="السعة" value={`${result.batteryKWh} kWh`} highlight />
+              <Stat label="السعة بـ Ah" value={`${arabicNumber(result.batteryAh)} Ah`} />
+              <Stat label="الجهد" value="48V" />
+              <Stat label="نمط الاستخدام" value="ليلي ونهاري" />
+            </div>
+            <Note>
+              <strong>توصية:</strong> الليثيوم (LiFePO4) هو الاستثمار الأفضل: عمر أطول،
+              شحن أسرع، وتفريغ عميق آمن.
+            </Note>
+          </Card>
+        ) : (
+          <Card>
+            <SectionTitle
+              icon={<BatteryCharging className="h-5 w-5" />}
+              title="بنك البطاريات"
+            />
+            <Note tone="muted">
+              نظامك مهيّأ للاستخدام النهاري فقط — بدون بطاريات. توفير في التكلفة الأولية مع
+              إمكانية إضافة بنك بطاريات لاحقاً عند الحاجة.
+            </Note>
+          </Card>
+        )}
 
         {/* Inverter */}
         <Card>

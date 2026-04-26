@@ -18,15 +18,13 @@ export const Route = createFileRoute("/calculator/preferences")({
 });
 
 const autonomyOpts: { id: Autonomy; title: string; desc: string; rec?: boolean }[] = [
-  { id: 0, title: "بدون تخزين (للاستخدام النهاري)", desc: "يحتسب بطارية صغيرة لتثبيت التيار." },
-  { id: 1, title: "ليلة واحدة", desc: "مناسب كبديل احتياطي للشبكة." },
-  { id: 2, title: "ليلتان (موصى به)", desc: "توازن جيد بين التكلفة والاعتمادية.", rec: true },
-  { id: 3, title: "3 ليالٍ (اعتمادية عالية)", desc: "للأحمال الحرجة أو المناطق ذات الطقس المتقلب." },
+  { id: 0, title: "بدون تخزين (استخدام نهاري فقط)", desc: "نظام بدون بطاريات — يعمل خلال ساعات النهار فقط." },
+  { id: 1, title: "استخدام ليلي ونهاري (موصى به)", desc: "يشمل بنك بطاريات لتشغيل الأحمال ليلاً ونهاراً.", rec: true },
 ];
 
 function StepPreferences() {
   const navigate = useNavigate();
-  const [autonomy, setAutonomy] = useState<Autonomy>(2);
+  const [autonomy, setAutonomy] = useState<Autonomy>(1);
 
   useEffect(() => {
     const s = loadState();
@@ -50,13 +48,13 @@ function StepPreferences() {
             <div className="flex-1">
               <h2 className="text-2xl font-extrabold text-ink">تفضيلات النظام</h2>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                حدد عدد ليالي التخزين المطلوبة من البطاريات.
+                اختر طريقة استخدامك للنظام الشمسي.
               </p>
             </div>
           </div>
 
           <div className="mt-8">
-            <div className="mb-3 text-sm font-bold text-ink">الاعتمادية (ليالي التخزين)</div>
+            <div className="mb-3 text-sm font-bold text-ink">طريقة الاستخدام</div>
             <div className="grid gap-3">
               {autonomyOpts.map((o) => (
                 <OptionCard
@@ -76,25 +74,25 @@ function StepPreferences() {
         <aside className="rounded-2xl border border-border bg-muted/40 p-5">
           <div className="mb-4 flex items-center gap-2 text-base font-extrabold text-ink">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            ماذا تعني الاعتمادية؟
+            ما الفرق بين الخيارين؟
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            "ليالي التخزين" هي عدد الأيام التي يمكن لنظامك أن يزودك بالطاقة دون شمس.
+            يحدد هذا الخيار ما إذا كان نظامك يحتاج إلى بنك بطاريات لتشغيل الأحمال ليلاً أم لا.
           </p>
 
           <div className="my-4 h-px bg-border" />
 
           <div className="space-y-3 text-sm">
             <div>
-              <div className="font-bold text-ink">ليلة واحدة (أساسي)</div>
+              <div className="font-bold text-ink">بدون تخزين</div>
               <div className="mt-1 text-muted-foreground">
-                مثالي كبديل للشبكة العامة في المناطق المشمسة.
+                مناسب للمحلات والمكاتب ذات الاستخدام النهاري فقط — تكلفة أقل ولا حاجة لبطاريات.
               </div>
             </div>
             <div>
-              <div className="font-bold text-ink">ليلتان (موصى به)</div>
+              <div className="font-bold text-ink">ليلي ونهاري (موصى به)</div>
               <div className="mt-1 text-muted-foreground">
-                يحقق أفضل توازن بين التكلفة والأمان.
+                النظام الكامل: ألواح + بطاريات لتشغيل أحمالك ٢٤ ساعة.
               </div>
             </div>
           </div>

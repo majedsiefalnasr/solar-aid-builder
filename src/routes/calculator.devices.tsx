@@ -250,7 +250,7 @@ function DeviceRow({
 
       <div className="grid gap-3 md:grid-cols-2">
         <NumberField
-          label="القدرة (واط)"
+          label="القدرة (وات)"
           value={device.watts}
           onChange={(v) => onChange({ watts: v })}
         />
@@ -288,7 +288,7 @@ function DeviceRow({
                 }`}
               >
                 <span>{p.label}</span>
-                <span className="text-[10px] text-muted-foreground">{p.watts} واط</span>
+                <span className="text-[10px] text-muted-foreground">{p.watts} وات</span>
               </button>
             );
           })}
