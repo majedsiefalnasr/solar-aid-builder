@@ -136,7 +136,10 @@ function ResultsPage() {
           <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
             <Stat label="إجمالي يومي" value={`${result.totalDailyKWh} kWh`} />
             <Stat label="استهلاك ليلي" value={`${result.nightKWh} kWh`} />
-            <Stat label="أيام الاستقلالية" value={arabicNumber(state.autonomy || 0.5)} />
+            <Stat
+              label="نمط الاستخدام"
+              value={state.autonomy > 0 ? "ليلي ونهاري" : "نهاري فقط"}
+            />
           </div>
         </Card>
 
