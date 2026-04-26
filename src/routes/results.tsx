@@ -99,6 +99,9 @@ function ResultsPage() {
       </div>
 
       <main className="relative z-10 mx-auto -mt-6 max-w-5xl space-y-6 px-4 pb-20 md:px-8">
+        {/* ROI hero — financial persuasion */}
+        <RoiHero roi={computeRoi(state, result)} />
+
         {/* Loads summary */}
         <Card>
           <SectionTitle icon={<Zap className="h-5 w-5" />} title="ملخص الأحمال" />
