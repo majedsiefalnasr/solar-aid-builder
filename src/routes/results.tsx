@@ -185,6 +185,15 @@ function ResultsPage() {
           </Note>
         </Card>
 
+        {/* Verified components — trust badges with pop-up explanations */}
+        <TrustGrid items={buildTrustItems(state, result)} city={state.city} />
+
+        {/* Savings visualization — break-even chart */}
+        <SavingsChart roi={computeRoi(state, result)} />
+
+        {/* Social proof — real installations in the user's city */}
+        <SocialProof city={state.city} />
+
         {/* Cost + actions */}
         <div className="rounded-3xl bg-gradient-to-br from-primary to-emerald-700 p-6 text-primary-foreground shadow-elevated md:p-8">
           <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-center">
@@ -201,7 +210,7 @@ function ResultsPage() {
             </div>
             <div className="flex flex-col gap-2 md:flex-row">
               <button
-                onClick={addToCart}
+                onClick={() => addToCart("cash")}
                 className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-extrabold text-primary shadow-md transition hover:bg-white/95"
               >
                 <ShoppingCart className="h-4 w-4" />
@@ -211,6 +220,9 @@ function ResultsPage() {
             </div>
           </div>
         </div>
+
+        {/* Financing options — installments + cash */}
+        <FinancingOptions total={result.totalSAR} onChoose={(opt) => addToCart(opt)} />
 
         {/* Action chips */}
         <div className="flex flex-wrap items-center gap-2">
