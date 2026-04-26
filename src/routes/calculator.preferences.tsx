@@ -74,25 +74,25 @@ function StepPreferences() {
         <aside className="rounded-2xl border border-border bg-muted/40 p-5">
           <div className="mb-4 flex items-center gap-2 text-base font-extrabold text-ink">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            ماذا تعني الاعتمادية؟
+            ما الفرق بين الخيارين؟
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            "ليالي التخزين" هي عدد الأيام التي يمكن لنظامك أن يزودك بالطاقة دون شمس.
+            يحدد هذا الخيار ما إذا كان نظامك يحتاج إلى بنك بطاريات لتشغيل الأحمال ليلاً أم لا.
           </p>
 
           <div className="my-4 h-px bg-border" />
 
           <div className="space-y-3 text-sm">
             <div>
-              <div className="font-bold text-ink">ليلة واحدة (أساسي)</div>
+              <div className="font-bold text-ink">بدون تخزين</div>
               <div className="mt-1 text-muted-foreground">
-                مثالي كبديل للشبكة العامة في المناطق المشمسة.
+                مناسب للمحلات والمكاتب ذات الاستخدام النهاري فقط — تكلفة أقل ولا حاجة لبطاريات.
               </div>
             </div>
             <div>
-              <div className="font-bold text-ink">ليلتان (موصى به)</div>
+              <div className="font-bold text-ink">ليلي ونهاري (موصى به)</div>
               <div className="mt-1 text-muted-foreground">
-                يحقق أفضل توازن بين التكلفة والأمان.
+                النظام الكامل: ألواح + بطاريات لتشغيل أحمالك ٢٤ ساعة.
               </div>
             </div>
           </div>
