@@ -39,6 +39,9 @@ export const brands = [
   "RAK سيراميك",
   "بورسلانوزا",
   "السعودية للسيراميك",
+  "JA Solar",
+  "Pylontech",
+  "Deye",
 ];
 
 export const products: Product[] = [
