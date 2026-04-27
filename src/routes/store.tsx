@@ -153,7 +153,7 @@ function StorePage() {
                 </>
               );
               return c.value === "__solar" ? (
-                <Link key={c.label} to="/calculator" className={baseCls}>
+                <Link key={c.label} to="/store/solar" className={baseCls}>
                   {inner}
                 </Link>
               ) : (
