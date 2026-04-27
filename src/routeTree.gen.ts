@@ -21,6 +21,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalculatorIndexRouteImport } from './routes/calculator.index'
 import { Route as CalculatorPreferencesRouteImport } from './routes/calculator.preferences'
 import { Route as CalculatorDevicesRouteImport } from './routes/calculator.devices'
+import { Route as StoreSolarIndexRouteImport } from './routes/store.solar.index'
+import { Route as StoreSolarProductsIndexRouteImport } from './routes/store.solar.products.index'
+import { Route as StoreSolarPackagesIndexRouteImport } from './routes/store.solar.packages.index'
+import { Route as StoreSolarPackagesPackageIdRouteImport } from './routes/store.solar.packages.$packageId'
 
 const ToolsRoute = ToolsRouteImport.update({
   id: '/tools',
@@ -82,6 +86,27 @@ const CalculatorDevicesRoute = CalculatorDevicesRouteImport.update({
   path: '/calculator/devices',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StoreSolarIndexRoute = StoreSolarIndexRouteImport.update({
+  id: '/solar/',
+  path: '/solar/',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreSolarProductsIndexRoute = StoreSolarProductsIndexRouteImport.update({
+  id: '/solar/products/',
+  path: '/solar/products/',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreSolarPackagesIndexRoute = StoreSolarPackagesIndexRouteImport.update({
+  id: '/solar/packages/',
+  path: '/solar/packages/',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreSolarPackagesPackageIdRoute =
+  StoreSolarPackagesPackageIdRouteImport.update({
+    id: '/solar/packages/$packageId',
+    path: '/solar/packages/$packageId',
+    getParentRoute: () => StoreRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -91,11 +116,15 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/results': typeof ResultsRoute
-  '/store': typeof StoreRoute
+  '/store': typeof StoreRouteWithChildren
   '/tools': typeof ToolsRoute
   '/calculator/devices': typeof CalculatorDevicesRoute
   '/calculator/preferences': typeof CalculatorPreferencesRoute
   '/calculator/': typeof CalculatorIndexRoute
+  '/store/solar/': typeof StoreSolarIndexRoute
+  '/store/solar/packages/$packageId': typeof StoreSolarPackagesPackageIdRoute
+  '/store/solar/packages/': typeof StoreSolarPackagesIndexRoute
+  '/store/solar/products/': typeof StoreSolarProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -105,11 +134,15 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/results': typeof ResultsRoute
-  '/store': typeof StoreRoute
+  '/store': typeof StoreRouteWithChildren
   '/tools': typeof ToolsRoute
   '/calculator/devices': typeof CalculatorDevicesRoute
   '/calculator/preferences': typeof CalculatorPreferencesRoute
   '/calculator': typeof CalculatorIndexRoute
+  '/store/solar': typeof StoreSolarIndexRoute
+  '/store/solar/packages/$packageId': typeof StoreSolarPackagesPackageIdRoute
+  '/store/solar/packages': typeof StoreSolarPackagesIndexRoute
+  '/store/solar/products': typeof StoreSolarProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -120,11 +153,15 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/results': typeof ResultsRoute
-  '/store': typeof StoreRoute
+  '/store': typeof StoreRouteWithChildren
   '/tools': typeof ToolsRoute
   '/calculator/devices': typeof CalculatorDevicesRoute
   '/calculator/preferences': typeof CalculatorPreferencesRoute
   '/calculator/': typeof CalculatorIndexRoute
+  '/store/solar/': typeof StoreSolarIndexRoute
+  '/store/solar/packages/$packageId': typeof StoreSolarPackagesPackageIdRoute
+  '/store/solar/packages/': typeof StoreSolarPackagesIndexRoute
+  '/store/solar/products/': typeof StoreSolarProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +178,10 @@ export interface FileRouteTypes {
     | '/calculator/devices'
     | '/calculator/preferences'
     | '/calculator/'
+    | '/store/solar/'
+    | '/store/solar/packages/$packageId'
+    | '/store/solar/packages/'
+    | '/store/solar/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +196,10 @@ export interface FileRouteTypes {
     | '/calculator/devices'
     | '/calculator/preferences'
     | '/calculator'
+    | '/store/solar'
+    | '/store/solar/packages/$packageId'
+    | '/store/solar/packages'
+    | '/store/solar/products'
   id:
     | '__root__'
     | '/'
@@ -169,6 +214,10 @@ export interface FileRouteTypes {
     | '/calculator/devices'
     | '/calculator/preferences'
     | '/calculator/'
+    | '/store/solar/'
+    | '/store/solar/packages/$packageId'
+    | '/store/solar/packages/'
+    | '/store/solar/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -179,7 +228,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   ResultsRoute: typeof ResultsRoute
-  StoreRoute: typeof StoreRoute
+  StoreRoute: typeof StoreRouteWithChildren
   ToolsRoute: typeof ToolsRoute
   CalculatorDevicesRoute: typeof CalculatorDevicesRoute
   CalculatorPreferencesRoute: typeof CalculatorPreferencesRoute
@@ -272,8 +321,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CalculatorDevicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/store/solar/': {
+      id: '/store/solar/'
+      path: '/solar'
+      fullPath: '/store/solar/'
+      preLoaderRoute: typeof StoreSolarIndexRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/store/solar/products/': {
+      id: '/store/solar/products/'
+      path: '/solar/products'
+      fullPath: '/store/solar/products/'
+      preLoaderRoute: typeof StoreSolarProductsIndexRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/store/solar/packages/': {
+      id: '/store/solar/packages/'
+      path: '/solar/packages'
+      fullPath: '/store/solar/packages/'
+      preLoaderRoute: typeof StoreSolarPackagesIndexRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/store/solar/packages/$packageId': {
+      id: '/store/solar/packages/$packageId'
+      path: '/solar/packages/$packageId'
+      fullPath: '/store/solar/packages/$packageId'
+      preLoaderRoute: typeof StoreSolarPackagesPackageIdRouteImport
+      parentRoute: typeof StoreRoute
+    }
   }
 }
+
+interface StoreRouteChildren {
+  StoreSolarIndexRoute: typeof StoreSolarIndexRoute
+  StoreSolarPackagesPackageIdRoute: typeof StoreSolarPackagesPackageIdRoute
+  StoreSolarPackagesIndexRoute: typeof StoreSolarPackagesIndexRoute
+  StoreSolarProductsIndexRoute: typeof StoreSolarProductsIndexRoute
+}
+
+const StoreRouteChildren: StoreRouteChildren = {
+  StoreSolarIndexRoute: StoreSolarIndexRoute,
+  StoreSolarPackagesPackageIdRoute: StoreSolarPackagesPackageIdRoute,
+  StoreSolarPackagesIndexRoute: StoreSolarPackagesIndexRoute,
+  StoreSolarProductsIndexRoute: StoreSolarProductsIndexRoute,
+}
+
+const StoreRouteWithChildren = StoreRoute._addFileChildren(StoreRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -283,7 +376,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   ResultsRoute: ResultsRoute,
-  StoreRoute: StoreRoute,
+  StoreRoute: StoreRouteWithChildren,
   ToolsRoute: ToolsRoute,
   CalculatorDevicesRoute: CalculatorDevicesRoute,
   CalculatorPreferencesRoute: CalculatorPreferencesRoute,
