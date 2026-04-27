@@ -239,13 +239,13 @@ function HomePage() {
           <div className="grid gap-5 md:grid-cols-3 md:[grid-template-rows:1fr_1fr]">
             {/* Tall left — Solar */}
             <CategoryTile
-              to="/calculator"
+              to="/store/solar"
               image={solarImg}
               alt="الطاقة الشمسية"
               eyebrow="الأكثر طلباً"
               title="الطاقة الشمسية"
-              subtitle="ألواح · بطاريات · إنفرترات"
-              cta="ابدأ الحساب"
+              subtitle="حزم جاهزة · حاسبة مخصصة · منتجات"
+              cta="تسوّق الآن"
               accent
               tall
               className="md:row-span-2 md:min-h-[520px]"
