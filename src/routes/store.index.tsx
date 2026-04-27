@@ -28,7 +28,7 @@ import {
 } from "@/lib/products";
 import { addProductToCart } from "@/lib/cart-store";
 
-export const Route = createFileRoute("/store")({
+export const Route = createFileRoute("/store/")({
   head: () => ({
     meta: [
       { title: "المتجر | تم" },
