@@ -20,6 +20,7 @@ export const filterCategories = [
   "أدوات البناء",
   "السلامة المهنية",
   "السباكة والصرف",
+  "الطاقة الشمسية",
 ];
 
 export const brands = [
