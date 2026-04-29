@@ -42,7 +42,7 @@ function PackagesPage() {
           <h1 className="text-3xl font-extrabold text-ink md:text-4xl">الحُزم الجاهزة</h1>
           <p className="mt-2 text-sm text-muted-foreground md:text-base">
             حزم مكوّنة من ألواح شمسية، بنك بطاريات ليثيوم، ومحول طاقة — مُحجّمة بحسب
-            استهلاكك التقديري كل 15 يوم.
+            استهلاكك التقديري كل 30 يوم.
           </p>
         </header>
 
