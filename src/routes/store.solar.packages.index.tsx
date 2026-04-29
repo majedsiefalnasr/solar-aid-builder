@@ -144,6 +144,7 @@ function PackageCard({ pkg }: { pkg: SolarPackage }) {
       <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
         قابل للتخفيض بحسب المسافة من السطح إلى مكان المنظومة
       </p>
+      </div>
     </Link>
   );
 }
