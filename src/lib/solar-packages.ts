@@ -19,6 +19,7 @@ export interface SolarPackage {
   name: string;
   subtitle: string;
   kWh15Days: number; // commercial bill over 15 days
+  appliances?: string[]; // appliances that can be powered by this package
   comingSoon?: boolean;
 }
 
@@ -27,22 +28,51 @@ const HOMES: SolarPackage[] = [
     id: "home-small",
     group: "homes",
     name: "حزمة شقة صغيرة",
-    subtitle: "تستهلك حتى 70 kWh كل 15 يوم",
+    subtitle: "تستهلك حتى 140 kWh كل 30 يوم",
     kWh15Days: 70,
+    appliances: [
+      "إضاءة: 17 لمبة",
+      "ثلاجة إنفرتر (و)",
+      "شاشة 24 بوصة",
+      "4 مراوح (24V)",
+      "غسالة 7 كيلو",
+      "خلاط",
+      "مودم (راوتر)",
+    ],
   },
   {
     id: "home-medium",
     group: "homes",
     name: "حزمة شقة متوسطة",
-    subtitle: "تستهلك حتى 150 kWh كل 15 يوم",
+    subtitle: "تستهلك حتى 300 kWh كل 30 يوم",
     kWh15Days: 150,
+    appliances: [
+      "إضاءة: 28 لمبة",
+      "ثلاجة إنفرتر (و)",
+      "شاشتان 32 بوصة",
+      "6 مراوح (24V)",
+      "غسالة 8 كيلو",
+      "خلاط ومحضرة طعام",
+      "مكيف صغير (تشغيل جزئي)",
+      "مودم (راوتر)",
+    ],
   },
   {
     id: "home-large",
     group: "homes",
     name: "حزمة شقة كبيرة",
-    subtitle: "تستهلك حتى 210 kWh كل 15 يوم",
+    subtitle: "تستهلك حتى 420 kWh كل 30 يوم",
     kWh15Days: 210,
+    appliances: [
+      "إضاءة: 40 لمبة",
+      "ثلاجة إنفرتر كبيرة + فريزر",
+      "3 شاشات",
+      "8 مراوح (24V)",
+      "غسالة 10 كيلو",
+      "خلاط وميكروويف",
+      "مكيف (تشغيل جزئي)",
+      "مودم (راوتر)",
+    ],
   },
 ];
 
@@ -51,29 +81,64 @@ const BUILDINGS: SolarPackage[] = [
     id: "bld-1f-2u",
     group: "buildings",
     name: "عمارة دور واحد · شقتان",
-    subtitle: "استهلاك تقديري 160 kWh / 15 يوم",
+    subtitle: "استهلاك تقديري 320 kWh / 30 يوم",
     kWh15Days: 160,
+    appliances: [
+      "34 لمبة",
+      "ثلاجتان إنفرتر",
+      "شاشتان",
+      "8 مراوح (24V)",
+      "غسالتان وخلاطان",
+      "مودم لكل شقة",
+    ],
   },
   {
     id: "bld-2f-4u",
     group: "buildings",
     name: "عمارة دورين · 4 شقق",
-    subtitle: "استهلاك تقديري 320 kWh / 15 يوم",
+    subtitle: "استهلاك تقديري 640 kWh / 30 يوم",
     kWh15Days: 320,
+    appliances: [
+      "68 لمبة",
+      "4 ثلاجات إنفرتر",
+      "4 شاشات",
+      "16 مروحة (24V)",
+      "4 غسالات و4 خلاطات",
+      "مكيف صغير (تشغيل جزئي)",
+      "مودم مركزي",
+    ],
   },
   {
     id: "bld-3f-6u",
     group: "buildings",
     name: "عمارة 3 أدوار · 6 شقق",
-    subtitle: "استهلاك تقديري 519 kWh / 15 يوم",
+    subtitle: "استهلاك تقديري 1038 kWh / 30 يوم",
     kWh15Days: 519,
+    appliances: [
+      "102 لمبة",
+      "6 ثلاجات إنفرتر",
+      "6 شاشات",
+      "24 مروحة (24V)",
+      "6 غسالات و6 خلاطات",
+      "2 مكيف (تشغيل جزئي)",
+      "مودم مركزي",
+    ],
   },
   {
     id: "bld-4f-8u",
     group: "buildings",
     name: "عمارة 4 أدوار · 8 شقق",
-    subtitle: "استهلاك تقديري 640 kWh / 15 يوم",
+    subtitle: "استهلاك تقديري 1280 kWh / 30 يوم",
     kWh15Days: 640,
+    appliances: [
+      "136 لمبة",
+      "8 ثلاجات إنفرتر (متوسط)",
+      "8 شاشات",
+      "32 مروحة (24V)",
+      "8 غسالات و8 خلاطات",
+      "4 مكيفات (تشغيل جزئي)",
+      "مودم مركزي",
+    ],
   },
 ];
 

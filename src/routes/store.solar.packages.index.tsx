@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Sun, BatteryCharging, Zap, ArrowLeft, Clock } from "lucide-react";
+import { ChevronLeft, Sun, ArrowLeft, Clock, CheckCircle2 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { PACKAGE_GROUPS, sizePackage, type SolarPackage } from "@/lib/solar-packages";
 import { arabicNumber } from "@/components/calculator-shell";
@@ -88,6 +88,7 @@ function PackageCard({ pkg }: { pkg: SolarPackage }) {
   }
 
   const { result } = sizePackage(pkg);
+  const appliances = pkg.appliances ?? [];
 
   return (
     <Link
@@ -101,11 +102,21 @@ function PackageCard({ pkg }: { pkg: SolarPackage }) {
       <h3 className="text-base font-extrabold text-ink">{pkg.name}</h3>
       <p className="mt-1.5 text-xs text-muted-foreground">{pkg.subtitle}</p>
 
-      <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-        <Mini icon={<Sun className="h-3.5 w-3.5" />} label="ألواح" value={`${arabicNumber(result.panelCount)}`} />
-        <Mini icon={<BatteryCharging className="h-3.5 w-3.5" />} label="بطارية" value={`${arabicNumber(result.batteryKWh)} kWh`} />
-        <Mini icon={<Zap className="h-3.5 w-3.5" />} label="إنفرتر" value={`${arabicNumber(result.inverterKVA)} kVA`} />
-      </div>
+      {appliances.length > 0 && (
+        <div className="mt-4 rounded-2xl bg-muted/60 p-3">
+          <div className="mb-2 text-[10px] font-extrabold uppercase tracking-wide text-muted-foreground">
+            الأجهزة التي يمكن تشغيلها
+          </div>
+          <ul className="space-y-1.5">
+            {appliances.map((a, i) => (
+              <li key={i} className="flex items-start gap-1.5 text-[11px] leading-relaxed text-foreground/85">
+                <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-5 flex items-end justify-between border-t border-border pt-4">
         <div>
@@ -120,18 +131,9 @@ function PackageCard({ pkg }: { pkg: SolarPackage }) {
           <ArrowLeft className="h-3.5 w-3.5 transition group-hover:-translate-x-1" />
         </span>
       </div>
+      <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
+        قابل للتخفيض بحسب المسافة من السطح إلى مكان المنظومة
+      </p>
     </Link>
-  );
-}
-
-function Mini({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-muted px-2 py-2">
-      <div className="flex items-center justify-center gap-1 text-[9px] font-bold text-muted-foreground">
-        {icon}
-        {label}
-      </div>
-      <div className="mt-0.5 text-xs font-extrabold text-ink">{value}</div>
-    </div>
   );
 }
