@@ -12,7 +12,7 @@ import {
   Star,
   ShoppingCart,
   Quote,
-  HardHat,
+  
   ArrowRight,
   CheckCircle2,
 } from "lucide-react";
