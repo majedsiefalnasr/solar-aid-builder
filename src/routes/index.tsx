@@ -14,17 +14,28 @@ import {
   Quote,
   HardHat,
   ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { ProductQuickView } from "@/components/product-quick-view";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import heroImg from "@/assets/solar-hero.jpg";
 import materialsImg from "@/assets/materials-card.jpg";
 import solarImg from "@/assets/solar-card.jpg";
+import solarPackageImg from "@/assets/solar-package.jpg";
 import catMaterials from "@/assets/cat-materials.jpg";
 import catTools from "@/assets/cat-tools.jpg";
 import catCeramic from "@/assets/cat-ceramic.jpg";
 import { products, type Product } from "@/lib/products";
 import { addProductToCart } from "@/lib/cart-store";
+import { SOLAR_PACKAGES, sizePackage } from "@/lib/solar-packages";
+import { arabicNumber } from "@/components/calculator-shell";
 
 export const Route = createFileRoute("/")({
   head: () => ({
