@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -7,6 +8,19 @@ import {
   ShoppingCart,
   CheckCircle2,
   ChevronLeft,
+  ChevronDown,
+  Package,
+  Lightbulb,
+  Refrigerator,
+  Monitor,
+  Fan,
+  WashingMachine,
+  Microwave,
+  Wifi,
+  AirVent,
+  Cable,
+  LayoutGrid,
+  CircuitBoard,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import heroImg from "@/assets/solar-hero.jpg";
