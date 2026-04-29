@@ -85,7 +85,10 @@ export function CalculatorShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Returns numbers using Arabic (Western) digits 0-9 across the entire site.
+// If any Arabic-Indic digits (٠-٩) are present in the input, they are normalized
+// back to 0-9 so the whole site renders in the requested numeric format.
 export function arabicNumber(n: number | string): string {
-  const map = "٠١٢٣٤٥٦٧٨٩";
-  return String(n).replace(/\d/g, (d) => map[Number(d)]);
+  const indic = "٠١٢٣٤٥٦٧٨٩";
+  return String(n).replace(/[٠-٩]/g, (d) => String(indic.indexOf(d)));
 }
