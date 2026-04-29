@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Sun, BatteryCharging, Zap, ArrowLeft, Clock } from "lucide-react";
+import { ChevronLeft, Sun, ArrowLeft, Clock, CheckCircle2 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { PACKAGE_GROUPS, sizePackage, type SolarPackage } from "@/lib/solar-packages";
 import { arabicNumber } from "@/components/calculator-shell";
