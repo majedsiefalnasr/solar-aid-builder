@@ -79,7 +79,7 @@ export function RoiHero({ roi }: { roi: RoiData }) {
             عائد الاستثمار · ROI
           </div>
           <h3 className="mt-1 text-xl font-extrabold leading-snug text-ink md:text-2xl">
-            باقتناء هذه المنظومة، ستوفر{" "}
+            احصل على هذه المنظومة، ووفر{" "}
             <span className="text-emerald-700">
               {arabicNumber(roi.monthlySavingSAR.toLocaleString("en-US"))} ر.س
             </span>{" "}
