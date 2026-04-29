@@ -137,7 +137,3 @@ function PackageCard({ pkg }: { pkg: SolarPackage }) {
     </Link>
   );
 }
-
-function Mini(_: { icon: React.ReactNode; label: string; value: string }) {
-  return null;
-}
