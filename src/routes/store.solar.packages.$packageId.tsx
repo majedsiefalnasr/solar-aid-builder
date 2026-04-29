@@ -22,6 +22,7 @@ import {
   LayoutGrid,
   CircuitBoard,
 } from "lucide-react";
+import type { CalcResult } from "@/lib/calculator";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import heroImg from "@/assets/solar-hero.jpg";
 import { arabicNumber } from "@/components/calculator-shell";
