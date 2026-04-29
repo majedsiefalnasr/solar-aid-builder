@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   Area,
   AreaChart,
@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   TrendingUp,
   Wallet,
-  X,
   Sparkles,
   MapPin,
   Camera,
