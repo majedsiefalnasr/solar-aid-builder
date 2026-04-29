@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Sun, ArrowLeft, Clock, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ArrowLeft, Clock, CheckCircle2 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { PACKAGE_GROUPS, sizePackage, type SolarPackage } from "@/lib/solar-packages";
 import { arabicNumber } from "@/components/calculator-shell";
+import solarPackageImg from "@/assets/solar-package.jpg";
 
 export const Route = createFileRoute("/store/solar/packages/")({
   head: () => ({
@@ -41,7 +42,7 @@ function PackagesPage() {
           <h1 className="text-3xl font-extrabold text-ink md:text-4xl">الحُزم الجاهزة</h1>
           <p className="mt-2 text-sm text-muted-foreground md:text-base">
             حزم مكوّنة من ألواح شمسية، بنك بطاريات ليثيوم، ومحول طاقة — مُحجّمة بحسب
-            استهلاكك التقديري كل 15 يوم.
+            استهلاكك التقديري كل 30 يوم.
           </p>
         </header>
 
@@ -94,11 +95,20 @@ function PackageCard({ pkg }: { pkg: SolarPackage }) {
     <Link
       to="/store/solar/packages/$packageId"
       params={{ packageId: pkg.id }}
-      className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated"
+      className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated"
     >
-      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-md">
-        <Sun className="h-6 w-6" />
+      <div className="relative aspect-[16/10] overflow-hidden">
+        <img
+          src={solarPackageImg}
+          alt={pkg.name}
+          loading="lazy"
+          width={1024}
+          height={768}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
       </div>
+      <div className="flex flex-1 flex-col p-6">
       <h3 className="text-base font-extrabold text-ink">{pkg.name}</h3>
       <p className="mt-1.5 text-xs text-muted-foreground">{pkg.subtitle}</p>
 
@@ -134,6 +144,7 @@ function PackageCard({ pkg }: { pkg: SolarPackage }) {
       <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
         قابل للتخفيض بحسب المسافة من السطح إلى مكان المنظومة
       </p>
+      </div>
     </Link>
   );
 }

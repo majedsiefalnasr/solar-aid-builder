@@ -12,19 +12,30 @@ import {
   Star,
   ShoppingCart,
   Quote,
-  HardHat,
+  
   ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { ProductQuickView } from "@/components/product-quick-view";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import heroImg from "@/assets/solar-hero.jpg";
 import materialsImg from "@/assets/materials-card.jpg";
 import solarImg from "@/assets/solar-card.jpg";
+import solarPackageImg from "@/assets/solar-package.jpg";
 import catMaterials from "@/assets/cat-materials.jpg";
 import catTools from "@/assets/cat-tools.jpg";
 import catCeramic from "@/assets/cat-ceramic.jpg";
 import { products, type Product } from "@/lib/products";
 import { addProductToCart } from "@/lib/cart-store";
+import { SOLAR_PACKAGES, sizePackage } from "@/lib/solar-packages";
+import { arabicNumber } from "@/components/calculator-shell";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -155,66 +166,103 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Calculators teasers — under hero */}
+      {/* Ready-made solar packages — carousel */}
       <section className="border-y border-border bg-card/30">
         <div className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
-          <div className="mb-8 text-center">
-            <span className="mb-2 inline-block rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
-              أدوات هندسية مجانية
-            </span>
-            <h2 className="text-2xl font-extrabold text-ink md:text-3xl">
-              احسب مشروعك بدقة قبل أن تبدأ
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              حاسبتان مجانيتان لتقدير تكاليف البناء والطاقة الشمسية بضغطة زر.
-            </p>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="mb-8 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
+            <div>
+              <span className="mb-2 inline-block rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
+                حُزم الطاقة الشمسية الجاهزة
+              </span>
+              <h2 className="text-2xl font-extrabold text-ink md:text-3xl">
+                اختر حزمتك بضغطة زر
+              </h2>
+              <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+                حزم مُحجّمة مسبقاً للشقق والعمائر — مع كل الأجهزة التي يمكن تشغيلها.
+              </p>
+            </div>
             <Link
-              to="/calculator-construction"
-              className="group relative flex items-start gap-4 overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary-soft to-card p-6 shadow-card transition hover:-translate-y-0.5 hover:shadow-elevated md:p-7"
+              to="/store/solar/packages"
+              className="inline-flex items-center gap-1.5 text-sm font-extrabold text-primary hover:underline"
             >
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-cta">
-                <HardHat className="h-7 w-7" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-extrabold text-ink md:text-xl">حاسبة البناء</h3>
-                  <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
-                    الأكثر استخداماً
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-foreground/80">ابني بيتك من مكان واحد</p>
-                <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold text-primary group-hover:gap-2">
-                  ابدأ الحساب
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                </span>
-              </div>
-            </Link>
-
-            <Link
-              to="/calculator"
-              className="group relative flex items-start gap-4 overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-50 to-card p-6 shadow-card transition hover:-translate-y-0.5 hover:shadow-elevated md:p-7"
-            >
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-cta">
-                <Sun className="h-7 w-7" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-extrabold text-ink md:text-xl">حاسبة الطاقة الشمسية</h3>
-                  <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                    جديد
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-foreground/80">احسب نظامك الشمسي بدقة بضغطة زر</p>
-                <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-600 group-hover:gap-2">
-                  ابدأ الحساب
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                </span>
-              </div>
+              عرض جميع الحزم
+              <ArrowLeft className="h-4 w-4" />
             </Link>
           </div>
+
+          <Carousel
+            opts={{ align: "start", direction: "rtl", loop: true }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-4">
+              {SOLAR_PACKAGES.filter((p) => !p.comingSoon)
+                .slice(0, 5)
+                .map((pkg) => {
+                  const { result } = sizePackage(pkg);
+                  const appliances = (pkg.appliances ?? []).slice(0, 4);
+                  return (
+                    <CarouselItem
+                      key={pkg.id}
+                      className="pl-4 sm:basis-1/2 lg:basis-1/3"
+                    >
+                      <Link
+                        to="/store/solar/packages/$packageId"
+                        params={{ packageId: pkg.id }}
+                        className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated"
+                      >
+                        <div className="relative aspect-[16/10] overflow-hidden">
+                          <img
+                            src={solarPackageImg}
+                            alt={pkg.name}
+                            loading="lazy"
+                            width={1024}
+                            height={768}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                        </div>
+                        <div className="flex flex-1 flex-col p-5">
+                          <h3 className="text-base font-extrabold text-ink">{pkg.name}</h3>
+                          <p className="mt-1 text-xs text-muted-foreground">{pkg.subtitle}</p>
+
+                          {appliances.length > 0 && (
+                            <ul className="mt-3 space-y-1.5">
+                              {appliances.map((a, i) => (
+                                <li
+                                  key={i}
+                                  className="flex items-start gap-1.5 text-[11px] leading-relaxed text-foreground/85"
+                                >
+                                  <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
+                                  <span>{a}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+
+                          <div className="mt-auto flex items-end justify-between border-t border-border pt-4">
+                            <div>
+                              <div className="text-[10px] font-bold uppercase text-muted-foreground">
+                                السعر التقديري
+                              </div>
+                              <div className="text-lg font-extrabold text-primary">
+                                {arabicNumber(result.totalSAR.toLocaleString("en-US"))}
+                                <span className="text-xs font-bold text-muted-foreground"> ر.س</span>
+                              </div>
+                            </div>
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-primary">
+                              التفاصيل
+                              <ArrowLeft className="h-3.5 w-3.5 transition group-hover:-translate-x-1" />
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    </CarouselItem>
+                  );
+                })}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex" />
+            <CarouselNext className="hidden md:flex" />
+          </Carousel>
         </div>
       </section>
 
