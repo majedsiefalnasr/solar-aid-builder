@@ -71,7 +71,7 @@ function ResultsPage() {
 
   const appliances = useMemo(() => {
     if (!state) return [];
-    if (state.mode === "devices") {
+    if (state.mode === "loads") {
       return state.devices.map((d) => `${d.label} — ${arabicNumber(d.qty)}× ${d.watts}W`);
     }
     return [];
