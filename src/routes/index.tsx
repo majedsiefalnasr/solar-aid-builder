@@ -91,11 +91,11 @@ function HomePage() {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
-                to="/tools"
+                to="/store/solar/packages"
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:translate-y-[-1px] hover:bg-primary/95"
               >
                 <Calculator className="h-4 w-4" />
-                الأدوات الهندسية
+                اختر حزمة طاقتك
               </Link>
               <Link
                 to="/store"
