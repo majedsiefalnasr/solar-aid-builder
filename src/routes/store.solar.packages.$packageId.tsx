@@ -36,6 +36,7 @@ import {
   computeRoi,
 } from "@/components/results-roi";
 import { getPackage, sizePackage } from "@/lib/solar-packages";
+import { MediaGallery } from "@/components/media-gallery";
 
 export const Route = createFileRoute("/store/solar/packages/$packageId")({
   loader: ({ params }) => {
@@ -131,6 +132,8 @@ function PackageDetail() {
         <AppliancesCard appliances={pkg.appliances ?? []} />
 
         <ComponentsSummaryCard result={result} />
+
+        <MediaGallery />
 
         <SavingsChart roi={roi} />
 

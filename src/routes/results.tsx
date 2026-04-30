@@ -39,6 +39,7 @@ import {
   buildTrustItems,
   computeRoi,
 } from "@/components/results-roi";
+import { MediaGallery } from "@/components/media-gallery";
 
 export const Route = createFileRoute("/results")({
   head: () => ({
@@ -126,6 +127,8 @@ function ResultsPage() {
         {appliances.length > 0 ? <AppliancesCard appliances={appliances} /> : null}
 
         <ComponentsSummaryCard result={result} />
+
+        <MediaGallery />
 
         <SavingsChart roi={roi} />
 
