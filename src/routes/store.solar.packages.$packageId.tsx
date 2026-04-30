@@ -37,6 +37,12 @@ import {
 } from "@/components/results-roi";
 import { getPackage, sizePackage } from "@/lib/solar-packages";
 import { MediaGallery } from "@/components/media-gallery";
+import {
+  AccessoriesCard,
+  computeAccessoryAdjustment,
+  defaultAccessories,
+  type AccessoriesState,
+} from "@/components/accessories-card";
 
 export const Route = createFileRoute("/store/solar/packages/$packageId")({
   loader: ({ params }) => {
@@ -80,13 +86,17 @@ export const Route = createFileRoute("/store/solar/packages/$packageId")({
 function PackageDetail() {
   const { pkg } = Route.useLoaderData();
   const navigate = useNavigate();
-  const { state, result } = sizePackage(pkg);
+  const { state, result: baseResult } = sizePackage(pkg);
+  const [accessories, setAccessories] = useState<AccessoriesState>(defaultAccessories);
+  const adjustment = computeAccessoryAdjustment(accessories);
+  const result = { ...baseResult, totalSAR: Math.max(0, baseResult.totalSAR + adjustment) };
   const roi = computeRoi(state, result);
 
   const addToCart = (paymentOption: "cash" | "installments" = "cash") => {
     const cart = {
       state,
       result,
+      accessories,
       pid: `pkg-${pkg.id}`,
       paymentOption,
       packageId: pkg.id,
@@ -132,6 +142,8 @@ function PackageDetail() {
         <AppliancesCard appliances={pkg.appliances ?? []} />
 
         <ComponentsSummaryCard result={result} />
+
+        <AccessoriesCard value={accessories} onChange={setAccessories} />
 
         <MediaGallery />
 
