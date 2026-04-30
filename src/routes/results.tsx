@@ -40,6 +40,12 @@ import {
   computeRoi,
 } from "@/components/results-roi";
 import { MediaGallery } from "@/components/media-gallery";
+import {
+  AccessoriesCard,
+  computeAccessoryAdjustment,
+  defaultAccessories,
+  type AccessoriesState,
+} from "@/components/accessories-card";
 
 export const Route = createFileRoute("/results")({
   head: () => ({
@@ -57,7 +63,8 @@ export const Route = createFileRoute("/results")({
 function ResultsPage() {
   const navigate = useNavigate();
   const [state, setState] = useState<CalcState | null>(null);
-  const [result, setResult] = useState<CalcResult | null>(null);
+  const [baseResult, setBaseResult] = useState<CalcResult | null>(null);
+  const [accessories, setAccessories] = useState<AccessoriesState>(defaultAccessories);
   const [pid] = useState(() =>
     typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
@@ -67,8 +74,14 @@ function ResultsPage() {
   useEffect(() => {
     const s = loadState();
     setState(s);
-    setResult(calculate(s));
+    setBaseResult(calculate(s));
   }, []);
+
+  const result = useMemo<CalcResult | null>(() => {
+    if (!baseResult) return null;
+    const adj = computeAccessoryAdjustment(accessories);
+    return { ...baseResult, totalSAR: Math.max(0, baseResult.totalSAR + adj) };
+  }, [baseResult, accessories]);
 
   const appliances = useMemo(() => {
     if (!state) return [];
@@ -83,6 +96,7 @@ function ResultsPage() {
     const cart = {
       state,
       result,
+      accessories,
       pid,
       paymentOption,
       addedAt: new Date().toISOString(),
