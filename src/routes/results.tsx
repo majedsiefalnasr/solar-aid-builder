@@ -142,6 +142,8 @@ function ResultsPage() {
 
         <ComponentsSummaryCard result={result} />
 
+        <AccessoriesCard value={accessories} onChange={setAccessories} />
+
         <MediaGallery />
 
         <SavingsChart roi={roi} />
