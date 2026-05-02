@@ -50,10 +50,12 @@ export const defaultAccessories: AccessoriesState = {
 // going from 4→5 adds 30 SAR. Adjustment = (selected - default) * 3 * 10
 // applied as a delta to the base total (subtracted vs default cost).
 export function computeAccessoryAdjustment(acc: AccessoriesState): number {
-  const wireDelta = (DEFAULT_FLOORS - acc.floors) * METERS_PER_FLOOR * SAR_PER_METER;
+  // Fewer floors → less wire → subtract from total. More floors → add.
+  const wireDelta = (acc.floors - DEFAULT_FLOORS) * METERS_PER_FLOOR * SAR_PER_METER;
+  // Cheaper racking than default → subtract the difference. Pricier → add.
   const racking =
     RACKING_TEMPLATES.find((r) => r.id === acc.rackingId) ?? DEFAULT_RACKING;
-  const rackingDelta = DEFAULT_RACKING.price - racking.price;
+  const rackingDelta = racking.price - DEFAULT_RACKING.price;
   return wireDelta + rackingDelta;
 }
 
