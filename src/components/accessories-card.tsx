@@ -1,8 +1,21 @@
 import { useState } from "react";
 import { Cable, LayoutGrid, Package, Pencil, Check } from "lucide-react";
 import { arabicNumber } from "@/components/calculator-shell";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import rackingBasic from "@/assets/racking-basic.jpg";
+import rackingStandard from "@/assets/racking-standard.jpg";
+import rackingTilt from "@/assets/racking-tilt.jpg";
+import rackingElevated from "@/assets/racking-elevated.jpg";
+import rackingPremium from "@/assets/racking-premium.jpg";
 
 export const DEFAULT_FLOORS = 6;
+export const MAX_FLOORS = 6;
 export const METERS_PER_FLOOR = 3;
 export const SAR_PER_METER = 10;
 
@@ -10,15 +23,15 @@ export interface RackingTemplate {
   id: string;
   name: string;
   price: number;
-  description: string;
+  image: string;
 }
 
 export const RACKING_TEMPLATES: RackingTemplate[] = [
-  { id: "basic", name: "قاعدة أساسية", price: 500, description: "حديد مجلفن — تثبيت أرضي بسيط" },
-  { id: "standard", name: "قاعدة قياسية", price: 750, description: "حديد مجلفن مقاوم — للأسطح المستوية" },
-  { id: "tilt", name: "قاعدة بزاوية مائلة", price: 1000, description: "زاوية ميل قابلة للتعديل لزيادة الإنتاج" },
-  { id: "elevated", name: "قاعدة مرتفعة", price: 1250, description: "مرتفعة لتهوية أفضل وحماية الأسطح" },
-  { id: "premium", name: "قاعدة بريميوم", price: 1500, description: "ألمنيوم/ستانلس — مقاومة قصوى للصدأ والرياح" },
+  { id: "basic", name: "قالب 1", price: 500, image: rackingBasic },
+  { id: "standard", name: "قالب 2", price: 750, image: rackingStandard },
+  { id: "tilt", name: "قالب 3", price: 1000, image: rackingTilt },
+  { id: "elevated", name: "قالب 4", price: 1250, image: rackingElevated },
+  { id: "premium", name: "قالب 5", price: 1500, image: rackingPremium },
 ];
 
 export const DEFAULT_RACKING = RACKING_TEMPLATES[RACKING_TEMPLATES.length - 1];
@@ -33,11 +46,19 @@ export const defaultAccessories: AccessoriesState = {
   rackingId: DEFAULT_RACKING.id,
 };
 
+// Wire price scales with selected floors. Going from 6→5 deducts 30 SAR;
+// going from 4→5 adds 30 SAR. Adjustment = (selected - default) * 3 * 10
+// applied as a delta to the base total (subtracted vs default cost).
 export function computeAccessoryAdjustment(acc: AccessoriesState): number {
   const wireDelta = (DEFAULT_FLOORS - acc.floors) * METERS_PER_FLOOR * SAR_PER_METER;
-  const racking = RACKING_TEMPLATES.find((r) => r.id === acc.rackingId) ?? DEFAULT_RACKING;
+  const racking =
+    RACKING_TEMPLATES.find((r) => r.id === acc.rackingId) ?? DEFAULT_RACKING;
   const rackingDelta = DEFAULT_RACKING.price - racking.price;
   return wireDelta + rackingDelta;
+}
+
+function wirePrice(floors: number) {
+  return floors * METERS_PER_FLOOR * SAR_PER_METER;
 }
 
 export function AccessoriesCard({
@@ -48,7 +69,7 @@ export function AccessoriesCard({
   onChange: (next: AccessoriesState) => void;
 }) {
   const [editFloors, setEditFloors] = useState(false);
-  const [editRacking, setEditRacking] = useState(false);
+  const [rackingOpen, setRackingOpen] = useState(false);
   const wireMeters = value.floors * METERS_PER_FLOOR;
   const racking =
     RACKING_TEMPLATES.find((r) => r.id === value.rackingId) ?? DEFAULT_RACKING;
@@ -75,10 +96,16 @@ export function AccessoriesCard({
                 الطول الإجمالي:{" "}
                 <span className="font-bold text-ink">{arabicNumber(wireMeters)} م</span>
               </div>
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                المسافة من السطح إلى مكان المنظومة:{" "}
+                <span className="font-bold text-ink">{arabicNumber(value.floors)} أدوار</span>
+              </div>
               <div className="mt-2 flex items-center justify-between gap-2">
                 <div className="text-xs text-muted-foreground">
-                  المسافة من السطح إلى مكان المنظومة:{" "}
-                  <span className="font-bold text-ink">{arabicNumber(value.floors)} أدوار</span>
+                  السعر:{" "}
+                  <span className="font-bold text-ink">
+                    {arabicNumber(wirePrice(value.floors).toLocaleString("en-US"))} ر.س
+                  </span>
                 </div>
                 <button
                   type="button"
@@ -94,8 +121,8 @@ export function AccessoriesCard({
                   <label className="text-[11px] font-bold text-muted-foreground">
                     عدد الأدوار (الطول = العدد × {arabicNumber(METERS_PER_FLOOR)} م)
                   </label>
-                  <div className="mt-2 grid grid-cols-5 gap-1.5">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                  <div className="mt-2 grid grid-cols-6 gap-1.5">
+                    {Array.from({ length: MAX_FLOORS }, (_, i) => i + 1).map((n) => (
                       <button
                         key={n}
                         type="button"
@@ -111,8 +138,8 @@ export function AccessoriesCard({
                     ))}
                   </div>
                   <div className="mt-2 text-[11px] text-muted-foreground">
-                    الافتراضي {arabicNumber(DEFAULT_FLOORS)} أدوار. كل متر يُخصم/يُضاف بـ{" "}
-                    {arabicNumber(SAR_PER_METER)} ر.س.
+                    الافتراضي {arabicNumber(DEFAULT_FLOORS)} أدوار. كل متر بـ{" "}
+                    {arabicNumber(SAR_PER_METER)} ر.س — تقليل الأدوار يخصم من الإجمالي وزيادتها تضيف.
                   </div>
                 </div>
               ) : null}
@@ -128,72 +155,92 @@ export function AccessoriesCard({
             </span>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-extrabold text-ink">قواعد التركيب</div>
-              <div className="mt-0.5 text-xs text-muted-foreground">
-                النوع: <span className="font-bold text-ink">{racking.name}</span>
-              </div>
-              <div className="mt-0.5 text-[11px] text-muted-foreground">
-                {racking.description}
-              </div>
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <div className="text-xs text-muted-foreground">
-                  السعر:{" "}
-                  <span className="font-bold text-ink">
-                    {arabicNumber(racking.price.toLocaleString("en-US"))} ر.س
-                  </span>
+              <div className="mt-2 flex items-center gap-3">
+                <img
+                  src={racking.image}
+                  alt={racking.name}
+                  loading="lazy"
+                  width={64}
+                  height={64}
+                  className="h-16 w-16 shrink-0 rounded-lg border border-border object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs text-muted-foreground">
+                    النوع: <span className="font-bold text-ink">{racking.name}</span>
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    السعر:{" "}
+                    <span className="font-bold text-ink">
+                      {arabicNumber(racking.price.toLocaleString("en-US"))} ر.س
+                    </span>
+                  </div>
                 </div>
+              </div>
+              <div className="mt-3 flex justify-end">
                 <button
                   type="button"
-                  onClick={() => setEditRacking((v) => !v)}
+                  onClick={() => setRackingOpen(true)}
                   className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
                 >
                   <Pencil className="h-3 w-3" />
-                  {editRacking ? "إغلاق" : "تعديل"}
+                  تعديل
                 </button>
               </div>
-              {editRacking ? (
-                <div className="mt-3 space-y-1.5 rounded-xl bg-primary-soft p-3">
-                  {RACKING_TEMPLATES.map((r) => {
-                    const selected = r.id === value.rackingId;
-                    return (
-                      <button
-                        key={r.id}
-                        type="button"
-                        onClick={() => onChange({ ...value, rackingId: r.id })}
-                        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-right text-xs transition ${
-                          selected
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-card text-ink hover:bg-muted"
-                        }`}
-                      >
-                        <div className="min-w-0">
-                          <div className="font-extrabold">{r.name}</div>
-                          <div
-                            className={`text-[10px] ${
-                              selected ? "opacity-90" : "text-muted-foreground"
-                            }`}
-                          >
-                            {r.description}
-                          </div>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-1.5">
-                          <span className="font-bold">
-                            {arabicNumber(r.price.toLocaleString("en-US"))} ر.س
-                          </span>
-                          {selected ? <Check className="h-3.5 w-3.5" /> : null}
-                        </div>
-                      </button>
-                    );
-                  })}
-                  <div className="text-[11px] text-muted-foreground">
-                    الافتراضي: {DEFAULT_RACKING.name} ({arabicNumber(DEFAULT_RACKING.price)} ر.س).
-                    تغيير القاعدة يُعدّل السعر بمقدار الفارق.
-                  </div>
-                </div>
-              ) : null}
             </div>
           </div>
         </div>
       </div>
+
+      <Dialog open={rackingOpen} onOpenChange={setRackingOpen}>
+        <DialogContent className="max-w-2xl" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right">اختر قالب قاعدة التركيب</DialogTitle>
+            <DialogDescription className="text-right">
+              تغيير القالب يُعدّل إجمالي السعر بمقدار الفارق بين السعرين.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {RACKING_TEMPLATES.map((r) => {
+              const selected = r.id === value.rackingId;
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => {
+                    onChange({ ...value, rackingId: r.id });
+                    setRackingOpen(false);
+                  }}
+                  className={`group relative overflow-hidden rounded-2xl border-2 p-2 text-right transition ${
+                    selected
+                      ? "border-primary bg-primary-soft"
+                      : "border-border bg-card hover:border-primary/50"
+                  }`}
+                >
+                  {selected ? (
+                    <span className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="h-3.5 w-3.5" />
+                    </span>
+                  ) : null}
+                  <img
+                    src={r.image}
+                    alt={r.name}
+                    loading="lazy"
+                    width={256}
+                    height={256}
+                    className="aspect-square w-full rounded-xl object-cover"
+                  />
+                  <div className="mt-2 px-1">
+                    <div className="text-sm font-extrabold text-ink">{r.name}</div>
+                    <div className="text-xs font-bold text-primary">
+                      {arabicNumber(r.price.toLocaleString("en-US"))} ر.س
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
