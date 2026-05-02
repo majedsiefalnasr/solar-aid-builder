@@ -153,6 +153,21 @@ const BILL_NIGHT_BUFFER = 1.2;   // +20% safety on night load
 // Loads-mode constants
 const PANEL_W = 650;
 const SUN_HOURS = 5.5;
+const NIGHT_BUFFER = 1.2;
+
+// متوسط ساعات ذروة الإشعاع الشمسي لكل مدينة (ساعة/يوم)
+const CITY_SUN_HOURS: Record<string, number> = {
+  "عدن": 6,
+  "صنعاء": 5.8,
+  "تعز": 5.7,
+  "حضرموت": 6.2,
+  "المكلا": 6,
+  "إب": 5.5,
+};
+
+function sunHoursFor(city: string): number {
+  return CITY_SUN_HOURS[city] ?? SUN_HOURS;
+}
 const SYSTEM_LOSS = 0.7;
 const BATTERY_VOLT = 48;
 const DOD_LITHIUM = 0.9;
