@@ -151,7 +151,7 @@ const BILL_SUN_HOURS = 5;        // hours of sun
 const BILL_NIGHT_BUFFER = 1.2;   // +20% safety on night load
 
 // Loads-mode constants
-const PANEL_W = 550;
+const PANEL_W = 650;
 const SUN_HOURS = 5.5;
 const SYSTEM_LOSS = 0.7;
 const BATTERY_VOLT = 48;
@@ -253,14 +253,9 @@ function calculateLoads(s: CalcState): CalcResult {
   const batteryKWh = hasBatteries ? nightKWh / dod : 0;
   const batteryAh = hasBatteries ? (batteryKWh * 1000) / BATTERY_VOLT : 0;
 
-  // عدد الألواح:
-  //   - ألواح لتغذية الحمل النهاري اللحظي: dayLoadW / PANEL_W
-  //   - ألواح لشحن البطارية خلال ساعات الشمس: batteryKWh*1000 / SUN_HOURS / PANEL_W
-  const panelsForDay = Math.ceil(dayLoadW / PANEL_W);
-  const panelsForBattery = hasBatteries
-    ? Math.ceil((batteryKWh * 1000) / SUN_HOURS / PANEL_W)
-    : 0;
-  const rawPanels = Math.max(1, panelsForDay + panelsForBattery);
+  // عدد الألواح = (الحمل النهاري بالوات + الحمل الليلي بالوات) / قدرة اللوح (650 وات)
+  // ثم يُقرّب إلى العدد الزوجي التالي (مثلاً 2.5 → 4)
+  const rawPanels = Math.max(1, (dayLoadW + nightWh) / PANEL_W);
   const panelCount = roundUpToEven(rawPanels);
   const panelKWp = (panelCount * PANEL_W) / 1000;
 
