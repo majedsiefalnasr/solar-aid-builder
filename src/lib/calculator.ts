@@ -229,35 +229,44 @@ function calculateBill(s: CalcState): CalcResult {
 }
 
 function calculateLoads(s: CalcState): CalcResult {
-  const totalDailyWh = s.devices.reduce(
-    (acc, d) => acc + d.watts * d.qty * d.hours,
+  // الحمل النهاري = قدرة الجهاز × العدد (بدون عدد الساعات) — قدرة لحظية بالوات
+  const dayLoadW = s.devices.reduce(
+    (acc, d) => acc + d.watts * d.qty,
     0,
   );
+  // الحمل الليلي = قدرة الجهاز × العدد × عدد ساعات الليل — طاقة بالـ Wh
   const nightWh = s.devices.reduce(
     (acc, d) => acc + d.watts * d.qty * d.nightHours,
     0,
   );
-  const maxLoadW = s.devices.reduce((acc, d) => acc + d.watts * d.qty, 0);
-  const totalDailyKWh = totalDailyWh / 1000;
+  const maxLoadW = dayLoadW;
+  const dayLoadKW = dayLoadW / 1000;
   const nightKWh = nightWh / 1000;
   const hasBatteries = (s.autonomy ?? 0) > 0;
 
-  const panelKWpRaw = (totalDailyKWh / SUN_HOURS) / SYSTEM_LOSS;
-  const rawPanels = Math.max(1, Math.ceil((panelKWpRaw * 1000) / PANEL_W));
-  // قرّب عدد الألواح إلى أعلى عدد زوجي
+  // عرض إجمالي الطاقة اليومية التقريبية (نهار + ليل) للمستخدم فقط
+  const totalDailyKWh =
+    s.devices.reduce((acc, d) => acc + d.watts * d.qty * d.hours, 0) / 1000;
+
+  const dod = s.battery === "lithium" ? DOD_LITHIUM : DOD_GEL;
+  // سعة البطارية لتغطية الحمل الليلي بالكامل (مع DoD)
+  const batteryKWh = hasBatteries ? nightKWh / dod : 0;
+  const batteryAh = hasBatteries ? (batteryKWh * 1000) / BATTERY_VOLT : 0;
+
+  // عدد الألواح:
+  //   - ألواح لتغذية الحمل النهاري اللحظي: dayLoadW / PANEL_W
+  //   - ألواح لشحن البطارية خلال ساعات الشمس: batteryKWh*1000 / SUN_HOURS / PANEL_W
+  const panelsForDay = Math.ceil(dayLoadW / PANEL_W);
+  const panelsForBattery = hasBatteries
+    ? Math.ceil((batteryKWh * 1000) / SUN_HOURS / PANEL_W)
+    : 0;
+  const rawPanels = Math.max(1, panelsForDay + panelsForBattery);
   const panelCount = roundUpToEven(rawPanels);
   const panelKWp = (panelCount * PANEL_W) / 1000;
 
-  const dod = s.battery === "lithium" ? DOD_LITHIUM : DOD_GEL;
-  // ليالي الاستهلاك = 1 دائماً عند تفعيل التخزين، وصفر بدون تخزين
-  const nightsCount = hasBatteries ? 1 : 0;
-  const usableNeededKWh = nightKWh * nightsCount;
-  const batteryKWh = hasBatteries ? usableNeededKWh / dod : 0;
-  const batteryAh = hasBatteries ? (batteryKWh * 1000) / BATTERY_VOLT : 0;
-
   const maxLoadKW = maxLoadW / 1000;
   // قدرة الإنفرتر > القدرة الإجمالية للألواح، ومقرّبة لأعلى عدد صحيح
-  const inverterRaw = Math.max(panelKWp, maxLoadKW * 1.25);
+  const inverterRaw = Math.max(panelKWp, dayLoadKW * 1.25);
   const inverterKVA = Math.max(1, Math.ceil(inverterRaw + 0.0001));
   const surgeKVA = Math.round(inverterKVA * 0.33 * 100) / 100;
 
