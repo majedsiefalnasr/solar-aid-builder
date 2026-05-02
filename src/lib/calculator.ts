@@ -268,9 +268,13 @@ function calculateLoads(s: CalcState): CalcResult {
   const batteryKWh = hasBatteries ? nightKWh / dod : 0;
   const batteryAh = hasBatteries ? (batteryKWh * 1000) / BATTERY_VOLT : 0;
 
-  // عدد الألواح = (الحمل النهاري بالوات + الحمل الليلي بالوات) / قدرة اللوح (650 وات)
+  // عدد الألواح = ((الحمل الليلي بالوات × 1.2 / ساعات ذروة الإشعاع للمدينة) + الحمل النهاري بالوات) / 650
   // ثم يُقرّب إلى العدد الزوجي التالي (مثلاً 2.5 → 4)
-  const rawPanels = Math.max(1, (dayLoadW + nightWh) / PANEL_W);
+  const peakSun = sunHoursFor(s.city);
+  const rawPanels = Math.max(
+    1,
+    ((nightWh * NIGHT_BUFFER) / peakSun + dayLoadW) / PANEL_W,
+  );
   const panelCount = roundUpToEven(rawPanels);
   const panelKWp = (panelCount * PANEL_W) / 1000;
 
