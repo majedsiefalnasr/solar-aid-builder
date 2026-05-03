@@ -189,25 +189,35 @@ function calculateBill(s: CalcState): CalcResult {
   // d. الحمل في الساعة (kW/h) = a / 15 / b
   const hourlyLoadKW = kWh / BILL_DAYS / totalHours;
 
-  // e. الحمل الليلي (سعة البطارية) = round(c * d * 1.2) — فقط إذا تم اختيار التخزين
+  // الحمل النهاري (وات لحظي) = d * 1000
+  const dayLoadW = hourlyLoadKW * 1000;
+  // الحمل الليلي (Wh) = c * d * 1000
+  const nightWh = nightHours * hourlyLoadKW * 1000;
+
+  // e. سعة البطارية بالـ kWh — فقط إذا تم اختيار التخزين
   const batteryKWh = hasBatteries
     ? Math.round(nightHours * hourlyLoadKW * BILL_NIGHT_BUFFER)
     : 0;
 
-  // f1. الألواح لتعبئة البطارية = ceil(e * 1000 / 5 / 650) — صفر بدون بطاريات
-  const panelsForBattery = hasBatteries
-    ? Math.ceil((batteryKWh * 1000) / BILL_SUN_HOURS / BILL_PANEL_W)
-    : 0;
-  // f2. الألواح للاستخدام النهاري = ceil(d * 1000 / 650)
-  const panelsForDay = Math.ceil((hourlyLoadKW * 1000) / BILL_PANEL_W);
-  const rawPanels = Math.max(1, panelsForBattery + panelsForDay);
-  // قرّب عدد الألواح إلى أعلى عدد زوجي
+  // عدد الألواح = ((الحمل الليلي بالوات × 1.2 / ساعات ذروة الإشعاع للمدينة) + الحمل النهاري بالوات) / 650
+  // ثم يُقرّب إلى أعلى عدد زوجي
+  const peakSun = sunHoursFor(s.city);
+  const rawPanels = Math.max(
+    1,
+    ((nightWh * BILL_NIGHT_BUFFER) / peakSun + dayLoadW) / BILL_PANEL_W,
+  );
   const panelCount = roundUpToEven(rawPanels);
+  const panelsForBattery = hasBatteries
+    ? Math.ceil((nightWh * BILL_NIGHT_BUFFER) / peakSun / BILL_PANEL_W)
+    : 0;
+  const panelsForDay = Math.max(0, panelCount - panelsForBattery);
 
-  // قدرة الإنفرتر يجب أن تكون أكبر من القدرة الإجمالية للألواح، ومُقرّبة لأعلى عدد صحيح
+  // قدرة الإنفرتر = Max(الحمل النهاري × 1.5، الحمل الليلي / ساعات ذروة الإشعاع)
+  // ثم تُقرَّب لأعلى عدد صحيح
   const panelKWp = (panelCount * BILL_PANEL_W) / 1000;
-  const inverterKW = Math.max(panelKWp, hourlyLoadKW, batteryKWh / BILL_SUN_HOURS);
-  const inverterKVA = Math.max(1, Math.ceil(inverterKW + 0.0001));
+  const inverterRawW = Math.max(dayLoadW * 1.5, nightWh / peakSun);
+  const inverterKW = inverterRawW / 1000;
+  const inverterKVA = Math.max(1, Math.ceil(inverterKW));
 
   // Daily energy (لعرضه فقط)
   const totalDailyKWh = kWh / BILL_DAYS;
