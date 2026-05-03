@@ -50,8 +50,8 @@ export const defaultState: CalcState = {
   mode: "loads",
   bill: {
     kWh15Days: 450,
-    dayHours: 14, // إجمالي عدد الساعات في اليوم
-    nightHours: 6, // منها ساعات ليلية
+    startTime: "08:00",
+    endTime: "22:00",
   },
   devices: [
     {
@@ -60,8 +60,8 @@ export const defaultState: CalcState = {
       label: "ثلاجة 10 قدم",
       watts: 150,
       qty: 1,
-      hours: 10,
-      nightHours: 2,
+      startTime: "08:00",
+      endTime: "18:00",
     },
   ],
 };
