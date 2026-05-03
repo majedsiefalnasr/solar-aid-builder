@@ -21,6 +21,7 @@ import {
   FRIDGE_PRESETS,
   LIGHT_PRESETS,
   PUMP_PRESETS,
+  computeHours,
   loadState,
   saveState,
   type CalcMode,
@@ -64,8 +65,8 @@ function StepDevices() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [bill, setBill] = useState<BillInput>({
     kWh15Days: 450,
-    dayHours: 14,
-    nightHours: 6,
+    startTime: "08:00",
+    endTime: "22:00",
   });
   const [activeCat, setActiveCat] = useState<DeviceCategory>("fridges");
 
@@ -97,8 +98,8 @@ function StepDevices() {
         label: meta.defaultLabel,
         watts: meta.defaultWatts,
         qty: 1,
-        hours: 8,
-        nightHours: 2,
+        startTime: "08:00",
+        endTime: "16:00",
       },
     ]);
   };
@@ -259,19 +260,19 @@ function DeviceRow({
           value={device.qty}
           onChange={(v) => onChange({ qty: Math.max(1, v) })}
         />
-        <NumberField
-          label="ساعات التشغيل"
-          value={device.hours}
-          onChange={(v) => onChange({ hours: Math.max(0, Math.min(24, v)) })}
+        <TimeField
+          label="من الساعة"
+          value={device.startTime}
+          onChange={(v) => onChange({ startTime: v })}
         />
-        <NumberField
-          label="منها ساعات ليلية"
-          value={device.nightHours}
-          onChange={(v) =>
-            onChange({ nightHours: Math.max(0, Math.min(device.hours, v)) })
-          }
+        <TimeField
+          label="إلى الساعة"
+          value={device.endTime}
+          onChange={(v) => onChange({ endTime: v })}
         />
       </div>
+
+      <HoursBreakdown start={device.startTime} end={device.endTime} />
 
       {presets.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
@@ -445,8 +446,9 @@ function BillForm({
   onChange: (b: BillInput) => void;
 }) {
   const dailyAvg = bill.kWh15Days / 15;
-  const totalHours = Math.max(1, bill.dayHours);
-  const nightHours = Math.max(0, Math.min(totalHours, bill.nightHours));
+  const hrs = computeHours(bill.startTime, bill.endTime);
+  const totalHours = Math.max(1, hrs.total);
+  const nightHours = hrs.night;
   const hourlyLoad = dailyAvg / totalHours;
   const batteryKWh = Math.round(nightHours * hourlyLoad * 1.2);
 
@@ -464,21 +466,18 @@ function BillForm({
           onChange={(v) => onChange({ ...bill, kWh15Days: Math.max(0, v) })}
         />
         <div className="grid gap-4 md:grid-cols-2">
-          <NumberField
-            label="إجمالي عدد ساعات التشغيل في اليوم"
-            value={bill.dayHours}
-            onChange={(v) =>
-              onChange({ ...bill, dayHours: Math.max(1, Math.min(24, v)) })
-            }
+          <TimeField
+            label="مدة التشغيل من الساعة"
+            value={bill.startTime}
+            onChange={(v) => onChange({ ...bill, startTime: v })}
           />
-          <NumberField
-            label="منها ساعات ليلية (للبطارية)"
-            value={bill.nightHours}
-            onChange={(v) =>
-              onChange({ ...bill, nightHours: Math.max(0, Math.min(24, v)) })
-            }
+          <TimeField
+            label="إلى الساعة"
+            value={bill.endTime}
+            onChange={(v) => onChange({ ...bill, endTime: v })}
           />
         </div>
+        <HoursBreakdown start={bill.startTime} end={bill.endTime} />
       </div>
 
       <div className="mt-5 grid gap-2 rounded-xl bg-primary-soft p-4 text-sm">
@@ -495,6 +494,49 @@ function BillForm({
           <span className="font-extrabold text-primary">{batteryKWh} kWh</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TimeField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+        {label}
+      </span>
+      <input
+        type="time"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-xl border border-input bg-card px-3 py-2.5 text-center text-sm font-bold text-ink focus:border-primary focus:outline-none"
+        dir="ltr"
+      />
+    </label>
+  );
+}
+
+function HoursBreakdown({ start, end }: { start: string; end: string }) {
+  const { total, day, night } = computeHours(start, end);
+  const fmt = (h: number) => (Number.isInteger(h) ? h.toString() : h.toFixed(1));
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+      <span className="rounded-md bg-muted px-2 py-1 text-foreground/70">
+        إجمالي: {fmt(total)} ساعة
+      </span>
+      <span className="rounded-md bg-amber-100 px-2 py-1 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300">
+        نهار (08:00–15:59): {fmt(day)} ساعة
+      </span>
+      <span className="rounded-md bg-indigo-100 px-2 py-1 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300">
+        ليل (16:00–07:59): {fmt(night)} ساعة
+      </span>
     </div>
   );
 }

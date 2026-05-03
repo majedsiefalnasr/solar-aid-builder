@@ -352,9 +352,8 @@ function TechnicalDetails({ state, result }: { state: CalcState; result: CalcRes
                     {arabicNumber(state.bill.kWh15Days)} kWh / 15 يوم
                   </span>
                 </div>
-                <div className="mt-2 text-xs text-muted-foreground">
-                  نهار: {arabicNumber(state.bill.dayHours)}h · ليل:{" "}
-                  {arabicNumber(state.bill.nightHours)}h
+                <div className="mt-2 text-xs text-muted-foreground" dir="ltr">
+                  {state.bill.startTime} → {state.bill.endTime}
                 </div>
               </div>
             ) : (
@@ -365,8 +364,8 @@ function TechnicalDetails({ state, result }: { state: CalcState; result: CalcRes
                     className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3 text-sm"
                   >
                     <span className="font-bold text-ink">{d.label}</span>
-                    <span className="text-muted-foreground">
-                      {arabicNumber(d.qty)}× {d.watts}W · {arabicNumber(d.hours)}h
+                    <span className="text-muted-foreground" dir="ltr">
+                      {arabicNumber(d.qty)}× {d.watts}W · {d.startTime}–{d.endTime}
                     </span>
                   </div>
                 ))}

@@ -267,8 +267,8 @@ export function sizePackage(pkg: SolarPackage): { state: CalcState; result: Calc
     devices: [],
     bill: {
       kWh15Days: kWh,
-      dayHours: totalHours,
-      nightHours,
+      startTime: "08:00",
+      endTime: "22:00",
     },
   };
 

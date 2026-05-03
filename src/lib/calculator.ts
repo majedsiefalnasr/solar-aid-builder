@@ -11,8 +11,10 @@ export interface Device {
   label: string;
   watts: number;
   qty: number;
-  hours: number;
-  nightHours: number;
+  /** وقت بدء التشغيل بصيغة HH:mm */
+  startTime: string;
+  /** وقت انتهاء التشغيل بصيغة HH:mm */
+  endTime: string;
 }
 
 export type DeviceCategory =
@@ -26,10 +28,10 @@ export type DeviceCategory =
 export interface BillInput {
   // Total kWh consumed over the bill cycle (BILL_DAYS)
   kWh15Days: number;
-  // Total operating hours per day (a + b in the spec)
-  dayHours: number;
-  // Of which night hours (c)
-  nightHours: number;
+  /** وقت بدء التشغيل بصيغة HH:mm */
+  startTime: string;
+  /** وقت انتهاء التشغيل بصيغة HH:mm */
+  endTime: string;
 }
 
 export interface CalcState {
@@ -48,8 +50,8 @@ export const defaultState: CalcState = {
   mode: "loads",
   bill: {
     kWh15Days: 450,
-    dayHours: 14, // إجمالي عدد الساعات في اليوم
-    nightHours: 6, // منها ساعات ليلية
+    startTime: "08:00",
+    endTime: "22:00",
   },
   devices: [
     {
@@ -58,8 +60,8 @@ export const defaultState: CalcState = {
       label: "ثلاجة 10 قدم",
       watts: 150,
       qty: 1,
-      hours: 10,
-      nightHours: 2,
+      startTime: "08:00",
+      endTime: "18:00",
     },
   ],
 };
@@ -173,6 +175,49 @@ const BATTERY_VOLT = 48;
 const DOD_LITHIUM = 0.9;
 const DOD_GEL = 0.5;
 
+/**
+ * تحويل وقت بصيغة HH:mm إلى عدد الدقائق منذ منتصف الليل.
+ */
+function parseHM(t: string): number {
+  if (!t || typeof t !== "string") return 0;
+  const [h, m] = t.split(":").map((x) => Number(x) || 0);
+  return Math.max(0, Math.min(23, h)) * 60 + Math.max(0, Math.min(59, m));
+}
+
+/**
+ * الساعات الليلية = من 16:00 إلى 07:59 (شاملة).
+ * يعني: الدقيقة ليلية إذا كانت >= 16:00 أو < 08:00.
+ */
+function isNightMinute(minuteOfDay: number): boolean {
+  const m = ((minuteOfDay % 1440) + 1440) % 1440;
+  return m >= 16 * 60 || m < 8 * 60;
+}
+
+/**
+ * يحسب إجمالي وعدد ساعات التشغيل النهارية والليلية بين وقتَي البدء والانتهاء.
+ * - النهار: من 08:00 إلى 15:59
+ * - الليل: من 16:00 إلى 07:59 (يلتف لليوم التالي)
+ */
+export function computeHours(
+  start: string,
+  end: string,
+): { total: number; night: number; day: number } {
+  const s = parseHM(start);
+  let e = parseHM(end);
+  if (e === s) return { total: 0, night: 0, day: 0 };
+  if (e < s) e += 1440; // امتداد لليوم التالي
+  let nightMin = 0;
+  for (let m = s; m < e; m++) {
+    if (isNightMinute(m)) nightMin++;
+  }
+  const totalMin = e - s;
+  return {
+    total: totalMin / 60,
+    night: nightMin / 60,
+    day: (totalMin - nightMin) / 60,
+  };
+}
+
 export function calculate(s: CalcState): CalcResult {
   if (s.mode === "bill") {
     return calculateBill(s);
@@ -182,8 +227,12 @@ export function calculate(s: CalcState): CalcResult {
 
 function calculateBill(s: CalcState): CalcResult {
   const kWh = Math.max(0, s.bill.kWh15Days);          // a
-  const totalHours = Math.max(1, s.bill.dayHours);     // b — إجمالي ساعات اليوم
-  const nightHours = Math.max(0, Math.min(totalHours, s.bill.nightHours)); // c
+  const { total: totalHoursRaw, night: nightHoursRaw } = computeHours(
+    s.bill.startTime,
+    s.bill.endTime,
+  );
+  const totalHours = Math.max(1, totalHoursRaw);
+  const nightHours = Math.max(0, Math.min(totalHours, nightHoursRaw));
   const hasBatteries = (s.autonomy ?? 0) > 0;
 
   // d. الحمل في الساعة (kW/h) = a / 15 / b
@@ -254,14 +303,21 @@ function calculateBill(s: CalcState): CalcResult {
 }
 
 function calculateLoads(s: CalcState): CalcResult {
+  // نحسب لكل جهاز ساعات النهار/الليل من بين وقت البدء والانتهاء
+  const perDevice = s.devices.map((d) => {
+    const h = computeHours(d.startTime, d.endTime);
+    return { d, ...h };
+  });
+
   // الحمل النهاري = قدرة الجهاز × العدد (بدون عدد الساعات) — قدرة لحظية بالوات
-  const dayLoadW = s.devices.reduce(
-    (acc, d) => acc + d.watts * d.qty,
+  // فقط للأجهزة التي تعمل خلال ساعات النهار
+  const dayLoadW = perDevice.reduce(
+    (acc, x) => acc + (x.day > 0 ? x.d.watts * x.d.qty : 0),
     0,
   );
   // الحمل الليلي = قدرة الجهاز × العدد × عدد ساعات الليل — طاقة بالـ Wh
-  const nightWh = s.devices.reduce(
-    (acc, d) => acc + d.watts * d.qty * d.nightHours,
+  const nightWh = perDevice.reduce(
+    (acc, x) => acc + x.d.watts * x.d.qty * x.night,
     0,
   );
   const maxLoadW = dayLoadW;
@@ -271,7 +327,7 @@ function calculateLoads(s: CalcState): CalcResult {
 
   // عرض إجمالي الطاقة اليومية التقريبية (نهار + ليل) للمستخدم فقط
   const totalDailyKWh =
-    s.devices.reduce((acc, d) => acc + d.watts * d.qty * d.hours, 0) / 1000;
+    perDevice.reduce((acc, x) => acc + x.d.watts * x.d.qty * x.total, 0) / 1000;
 
   const dod = s.battery === "lithium" ? DOD_LITHIUM : DOD_GEL;
   // سعة البطارية لتغطية الحمل الليلي بالكامل (مع DoD)
