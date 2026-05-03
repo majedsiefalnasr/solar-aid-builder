@@ -271,20 +271,30 @@ function Field({
   placeholder,
   type = "text",
   full,
+  textarea,
 }: {
   label: string;
   placeholder?: string;
   type?: string;
   full?: boolean;
+  textarea?: boolean;
 }) {
   return (
     <label className={`block ${full ? "md:col-span-2" : ""}`}>
       <span className="mb-1.5 block text-xs font-bold text-ink">{label}</span>
-      <input
-        type={type}
-        placeholder={placeholder}
-        className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-ink placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
-      />
+      {textarea ? (
+        <textarea
+          placeholder={placeholder}
+          rows={3}
+          className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm text-ink placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
+        />
+      ) : (
+        <input
+          type={type}
+          placeholder={placeholder}
+          className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-ink placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
+        />
+      )}
     </label>
   );
 }
