@@ -142,18 +142,33 @@ function CheckoutPage() {
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 {authMode === "guest" && (
                   <>
-                    <Field label="الاسم" placeholder="أحمد محمد" />
-                    <Field label="رقم الجوال" placeholder="+967 7XX XXX XXX" type="tel" />
+                    <Field
+                      label="الاسم"
+                      placeholder="أحمد محمد"
+                      value={customer.name}
+                      onChange={(v) => setCustomer({ ...customer, name: v })}
+                    />
+                    <Field
+                      label="رقم الجوال"
+                      placeholder="+967 7XX XXX XXX"
+                      type="tel"
+                      value={customer.phone}
+                      onChange={(v) => setCustomer({ ...customer, phone: v })}
+                    />
                     <Field
                       label="العنوان"
                       placeholder="المدينة، الحي، الشارع"
                       full
+                      value={customer.address}
+                      onChange={(v) => setCustomer({ ...customer, address: v })}
                     />
                     <Field
                       label="ملاحظات"
                       placeholder="أي تفاصيل إضافية تساعدنا في تجهيز طلبك"
                       full
                       textarea
+                      value={customer.notes}
+                      onChange={(v) => setCustomer({ ...customer, notes: v })}
                     />
                   </>
                 )}
