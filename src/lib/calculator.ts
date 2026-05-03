@@ -11,8 +11,10 @@ export interface Device {
   label: string;
   watts: number;
   qty: number;
-  hours: number;
-  nightHours: number;
+  /** وقت بدء التشغيل بصيغة HH:mm */
+  startTime: string;
+  /** وقت انتهاء التشغيل بصيغة HH:mm */
+  endTime: string;
 }
 
 export type DeviceCategory =
