@@ -272,7 +272,7 @@ function CheckoutPage() {
 
               <div className="flex items-center justify-between" dir="ltr">
                 <button
-                  onClick={() => setDone(true)}
+                  onClick={handleConfirm}
                   className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95"
                   dir="rtl"
                 >
