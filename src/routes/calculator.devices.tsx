@@ -97,8 +97,8 @@ function StepDevices() {
         label: meta.defaultLabel,
         watts: meta.defaultWatts,
         qty: 1,
-        hours: 8,
-        nightHours: 2,
+        startTime: "08:00",
+        endTime: "16:00",
       },
     ]);
   };
