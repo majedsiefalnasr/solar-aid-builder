@@ -260,19 +260,19 @@ function DeviceRow({
           value={device.qty}
           onChange={(v) => onChange({ qty: Math.max(1, v) })}
         />
-        <NumberField
-          label="ساعات التشغيل"
-          value={device.hours}
-          onChange={(v) => onChange({ hours: Math.max(0, Math.min(24, v)) })}
+        <TimeField
+          label="من الساعة"
+          value={device.startTime}
+          onChange={(v) => onChange({ startTime: v })}
         />
-        <NumberField
-          label="منها ساعات ليلية"
-          value={device.nightHours}
-          onChange={(v) =>
-            onChange({ nightHours: Math.max(0, Math.min(device.hours, v)) })
-          }
+        <TimeField
+          label="إلى الساعة"
+          value={device.endTime}
+          onChange={(v) => onChange({ endTime: v })}
         />
       </div>
+
+      <HoursBreakdown start={device.startTime} end={device.endTime} />
 
       {presets.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
