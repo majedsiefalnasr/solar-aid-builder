@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,9 +10,15 @@ import {
   User,
   UserPlus,
   ShoppingBag,
+  Printer,
+  Download,
+  Sun,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { Steps } from "./cart";
+import { readProductCart, cartTotal, type ProductCartLine } from "@/lib/cart-store";
+import { products } from "@/lib/products";
+import { arabicNumber } from "@/components/calculator-shell";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -24,36 +30,72 @@ export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
 });
 
+interface SolarPayload {
+  state: { city?: string; battery?: string; autonomy?: number };
+  result: {
+    panelKWp: number;
+    batteryKWh: number;
+    panelCount: number;
+    inverterKVA: number;
+    totalSAR: number;
+  };
+}
+
+interface CustomerInfo {
+  name: string;
+  phone: string;
+  address: string;
+  notes: string;
+}
+
 function CheckoutPage() {
   const navigate = useNavigate();
   const [stage, setStage] = useState<1 | 2>(1);
   const [authMode, setAuthMode] = useState<"guest" | "login" | "register">("guest");
   const [pay, setPay] = useState<"bank" | "card">("bank");
   const [done, setDone] = useState(false);
+  const [orderNumber, setOrderNumber] = useState<string>("");
+  const [customer, setCustomer] = useState<CustomerInfo>({
+    name: "",
+    phone: "",
+    address: "",
+    notes: "",
+  });
+  const [lines, setLines] = useState<ProductCartLine[]>([]);
+  const [solar, setSolar] = useState<SolarPayload | null>(null);
+
+  useEffect(() => {
+    setLines(readProductCart());
+    try {
+      const raw = localStorage.getItem("mutajadidah:cart:v1");
+      setSolar(raw ? JSON.parse(raw) : null);
+    } catch {
+      setSolar(null);
+    }
+  }, []);
+
+  const productsTotal = useMemo(() => cartTotal(lines, products), [lines]);
+  const solarTotal = solar?.result.totalSAR ?? 0;
+  const grandTotal = productsTotal + solarTotal;
+
+  const handleConfirm = () => {
+    const num = `TM-${Date.now().toString().slice(-8)}`;
+    setOrderNumber(num);
+    setDone(true);
+  };
 
   if (done) {
     return (
-      <div className="min-h-screen bg-background">
-        <SiteNav />
-        <main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-4 py-16 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-soft text-primary">
-            <CheckCircle2 className="h-10 w-10" />
-          </div>
-          <h1 className="mt-6 text-3xl font-extrabold text-ink md:text-4xl">
-            تم استلام طلبك بنجاح
-          </h1>
-          <p className="mt-3 max-w-md text-sm text-muted-foreground">
-            سيتواصل معك فريق تم خلال 24 ساعة لتأكيد الطلب وجدولة التركيب.
-          </p>
-          <Link
-            to="/"
-            className="mt-7 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-cta"
-          >
-            العودة للرئيسية
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </main>
-      </div>
+      <OrderSuccess
+        orderNumber={orderNumber}
+        customer={customer}
+        lines={lines}
+        solar={solar}
+        productsTotal={productsTotal}
+        solarTotal={solarTotal}
+        grandTotal={grandTotal}
+        payMethod={pay}
+      />
     );
   }
 
