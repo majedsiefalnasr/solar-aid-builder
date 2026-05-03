@@ -175,6 +175,49 @@ const BATTERY_VOLT = 48;
 const DOD_LITHIUM = 0.9;
 const DOD_GEL = 0.5;
 
+/**
+ * تحويل وقت بصيغة HH:mm إلى عدد الدقائق منذ منتصف الليل.
+ */
+function parseHM(t: string): number {
+  if (!t || typeof t !== "string") return 0;
+  const [h, m] = t.split(":").map((x) => Number(x) || 0);
+  return Math.max(0, Math.min(23, h)) * 60 + Math.max(0, Math.min(59, m));
+}
+
+/**
+ * الساعات الليلية = من 16:00 إلى 07:59 (شاملة).
+ * يعني: الدقيقة ليلية إذا كانت >= 16:00 أو < 08:00.
+ */
+function isNightMinute(minuteOfDay: number): boolean {
+  const m = ((minuteOfDay % 1440) + 1440) % 1440;
+  return m >= 16 * 60 || m < 8 * 60;
+}
+
+/**
+ * يحسب إجمالي وعدد ساعات التشغيل النهارية والليلية بين وقتَي البدء والانتهاء.
+ * - النهار: من 08:00 إلى 15:59
+ * - الليل: من 16:00 إلى 07:59 (يلتف لليوم التالي)
+ */
+export function computeHours(
+  start: string,
+  end: string,
+): { total: number; night: number; day: number } {
+  const s = parseHM(start);
+  let e = parseHM(end);
+  if (e === s) return { total: 0, night: 0, day: 0 };
+  if (e < s) e += 1440; // امتداد لليوم التالي
+  let nightMin = 0;
+  for (let m = s; m < e; m++) {
+    if (isNightMinute(m)) nightMin++;
+  }
+  const totalMin = e - s;
+  return {
+    total: totalMin / 60,
+    night: nightMin / 60,
+    day: (totalMin - nightMin) / 60,
+  };
+}
+
 export function calculate(s: CalcState): CalcResult {
   if (s.mode === "bill") {
     return calculateBill(s);
