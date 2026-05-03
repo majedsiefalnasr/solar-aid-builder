@@ -303,14 +303,21 @@ function calculateBill(s: CalcState): CalcResult {
 }
 
 function calculateLoads(s: CalcState): CalcResult {
+  // نحسب لكل جهاز ساعات النهار/الليل من بين وقت البدء والانتهاء
+  const perDevice = s.devices.map((d) => {
+    const h = computeHours(d.startTime, d.endTime);
+    return { d, ...h };
+  });
+
   // الحمل النهاري = قدرة الجهاز × العدد (بدون عدد الساعات) — قدرة لحظية بالوات
-  const dayLoadW = s.devices.reduce(
-    (acc, d) => acc + d.watts * d.qty,
+  // فقط للأجهزة التي تعمل خلال ساعات النهار
+  const dayLoadW = perDevice.reduce(
+    (acc, x) => acc + (x.day > 0 ? x.d.watts * x.d.qty : 0),
     0,
   );
   // الحمل الليلي = قدرة الجهاز × العدد × عدد ساعات الليل — طاقة بالـ Wh
-  const nightWh = s.devices.reduce(
-    (acc, d) => acc + d.watts * d.qty * d.nightHours,
+  const nightWh = perDevice.reduce(
+    (acc, x) => acc + x.d.watts * x.d.qty * x.night,
     0,
   );
   const maxLoadW = dayLoadW;
@@ -320,7 +327,7 @@ function calculateLoads(s: CalcState): CalcResult {
 
   // عرض إجمالي الطاقة اليومية التقريبية (نهار + ليل) للمستخدم فقط
   const totalDailyKWh =
-    s.devices.reduce((acc, d) => acc + d.watts * d.qty * d.hours, 0) / 1000;
+    perDevice.reduce((acc, x) => acc + x.d.watts * x.d.qty * x.total, 0) / 1000;
 
   const dod = s.battery === "lithium" ? DOD_LITHIUM : DOD_GEL;
   // سعة البطارية لتغطية الحمل الليلي بالكامل (مع DoD)
