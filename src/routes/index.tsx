@@ -263,6 +263,39 @@ function HomePage() {
             <CarouselPrevious className="hidden md:flex" />
             <CarouselNext className="hidden md:flex" />
           </Carousel>
+
+          {/* Calculator CTA */}
+          <div className="mt-10">
+            <Link
+              to="/calculator"
+              className="group relative flex flex-col items-start gap-5 overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary-soft via-card to-card p-6 shadow-card transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-elevated md:flex-row md:items-center md:justify-between md:p-8"
+            >
+              <div className="pointer-events-none absolute -left-10 -top-10 h-48 w-48 rounded-full bg-primary/15 blur-3xl" />
+              <div className="pointer-events-none absolute -right-10 -bottom-10 h-48 w-48 rounded-full bg-amber-400/15 blur-3xl" />
+
+              <div className="relative z-10 flex items-start gap-4 md:items-center">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-cta">
+                  <Calculator className="h-7 w-7" />
+                </div>
+                <div>
+                  <span className="inline-block rounded-full bg-primary/15 px-2.5 py-1 text-[10px] font-extrabold text-primary">
+                    حصري · مجاناً
+                  </span>
+                  <h3 className="mt-2 text-xl font-extrabold text-ink md:text-2xl">
+                    لم تجد الحزمة المناسبة؟ صمّم نظامك بنفسك
+                  </h3>
+                  <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                    احسب احتياجك من الألواح والبطاريات والإنفرتر بدقة بناءً على أحمالك وفاتورتك وموقعك — في أقل من 3 دقائق.
+                  </p>
+                </div>
+              </div>
+
+              <span className="relative z-10 inline-flex shrink-0 items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-extrabold text-primary-foreground shadow-cta transition group-hover:translate-x-[-2px]">
+                ابدأ الحساب الآن
+                <ArrowLeft className="h-4 w-4" />
+              </span>
+            </Link>
+          </div>
         </div>
       </section>
 
