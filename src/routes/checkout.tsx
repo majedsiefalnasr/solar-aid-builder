@@ -314,12 +314,16 @@ function Field({
   type = "text",
   full,
   textarea,
+  value,
+  onChange,
 }: {
   label: string;
   placeholder?: string;
   type?: string;
   full?: boolean;
   textarea?: boolean;
+  value?: string;
+  onChange?: (v: string) => void;
 }) {
   return (
     <label className={`block ${full ? "md:col-span-2" : ""}`}>
@@ -328,12 +332,16 @@ function Field({
         <textarea
           placeholder={placeholder}
           rows={3}
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
           className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm text-ink placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
         />
       ) : (
         <input
           type={type}
           placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
           className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-ink placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
         />
       )}
