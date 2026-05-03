@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   User,
   UserPlus,
+  ShoppingBag,
 } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site-chrome";
 import { Steps } from "./cart";
