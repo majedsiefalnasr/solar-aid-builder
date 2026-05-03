@@ -27,7 +27,7 @@ export const Route = createFileRoute("/checkout")({
 function CheckoutPage() {
   const navigate = useNavigate();
   const [stage, setStage] = useState<1 | 2>(1);
-  const [authMode, setAuthMode] = useState<"login" | "register">("register");
+  const [authMode, setAuthMode] = useState<"guest" | "login" | "register">("guest");
   const [pay, setPay] = useState<"bank" | "card">("bank");
   const [done, setDone] = useState(false);
 
