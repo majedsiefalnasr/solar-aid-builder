@@ -28,10 +28,10 @@ export type DeviceCategory =
 export interface BillInput {
   // Total kWh consumed over the bill cycle (BILL_DAYS)
   kWh15Days: number;
-  // Total operating hours per day (a + b in the spec)
-  dayHours: number;
-  // Of which night hours (c)
-  nightHours: number;
+  /** وقت بدء التشغيل بصيغة HH:mm */
+  startTime: string;
+  /** وقت انتهاء التشغيل بصيغة HH:mm */
+  endTime: string;
 }
 
 export interface CalcState {
