@@ -21,6 +21,7 @@ import {
   FRIDGE_PRESETS,
   LIGHT_PRESETS,
   PUMP_PRESETS,
+  computeHours,
   loadState,
   saveState,
   type CalcMode,
