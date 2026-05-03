@@ -69,11 +69,18 @@ function CheckoutPage() {
             <>
               <h1 className="text-2xl font-extrabold text-ink md:text-3xl">بياناتك</h1>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                سجّل دخولك أو أنشئ حساباً جديداً.
+                أكمل طلبك بسرعة كزائر، أو سجّل دخولك للاستفادة من حفظ طلباتك.
               </p>
 
               {/* Auth toggle */}
-              <div className="mt-6 grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1.5">
+              <div className="mt-6 grid grid-cols-3 gap-2 rounded-2xl bg-muted p-1.5">
+                <ModeBtn
+                  active={authMode === "guest"}
+                  onClick={() => setAuthMode("guest")}
+                  icon={<ShoppingBag className="h-4 w-4" />}
+                >
+                  شراء كزائر
+                </ModeBtn>
                 <ModeBtn
                   active={authMode === "login"}
                   onClick={() => setAuthMode("login")}
@@ -91,18 +98,41 @@ function CheckoutPage() {
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
-                {authMode === "register" && (
-                  <Field label="الاسم الكامل" placeholder="أحمد محمد" />
+                {authMode === "guest" && (
+                  <>
+                    <Field label="الاسم" placeholder="أحمد محمد" />
+                    <Field label="رقم الجوال" placeholder="+967 7XX XXX XXX" type="tel" />
+                    <Field
+                      label="العنوان"
+                      placeholder="المدينة، الحي، الشارع"
+                      full
+                    />
+                    <Field
+                      label="ملاحظات"
+                      placeholder="أي تفاصيل إضافية تساعدنا في تجهيز طلبك"
+                      full
+                      textarea
+                    />
+                  </>
                 )}
-                <Field label="رقم الجوال" placeholder="+967 7XX XXX XXX" type="tel" />
-                <Field label="البريد الإلكتروني" placeholder="you@example.com" type="email" />
-                <Field label="كلمة المرور" placeholder="••••••••" type="password" />
+                {authMode === "login" && (
+                  <>
+                    <Field label="البريد الإلكتروني" placeholder="you@example.com" type="email" full />
+                    <Field label="كلمة المرور" placeholder="••••••••" type="password" full />
+                  </>
+                )}
                 {authMode === "register" && (
-                  <Field
-                    label="عنوان التركيب"
-                    placeholder="المدينة، الحي، الشارع"
-                    full
-                  />
+                  <>
+                    <Field label="الاسم الكامل" placeholder="أحمد محمد" />
+                    <Field label="رقم الجوال" placeholder="+967 7XX XXX XXX" type="tel" />
+                    <Field label="البريد الإلكتروني" placeholder="you@example.com" type="email" />
+                    <Field label="كلمة المرور" placeholder="••••••••" type="password" />
+                    <Field
+                      label="عنوان التركيب"
+                      placeholder="المدينة، الحي، الشارع"
+                      full
+                    />
+                  </>
                 )}
               </div>
 
