@@ -133,7 +133,7 @@ const prices = {
 
 function ConstructionCalculator() {
   const [type, setType] = useState<ProjectType>("villa");
-  const [city, setCity] = useState<string>("عدن");
+  const [city, setCity] = useState<string>("تعز");
   const [finish, setFinish] = useState<FinishQuality>("standard");
   const [area, setArea] = useState(150);
   const [floors, setFloors] = useState(2);
@@ -168,7 +168,7 @@ function ConstructionCalculator() {
 
   const reset = () => {
     setType("villa");
-    setCity("عدن");
+    setCity("تعز");
     setFinish("standard");
     setArea(150);
     setFloors(2);

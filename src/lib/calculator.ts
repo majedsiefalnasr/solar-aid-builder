@@ -44,7 +44,7 @@ export interface CalcState {
 }
 
 export const defaultState: CalcState = {
-  city: "عدن",
+  city: "تعز",
   battery: "lithium",
   autonomy: 1,
   mode: "loads",
