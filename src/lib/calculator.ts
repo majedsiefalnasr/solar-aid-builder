@@ -227,8 +227,12 @@ export function calculate(s: CalcState): CalcResult {
 
 function calculateBill(s: CalcState): CalcResult {
   const kWh = Math.max(0, s.bill.kWh15Days);          // a
-  const totalHours = Math.max(1, s.bill.dayHours);     // b — إجمالي ساعات اليوم
-  const nightHours = Math.max(0, Math.min(totalHours, s.bill.nightHours)); // c
+  const { total: totalHoursRaw, night: nightHoursRaw } = computeHours(
+    s.bill.startTime,
+    s.bill.endTime,
+  );
+  const totalHours = Math.max(1, totalHoursRaw);
+  const nightHours = Math.max(0, Math.min(totalHours, nightHoursRaw));
   const hasBatteries = (s.autonomy ?? 0) > 0;
 
   // d. الحمل في الساعة (kW/h) = a / 15 / b
