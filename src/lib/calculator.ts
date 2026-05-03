@@ -279,9 +279,10 @@ function calculateLoads(s: CalcState): CalcResult {
   const panelKWp = (panelCount * PANEL_W) / 1000;
 
   const maxLoadKW = maxLoadW / 1000;
-  // قدرة الإنفرتر > القدرة الإجمالية للألواح، ومقرّبة لأعلى عدد صحيح
-  const inverterRaw = Math.max(panelKWp, dayLoadKW * 1.25);
-  const inverterKVA = Math.max(1, Math.ceil(inverterRaw + 0.0001));
+  // قدرة الإنفرتر = Max(الحمل النهاري × 1.5، الحمل الليلي / ساعات ذروة الإشعاع)
+  // ثم تُقرَّب لأعلى عدد صحيح
+  const inverterRawW = Math.max(dayLoadW * 1.5, nightWh / peakSun);
+  const inverterKVA = Math.max(1, Math.ceil(inverterRawW / 1000));
   const surgeKVA = Math.round(inverterKVA * 0.33 * 100) / 100;
 
   const totalSAR =
