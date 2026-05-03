@@ -19,7 +19,7 @@ export const Route = createFileRoute("/calculator/")({
 
 function StepLocation() {
   const navigate = useNavigate();
-  const [city, setCity] = useState<string>("عدن");
+  const [city, setCity] = useState<string>("تعز");
 
   useEffect(() => {
     const s = loadState();

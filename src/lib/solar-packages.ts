@@ -199,7 +199,7 @@ export function getPackage(id: string): SolarPackage | undefined {
 // ---------------- Sizing engine (mirrors calculator.ts bill mode) ----------------
 const BILL_DAYS = 15;
 const PANEL_W = 650;
-const CITY_SUN_HOURS = 6; // عدن الافتراضية
+const CITY_SUN_HOURS = 5.7; // تعز الافتراضية
 const NIGHT_BUFFER = 1.2;
 const BATTERY_VOLT = 48;
 const DOD_LITHIUM = 0.9;
@@ -271,7 +271,7 @@ export function sizePackage(pkg: SolarPackage): { state: CalcState; result: Calc
   };
 
   const state: CalcState = {
-    city: "عدن",
+    city: "تعز",
     battery: "lithium",
     autonomy: 1,
     mode: "bill",
