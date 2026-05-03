@@ -408,3 +408,266 @@ function PayOption({
     </button>
   );
 }
+
+function OrderSuccess({
+  orderNumber,
+  customer,
+  lines,
+  solar,
+  productsTotal,
+  solarTotal,
+  grandTotal,
+  payMethod,
+}: {
+  orderNumber: string;
+  customer: CustomerInfo;
+  lines: ProductCartLine[];
+  solar: SolarPayload | null;
+  productsTotal: number;
+  solarTotal: number;
+  grandTotal: number;
+  payMethod: "bank" | "card";
+}) {
+  const printRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+  const orderDate = useMemo(
+    () => new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }),
+    []
+  );
+
+  const handlePrint = () => window.print();
+
+  const handleDownload = async () => {
+    if (!printRef.current) return;
+    setDownloading(true);
+    try {
+      const html2pdf = (await import("html2pdf.js")).default;
+      await html2pdf()
+        .set({
+          margin: 10,
+          filename: `${orderNumber}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        })
+        .from(printRef.current)
+        .save();
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <style>{`@media print { .no-print { display: none !important; } body { background: white; } }`}</style>
+      <div className="no-print">
+        <SiteNav />
+      </div>
+
+      <main className="mx-auto max-w-3xl px-4 py-10 md:px-8 md:py-14">
+        {/* Action bar */}
+        <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              تم استلام طلبك
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePrint}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground transition hover:border-primary hover:text-primary"
+            >
+              <Printer className="h-4 w-4" />
+              طباعة
+            </button>
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-cta transition hover:bg-primary/95 disabled:opacity-60"
+            >
+              <Download className="h-4 w-4" />
+              {downloading ? "جارٍ التحميل..." : "تحميل PDF"}
+            </button>
+          </div>
+        </div>
+
+        {/* Printable receipt */}
+        <div
+          ref={printRef}
+          dir="rtl"
+          className="rounded-3xl border border-border bg-card p-6 shadow-card md:p-10"
+        >
+          <div className="flex items-start justify-between gap-4 border-b border-border pb-5">
+            <div>
+              <div className="text-2xl font-extrabold text-primary">تَم</div>
+              <div className="mt-1 text-xs text-muted-foreground">شركة تم للطاقة والبناء</div>
+            </div>
+            <div className="text-left">
+              <div className="text-xs text-muted-foreground">رقم الطلب</div>
+              <div className="text-base font-extrabold text-ink" dir="ltr">
+                {orderNumber}
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">{orderDate}</div>
+            </div>
+          </div>
+
+          <div className="mt-5 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-soft text-primary">
+              <CheckCircle2 className="h-7 w-7" />
+            </div>
+            <h1 className="mt-3 text-xl font-extrabold text-ink md:text-2xl">
+              تم استلام طلبك بنجاح
+            </h1>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              سيتواصل معك فريق تم خلال 24 ساعة لتأكيد الطلب وجدولة التسليم.
+            </p>
+          </div>
+
+          {/* Customer info */}
+          <div className="mt-6 rounded-2xl bg-muted p-4">
+            <div className="mb-2 text-xs font-extrabold text-ink">بيانات العميل</div>
+            <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-2">
+              <InfoRow label="الاسم" value={customer.name || "—"} />
+              <InfoRow label="رقم الجوال" value={customer.phone || "—"} />
+              <InfoRow label="العنوان" value={customer.address || "—"} full />
+              {customer.notes && <InfoRow label="ملاحظات" value={customer.notes} full />}
+              <InfoRow
+                label="طريقة الدفع"
+                value={payMethod === "bank" ? "تحويل بنكي" : "بطاقة بنكية"}
+              />
+            </div>
+          </div>
+
+          {/* Items table */}
+          <div className="mt-6">
+            <div className="mb-2 text-xs font-extrabold text-ink">المنتجات المطلوبة</div>
+            <div className="overflow-hidden rounded-2xl border border-border">
+              <table className="w-full text-right text-xs">
+                <thead className="bg-muted text-ink">
+                  <tr>
+                    <th className="px-3 py-2 font-bold">#</th>
+                    <th className="px-3 py-2 font-bold">المنتج</th>
+                    <th className="px-3 py-2 font-bold">الكمية</th>
+                    <th className="px-3 py-2 font-bold">السعر</th>
+                    <th className="px-3 py-2 font-bold">الإجمالي</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {solar && (
+                    <tr className="border-t border-border">
+                      <td className="px-3 py-2 text-muted-foreground">1</td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <Sun className="h-4 w-4 text-primary" />
+                          <span className="font-bold text-ink">
+                            نظام شمسي {solar.result.panelKWp} kWp · {solar.result.batteryKWh} kWh
+                          </span>
+                        </div>
+                        <div className="mt-0.5 text-[10px] text-muted-foreground">
+                          {arabicNumber(solar.result.panelCount)} لوح · إنفرتر{" "}
+                          {solar.result.inverterKVA} kVA
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">1</td>
+                      <td className="px-3 py-2" dir="ltr">
+                        {solar.result.totalSAR.toLocaleString("en-US")}
+                      </td>
+                      <td className="px-3 py-2 font-bold text-ink" dir="ltr">
+                        {solar.result.totalSAR.toLocaleString("en-US")}
+                      </td>
+                    </tr>
+                  )}
+                  {lines.map((line, i) => {
+                    const p = products.find((x) => x.id === line.productId);
+                    if (!p) return null;
+                    const lineTotal = p.price * line.qty;
+                    return (
+                      <tr key={line.productId} className="border-t border-border">
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {i + (solar ? 2 : 1)}
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="font-bold text-ink">{p.name}</div>
+                          <div className="mt-0.5 text-[10px] text-muted-foreground">
+                            {p.brand}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">{line.qty}</td>
+                        <td className="px-3 py-2" dir="ltr">
+                          {p.price.toLocaleString("en-US")}
+                        </td>
+                        <td className="px-3 py-2 font-bold text-ink" dir="ltr">
+                          {lineTotal.toLocaleString("en-US")}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Totals */}
+          <div className="mt-5 ml-auto max-w-xs space-y-1.5 text-xs">
+            {solar && (
+              <TotalRow label="نظام الطاقة" value={`${solarTotal.toLocaleString("en-US")} ر.س`} />
+            )}
+            {lines.length > 0 && (
+              <TotalRow
+                label={`المنتجات (${lines.length})`}
+                value={`${productsTotal.toLocaleString("en-US")} ر.س`}
+              />
+            )}
+            <TotalRow label="الشحن" value="مجاني" />
+            <div className="my-2 h-px bg-border" />
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-ink">الإجمالي</span>
+              <span className="text-lg font-extrabold text-primary" dir="ltr">
+                {grandTotal.toLocaleString("en-US")} ر.س
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-border pt-4 text-center text-[10px] text-muted-foreground">
+            شكراً لاختياركم تَم — لأي استفسار: support@tamm.online
+          </div>
+        </div>
+
+        <div className="no-print mt-6 flex justify-center">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-bold text-foreground transition hover:border-primary hover:text-primary"
+          >
+            العودة للرئيسية
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </div>
+      </main>
+
+      <div className="no-print">
+        <SiteFooter />
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ label, value, full }: { label: string; value: string; full?: boolean }) {
+  return (
+    <div className={full ? "md:col-span-2" : ""}>
+      <span className="text-muted-foreground">{label}: </span>
+      <span className="font-bold text-ink">{value}</span>
+    </div>
+  );
+}
+
+function TotalRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-bold text-ink" dir="ltr">
+        {value}
+      </span>
+    </div>
+  );
+}
