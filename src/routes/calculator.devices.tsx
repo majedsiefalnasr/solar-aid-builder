@@ -64,8 +64,8 @@ function StepDevices() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [bill, setBill] = useState<BillInput>({
     kWh15Days: 450,
-    dayHours: 14,
-    nightHours: 6,
+    startTime: "08:00",
+    endTime: "22:00",
   });
   const [activeCat, setActiveCat] = useState<DeviceCategory>("fridges");
 
